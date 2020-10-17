@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.Macros">
+   <children>
+      <BorderPane fx:id="header" styleClass="nav">
+         <center>
+            <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
+               <children>
+                  <Group>
+                     <children>
+                        <ImageView fx:id="deviceImage" fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true" styleClass="titleImage" />
+                        <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true" styleClass="titleImage" x="60.0" y="6.0">
+                           <image>
+                              <Image url="@icons/macros32.png" />
+                           </image>
+                        </ImageView>
+                     </children>
+                  </Group>
+                  <VBox>
+                     <children>
+                        <Label styleClass="title" text="%macros" />
+                        <Label fx:id="deviceName" text="Device Name" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+         </center>
+         <right>
+            <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
+               <children>
+                  <Hyperlink onAction="#evtBack" styleClass="iconButton" text="%back" />
+               </children>
+            </HBox>
+         </right>
+      </BorderPane>
+      <StackPane VBox.vgrow="ALWAYS">
+         <children>
+            <Region fx:id="background" prefHeight="200.0" prefWidth="200.0" />
+            <BorderPane>
+               <left>
+                  <BorderPane prefHeight="300.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                     <center>
+                        <BorderPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                           <center>
+                              <TreeView fx:id="macros" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                                 <styleClass>
+                                    <String fx:value="focusless" />
+                                    <String fx:value="transparentBackground" />
+                                 </styleClass>
+                              </TreeView>
+                           </center>
+                           <bottom>
+                              <HBox styleClass="compactTools" BorderPane.alignment="CENTER">
+                                 <children>
+                                    <Hyperlink onAction="#evtImport" text="%import" />
+                                    <Hyperlink fx:id="export" onAction="#evtExport" text="%export" />
+                                 </children>
+                              </HBox>
+                           </bottom>
+                        </BorderPane>
+                     </center>
+                     <top>
+                        <VBox styleClass="tools" BorderPane.alignment="CENTER">
+                           <children>
+                              <Label styleClass="subtitle" text="%sequences" />
+                              <HBox alignment="CENTER_LEFT" styleClass="row">
+                                 <children>
+                                    <Hyperlink fx:id="add" onAction="#evtAdd" text="%add" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </top>
+                  </BorderPane>
+               </left>
+               <center>
+                  <VBox BorderPane.alignment="CENTER">
+                     <children>
+                        <VBox fx:id="sequenceEditor">
+                           <children>
+                              <Label styleClass="subtitle" text="%macroKeySubtitle" />
+                              <ComboBox fx:id="macroKey" prefWidth="150.0" />
+                              <Hyperlink onAction="#evtAddMacro" text="%addMacro" />
+                              <Hyperlink fx:id="recordMacro" onAction="#evtRecordMacro" text="%recordMacro" />
+                           </children>
+                           <styleClass>
+                              <String fx:value="tools" />
+                              <String fx:value="danger" />
+                           </styleClass>
+                        </VBox>
+                        <HBox />
+                        <VBox fx:id="editor" prefWidth="360.0">
+                           <children>
+                              <GridPane VBox.vgrow="NEVER">
+                                <columnConstraints>
+                                  <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
+                                  <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
+                                    <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
+                                </columnConstraints>
+                                <rowConstraints>
+                                  <RowConstraints minHeight="-Infinity" prefHeight="30.0" vgrow="NEVER" />
+                                  <RowConstraints maxHeight="-Infinity" minHeight="-Infinity" prefHeight="30.0" vgrow="NEVER" />
+                                </rowConstraints>
+                                 <children>
+                                    <RadioButton fx:id="keyMacro" mnemonicParsing="false" GridPane.rowIndex="1">
+                                       <opaqueInsets>
+                                          <Insets />
+                                       </opaqueInsets>
+                                       <toggleGroup>
+                                          <ToggleGroup fx:id="macroType" />
+                                       </toggleGroup>
+                                    </RadioButton>
+                                    <RadioButton fx:id="urlMacro" mnemonicParsing="false" toggleGroup="$macroType" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                    <RadioButton fx:id="scriptMacro" mnemonicParsing="false" toggleGroup="$macroType" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                                    <Label text="%key" textAlignment="CENTER" />
+                                    <Label text="%url" textAlignment="CENTER" GridPane.columnIndex="1" />
+                                    <Label text="%script" textAlignment="CENTER" GridPane.columnIndex="2" />
+                                 </children>
+                              </GridPane>
+                              <VBox fx:id="keyMacroSection" styleClass="tools">
+                                 <children>
+                                    <Label styleClass="subtitle" text="%keySubtitle" />
+                                    <ComboBox fx:id="simulateKey" prefWidth="150.0" />
+                                    <Label styleClass="emphasis" text="%state" />
+                                    <ComboBox fx:id="state" prefWidth="150.0" />
+                                    <Label styleClass="emphasis" text="%pause" />
+                                    <TextField fx:id="pause" />
+                                 </children>
+                              </VBox>
+                              <VBox fx:id="urlMacroSection" styleClass="tools">
+                                 <children>
+                                    <Label styleClass="subtitle" text="%urlSubtitle" />
+                                    <HBox styleClass="row">
+                                       <children>
+                                          <TextField fx:id="urlLocation" />
+                                          <Button fx:id="urlOpen" mnemonicParsing="false" onAction="#evtUrlOpen" text="%urlOpen" />
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </VBox>
+                              <VBox fx:id="scriptMacroSection" styleClass="tools">
+                                 <children>
+                                    <Label styleClass="subtitle" text="%scriptSubtitle" />
+                                    <HBox styleClass="row">
+                                       <children>
+                                          <TextField fx:id="scriptLocation" />
+                                          <Button mnemonicParsing="false" onAction="#evtScriptBrowse" text="%scriptBrowse" />
+                                       </children>
+                                    </HBox>
+                                    <Label styleClass="emphasis" text="%arguments" />
+                                    <Label styleClass="small" text="%argumentsDescription" wrapText="true" />
+                                    <TextArea fx:id="scriptArgs" maxWidth="-Infinity" prefWidth="300.0" VBox.vgrow="ALWAYS" />
+                                 </children>
+                              </VBox>
+                           </children>
+                        </VBox>
+                        <HBox alignment="CENTER_LEFT" styleClass="tools">
+                           <children>
+                              <Hyperlink fx:id="delete" onAction="#evtDelete" text="%delete" />
+                              <Label fx:id="error" styleClass="danger" />
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+               </center>
+            </BorderPane>
+         </children>
+      </StackPane>
+   </children>
+</VBox>

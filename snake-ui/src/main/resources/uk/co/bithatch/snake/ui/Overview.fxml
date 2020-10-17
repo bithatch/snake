@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane fx:id="overviewContent" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.Overview">
+	<center>
+      <BorderPane fx:id="content" BorderPane.alignment="CENTER_LEFT">
+         <center>
+      		<ListView fx:id="devices" prefWidth="265.0">
+               <styleClass>
+                  <String fx:value="devices" />
+                  <String fx:value="focusless" />
+                  <String fx:value="transparentBackground" />
+               </styleClass>
+            </ListView>
+         </center>
+      </BorderPane>
+	</center>
+   <bottom>
+      <BorderPane BorderPane.alignment="CENTER">
+         <center>
+            <VBox alignment="CENTER" styleClass="tools">
+               <children>
+                  <CheckBox fx:id="sync" mnemonicParsing="false" text="%sync" />
+               </children>
+            </VBox>
+         </center>
+         <right>
+            <HBox fx:id="decoratedTools" alignment="CENTER_RIGHT" fillHeight="false" styleClass="iconBar" BorderPane.alignment="CENTER">
+               <children>
+                  <Hyperlink alignment="CENTER" onAction="#evtAbout" styleClass="smallIconButton" text="%about" />
+                  <Hyperlink onAction="#evtOptions" styleClass="smallIconButton" text="%options" />
+               </children>
+            </HBox>
+         </right>
+         <left>
+            <Hyperlink fx:id="update" onAction="#evtUpdate" text="%update" BorderPane.alignment="CENTER">
+               <styleClass>
+                  <String fx:value="warning" />
+                  <String fx:value="gapLeft" />
+               </styleClass></Hyperlink>
+         </left>
+      </BorderPane>
+   </bottom>
+   <top>
+      <BorderPane fx:id="filterOptions" styleClass="nav" BorderPane.alignment="CENTER">
+         <right>
+            <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
+               <children>
+                  <Label text="%brightness" />
+                  <Slider fx:id="brightness" />
+                  <Label fx:id="battery" rotate="-90.0" styleClass="iconButton" />
+               </children>
+            </HBox>
+         </right>
+         <left>
+            <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
+               <children>
+                  <HBox fx:id="types" alignment="CENTER_LEFT" fillHeight="false" styleClass="gapRight" />
+                  <TextField fx:id="filter" />
+                  <Hyperlink fx:id="clearFilter" styleClass="smallIconButton" text="%clearFilter" />
+               </children>
+            </HBox>
+         </left>
+      </BorderPane>
+   </top>
+</BorderPane>

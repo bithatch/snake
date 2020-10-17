@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.Record">
+   <children>
+      <BorderPane fx:id="header" styleClass="nav">
+         <center>
+            <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
+               <children>
+                  <Group fx:id="headerImageGroup">
+                     <children>
+                        <ImageView fx:id="deviceImage" fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true" styleClass="titleImage" />
+                     </children>
+                  </Group>
+                  <VBox>
+                     <children>
+                        <Label styleClass="title" text="%record" />
+                        <Label fx:id="deviceName" text="Macro Name" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+         </center>
+         <right>
+            <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
+               <children>
+                  <Hyperlink onAction="#evtBack" styleClass="iconButton" text="%back" />
+               </children>
+            </HBox>
+         </right>
+      </BorderPane>
+      <BorderPane>
+         <top>
+            <VBox prefHeight="200.0" prefWidth="100.0" styleClass="tools" BorderPane.alignment="CENTER">
+               <children>
+                  <Label styleClass="title" text="%controls" />
+                  <HBox alignment="CENTER_LEFT" styleClass="row">
+                     <children>
+                        <Label styleClass="emphasis" text="%status" />
+                        <Label fx:id="status" />
+                     </children>
+                  </HBox>
+                  <HBox alignment="CENTER_LEFT" styleClass="row">
+                     <children>
+                        <Hyperlink fx:id="startRecord" onAction="#evtStartRecord" styleClass="largeIconButton" text="%startRecord" />
+                        <Hyperlink fx:id="pause" onAction="#evtPause" styleClass="iconButton" text="%pause" />
+                        <Hyperlink fx:id="stop" onAction="#evtStop" styleClass="iconButton" text="%stop" />
+                     </children>
+                  </HBox>
+                  <CheckBox mnemonicParsing="false" styleClass="gapLeft" text="%recordDelays" />
+                  <Label text="%macro">
+                     <styleClass>
+                        <String fx:value="title" />
+                        <String fx:value="gapTop" />
+                     </styleClass>
+                  </Label>
+                  <Label fx:id="empty" text="%empty" />
+               </children>
+            </VBox>
+         </top>
+         <center>
+            <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" BorderPane.alignment="CENTER">
+               <content>
+                  <FlowPane fx:id="keys">
+                     <styleClass>
+                        <String fx:value="spaced" />
+                        <String fx:value="tools" />
+                     </styleClass>
+                  </FlowPane>
+               </content>
+               <styleClass>
+                  <String fx:value="focusless" />
+                  <String fx:value="transparentBackground" />
+               </styleClass>
+            </ScrollPane>
+         </center>
+      </BorderPane>
+   </children>
+</VBox>

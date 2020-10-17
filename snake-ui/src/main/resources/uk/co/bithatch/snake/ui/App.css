@@ -1,0 +1,285 @@
+/* Black and Green - Default Style for Snake, A front-end for OpenRazer to control Razer devices */
+
+/* Define custom fonts */
+
+@font-face {
+    src: url('FROSTBITE-Narrow.ttf');
+}
+@font-face {
+    src: url('Roboto-Light.ttf');
+}
+@font-face {
+    src: url('RazerSymbols.ttf');
+}
+
+Label, CheckBox {
+    -fx-font-family: 'Roboto Light';	
+}
+
+/* Generic spacing styles */
+
+.gapRight {
+    -fx-padding: 0 2em 0 0;
+}
+
+.gapLeft {
+    -fx-padding: 0 0 0 2em;
+}
+
+.regions {
+    -fx-padding: 1em 1em 1em 1em;
+    -fx-spacing: 1em;
+    -fx-font-size: 10px;
+}
+
+/* Some components we hide the focus (such as ListView used for devices ) */
+
+.focusless:focused {
+    -fx-background-color: -fx-box-border, -fx-control-inner-background;
+    -fx-background-insets: 0, 1;
+    -fx-padding: 1;
+}
+
+/* Logical text styles for anything that needs mild emphasis  */
+
+.emphasis {
+	-fx-font-weight: bold;
+}
+
+.small {
+    -fx-font-size: 10px;
+}
+
+.title {
+    -fx-font-size: 24px;
+    -fx-text-fill: -fx-accent;
+    -fx-font-family: 'FROSTBITE Narrow';
+}
+
+.subtitle {
+    -fx-font-size: 18px;
+    -fx-text-fill: -fx-accent;
+    -fx-font-family: 'FROSTBITE Narrow';
+}
+
+.header {
+    -fx-font-size: 18px;
+    -fx-text-fill: -fx-accent;
+    -fx-padding: 0 0 1em 0;
+}
+
+.titleBar {
+    -fx-font-size: 32px;
+    -fx-text-fill: -fx-accent;
+    -fx-font-family: 'FROSTBITE Narrow';
+}
+
+.description {
+	-fx-padding: 1em;
+    -fx-font-size: 18px;
+}
+
+/* Various icon, image and icon button styles */
+
+.iconBar {
+    -fx-padding: 4px;
+    -fx-spacing: 4px;
+}
+
+.tools {
+    -fx-padding: 1em 1em 1em 1em;
+    -fx-spacing: 1em;
+}
+
+.row {
+    -fx-spacing: 1em;
+}
+
+.column {
+    -fx-spacing: 1em;
+}
+
+.spaced {
+    -fx-hgap: 1em;
+    -fx-vgap: 1em;
+}
+
+.compactTools {
+    -fx-padding: 0.25em;
+    -fx-spacing: 0.25em;
+}
+
+.control {
+	-fx-pref-width: 280px;
+	-fx-padding: 1em 0 0 0;
+}
+
+.icon, .iconButton, .smallIconButton, .largeIconButton, .iconButton:visited, .smallIconButton:visited, .largeIconButton:visited {
+	-fx-underline: false;
+    -fx-border-width: 0;
+    -fx-text-fill: -fx-dark-text-color;
+}
+
+.iconButton:pressed, .iconButton:hover, .smallIconButton:pressed, .smallIconButton:hover, .largeIconButton:pressed, .largeIconButton:hover {
+    -fx-text-fill: -fx-accent;
+}
+
+.icon, .iconButton {
+    -fx-font-size: 32px;
+}
+
+.smallIconButton {
+    -fx-font-size: 22px;
+}
+
+.largeIconButton, .largeIcon, .titleIcon {
+    -fx-text-fill: -fx-accent;
+    -fx-font-size: 72px;
+}
+
+.hugeIcon {
+    -fx-text-fill: -fx-accent;
+    -fx-font-size: 256px;
+}
+
+.mediumIcon {
+    -fx-text-fill: -fx-accent;
+    -fx-font-size: 48px;
+}
+
+.titleIcon {
+    -fx-padding: 0 0.25em 0 0;
+}
+
+.titleImage {
+	-fx-fit-height: 96px;
+	-fx-fit-width: 96px;
+    -fx-padding: 0 0.25em 0 0;
+}
+
+/* Logical information message level styles */
+
+.danger {
+    -fx-text-fill: red;
+}
+
+.warning {
+    -fx-text-fill: orange;
+}
+
+.success {
+    -fx-text-fill: green;
+}
+
+.info {
+    -fx-text-fill: blue;
+}
+
+/* Nav areas, i.e the bar at the top of the UI that contains back icon, filters and device image / title etc */
+
+.nav {
+    -fx-padding: 8px; 
+	-fx-pref-height: 96px;
+}
+
+/* Status areas, a horizontal group of components, each conveying different status information such as
+ * that used in the device overview
+ */
+
+.status {
+	-fx-spacing: 1em;
+}
+
+.deviceOverview .title {
+	-fx-font-size: 16px;
+}
+
+.statusImage {
+}
+
+/* Some components we want to explicitly add transparent backgrounds to  */
+
+.control, .transparentBackground, .transparentBackground .viewport, 
+.transparentBackground:focused, .transparentBackground:focused .viewport, .deviceOverview {
+	-fx-background-color: transparent;
+}
+
+/* Matrix UI */
+
+.keyboard {
+    -fx-hgap: 4px;
+    -fx-vgap: 4px;
+}
+
+.key {
+	-fx-font-size: 10px;
+	-fx-pref-width: 36px;
+	-fx-pref-height: 36px;
+    -fx-background-color: linear-gradient(#222222, #111111);
+    -fx-background-radius: 4;
+    -fx-background-insets: 0; 
+    -fx-text-fill: white;
+}
+
+.key Label {
+	-fx-effect: dropshadow( one-pass-box , white , 4 , 0.0 , 0 , 0 );
+}
+
+.key:hover {
+    -fx-background-color: linear-gradient(#444444, #222222);
+}
+
+.key:armed {
+    -fx-background-color: linear-gradient(#888888, #777777);
+}
+.key:selected {
+    -fx-background-color: linear-gradient(#dddddd, #cccccc);
+}
+	
+.key2 {
+    -fx-background-color: -fx-text-base-color, -fx-text-base-color, -fx-accent, -fx-body-color;
+    -fx-background-insets: 0 0 -1 0, 0, 1, 2;
+    -fx-background-radius: 3px, 3px, 2px, 1px;
+    -fx-padding: 0.333333em 0.666667em 0.333333em 0.666667em; 
+    -fx-text-fill: -fx-text-base-color;
+    -fx-alignment: CENTER;
+    -fx-content-display: LEFT;
+}
+
+/* Overview UI */
+
+.devices .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 0.25em; /* 3 */
+    -fx-text-fill: -fx-text-inner-color;
+    -fx-opacity: 1;
+}
+
+.devices .list-cell:filled:selected:focused, .devices .list-cell:filled:selected {
+    -fx-background-color: #00FF0040;
+    -fx-text-fill: -fx-text-inner-color;
+}
+
+/* Options UI */
+#trayOptions {
+	-fx-pref-width: 340px;	
+}
+
+
+/* Additional generic component styles */
+
+TextField {
+    -fx-background-color: -fx-mid-text-color;
+    -fx-text-fill: -fx-default-background;
+}
+
+.tooltip {
+    -fx-background: rgba(30,30,30);
+    -fx-text-fill: white;
+    -fx-background-color: rgba(30,30,30,0.8);
+    -fx-background-radius: 6px;
+    -fx-background-insets: 0;
+    -fx-padding: 0.667em 0.75em 0.667em 0.75em; /* 10px */
+    -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.5) , 10, 0.0 , 0 , 3 );
+    -fx-font-size: 12px;
+}

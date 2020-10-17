@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="300.0" styleClass="control" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.BatteryControl">
+   <children>
+      <HBox>
+         <children>
+            <Label styleClass="header" text="%battery" />
+            <Label fx:id="charging" alignment="TOP_RIGHT" styleClass="small" text="%charging">
+               <HBox.margin>
+                  <Insets left="16.0" />
+               </HBox.margin>
+            </Label>
+         </children>
+      </HBox>
+      <HBox>
+         <children>
+            <VBox alignment="CENTER">
+               <children>
+                  <Label fx:id="batteryStatus" alignment="TOP_CENTER" rotate="-90.0" styleClass="mediumIcon" text="%batteryFull" />
+                  <Label fx:id="percentage" alignment="BOTTOM_CENTER" text="99%">
+                     <padding>
+                        <Insets top="8.0" />
+                     </padding>
+                  </Label>
+               </children>
+            </VBox>
+            <VBox>
+               <children>
+                  <Label styleClass="emphasis" text="%lowThreshold" />
+                  <Spinner fx:id="lowThreshold" editable="true" />
+                  <Label styleClass="emphasis" text="%idleTime" />
+                  <Spinner fx:id="idleTime" editable="true" />
+               </children>
+            </VBox>
+         </children>
+      </HBox>
+   </children>
+</VBox>

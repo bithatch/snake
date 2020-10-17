@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.ColorPicker?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.ReactiveOptions">
+   <center>
+      <VBox styleClass="tools">
+         <children>
+            <HBox alignment="CENTER_LEFT">
+               <children>
+                  <Label styleClass="emphasis" text="%color" />
+                  <ColorPicker fx:id="color" />
+               </children>
+            </HBox>
+            <HBox alignment="CENTER_LEFT">
+               <children>
+                  <Label text="%speed" />
+                  <Slider fx:id="speed" max="255.0" />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </center>
+   <top>
+      <BorderPane fx:id="header" styleClass="nav" BorderPane.alignment="CENTER_LEFT">
+         <center>
+            <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
+               <children>
+                  <Group>
+                     <children>
+                        <ImageView fx:id="deviceImage" fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true" />
+                        <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true" styleClass="titleImage" x="60.0" y="6.0">
+                           <image>
+                              <Image url="@effects/reactive32.png" />
+                           </image>
+                        </ImageView>
+                     </children>
+                  </Group>
+                  <VBox>
+                     <children>
+                        <Label styleClass="title" text="%reactive" />
+                        <Label fx:id="deviceName" text="Device Name" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+         </center>
+         <right>
+            <HBox alignment="CENTER" fillHeight="false" BorderPane.alignment="CENTER">
+               <children>
+                  <Hyperlink onAction="#evtBack" styleClass="iconButton" text="%back" />
+               </children>
+            </HBox>
+         </right>
+      </BorderPane>
+   </top>
+</BorderPane>

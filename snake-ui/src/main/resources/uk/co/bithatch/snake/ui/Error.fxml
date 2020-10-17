@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.Error">
+   <center>
+      <VBox alignment="CENTER" fillWidth="false" prefWidth="400.0" styleClass="tools" BorderPane.alignment="CENTER">
+         <children>
+            <Label fx:id="error" text="%error">
+               <styleClass>
+                  <String fx:value="danger" />
+                  <String fx:value="hugeIcon" />
+               </styleClass></Label>
+            <Label fx:id="errorTitle">
+               <styleClass>
+                  <String fx:value="danger" />
+                  <String fx:value="title" />
+               </styleClass></Label>
+            <Label fx:id="errorDescription" prefHeight="200.0" styleClass="description" wrapText="true" VBox.vgrow="SOMETIMES" />
+            <Hyperlink onAction="#evtRetry" text="%retry">
+               <styleClass>
+                  <String fx:value="gapTop" />
+                  <String fx:value="smallIconButton" />
+               </styleClass></Hyperlink>
+         </children>
+      </VBox>
+   </center>
+   <bottom>
+      <HBox fx:id="decoratedTools" alignment="CENTER_RIGHT" fillHeight="false" BorderPane.alignment="CENTER_RIGHT">
+         <children>
+            <Hyperlink onAction="#evtAbout" styleClass="iconButton" text="%about" />
+            <Hyperlink onAction="#evtOptions" styleClass="iconButton" text="%options" />
+         </children>
+      </HBox>
+   </bottom>
+</BorderPane>

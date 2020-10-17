@@ -1,0 +1,152 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>snake-dist</artifactId>
+	<parent>
+		<groupId>uk.co.bithatch</groupId>
+		<version>1.0-SNAPSHOT</version>
+		<artifactId>snake</artifactId>
+	</parent>
+	<packaging>pom</packaging>
+	<build>
+		<plugins>
+
+			<plugin>
+				<groupId>com.sshtools</groupId>
+				<artifactId>forker-updater-maven-plugin</artifactId>
+				<version>1.7-SNAPSHOT</version>
+				<executions>
+					<execution>
+						<id>updater</id>
+						<phase>package</phase>
+						<goals>
+							<goal>updates</goal>
+						</goals>
+						<configuration>
+							<launcherScriptName>snake</launcherScriptName>
+							<remoteBase>http://blue/repository</remoteBase>
+							<mainClass>uk.co.bithatch.snake.ui/uk.co.bithatch.snake.ui.App</mainClass>
+							<remotesFromOriginalSource>true</remotesFromOriginalSource>
+							<image>false</image>
+							<vmArgs>
+								<vmArg>-Xmx64m</vmArg>
+							</vmArgs>
+							<id>snake</id>
+							<forkerArgs>
+								<forkerArg>level FINE</forkerArg>
+								<forkerArg>restart-on 90</forkerArg>
+								<forkerArg>single-instance</forkerArg>
+								<forkerArg>install-location ${installer.home}/snake-razer</forkerArg>
+							</forkerArgs>
+							<bootstrapFiles>
+								<bootstrapFile>
+									<source>${basedir}/../README.md</source>
+									<target>docs</target>
+								</bootstrapFile>
+								<bootstrapFile>
+									<source>${basedir}/../CHANGES.md</source>
+									<target>docs</target>
+								</bootstrapFile>
+							</bootstrapFiles>
+							<bootstrapModules>
+								<bootstrapModule>javafx-base</bootstrapModule>
+								<bootstrapModule>javafx-base-linux</bootstrapModule>
+								<bootstrapModule>javafx-controls</bootstrapModule>
+								<bootstrapModule>javafx-controls-linux</bootstrapModule>
+								<bootstrapModule>javafx-fxml</bootstrapModule>
+								<bootstrapModule>javafx-fxml-linux</bootstrapModule>
+								<bootstrapModule>javafx-graphics</bootstrapModule>
+								<bootstrapModule>javafx-graphics-linux</bootstrapModule>
+								<bootstrapModule>FX-BorderlessScene</bootstrapModule>
+							</bootstrapModules>
+							<bootstrapOnlyModules>
+								<bootstrapOnlyModule>snake-updater</bootstrapOnlyModule>
+							</bootstrapOnlyModules>
+							<systemModules>
+								<systemModule>java.prefs</systemModule>
+								<systemModule>java.xml</systemModule>
+								<systemModule>jdk.unsupported</systemModule>
+								<systemModule>jdk.crypto.ec</systemModule>
+								
+								<systemModule>java.instrument</systemModule>
+								<systemModule>java.management</systemModule>
+								<systemModule>jdk.attach</systemModule>
+								<systemModule>jdk.management.agent</systemModule>
+								<systemModule>jdk.xml.dom</systemModule>
+								<systemModule>jdk.jsobject</systemModule>
+								<systemModule>java.net.http</systemModule>
+								
+								<!-- TODO separate this in forker? -->
+								<systemModule>java.desktop</systemModule>
+								
+								<!-- TODO separate this in forker? -->
+								<systemModule>java.scripting</systemModule>
+								
+								<!-- TODO separate this in forker? -->
+								<systemModule>java.management</systemModule>
+
+								<!-- TODO Because of Gson, consider finding a library that doesnt 
+									link to SQL -->
+								<systemModule>java.sql</systemModule>
+							</systemModules>
+							<classpathJars>
+								<classpathJar>asm</classpathJar>
+							</classpathJars>
+							<automaticModules>
+								<automaticModule>FX-BorderlessScene</automaticModule>
+								<automaticModule>dbus-java</automaticModule>
+								<automaticModule>java-utils</automaticModule>
+								<automaticModule>jnr-ffi</automaticModule>
+								<automaticModule>jnr-unixsocket</automaticModule>
+								<automaticModule>jnr-a64asm</automaticModule>
+								<automaticModule>jnr-x86asm</automaticModule>
+								<automaticModule>jnr-enxio</automaticModule>
+								<automaticModule>jnr-posix</automaticModule>
+								<automaticModule>icon-generator-common</automaticModule>
+								<automaticModule>icon-generator-javafx</automaticModule>
+							</automaticModules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.github.hazendaz.maven</groupId>
+				<artifactId>makeself-maven-plugin</artifactId>
+				<version>1.2.0</version>
+				<executions>
+					<execution>
+						<id>package</id>
+						<phase>package</phase>
+						<goals>
+							<goal>makeself</goal>
+						</goals>
+						<configuration>
+							<label>${project.name}</label>
+							<archiveDir>image</archiveDir>
+							<fileName>snake-installer.sh</fileName>
+							<startupScript>bin/snake</startupScript>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<version>${project.version}</version>
+			<artifactId>snake-ui</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<version>${project.version}</version>
+			<artifactId>snake-ui-linux</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<version>${project.version}</version>
+			<artifactId>snake-updater</artifactId>
+		</dependency>
+	</dependencies>
+</project>

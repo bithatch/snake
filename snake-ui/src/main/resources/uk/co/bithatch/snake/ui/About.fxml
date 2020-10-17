@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.About">
+   <center>
+      <VBox alignment="CENTER" fillWidth="false" BorderPane.alignment="CENTER">
+         <children>
+            <Label styleClass="title" text="%app" />
+            <Label fx:id="version" styleClass="small" />
+            <Label text="%copyright" />
+            <VBox alignment="CENTER">
+               <children>
+                  <GridPane alignment="CENTER_LEFT" styleClass="tools">
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                     <children>
+                        <Label styleClass="emphasis" text="%backend" />
+                        <Label styleClass="emphasis" text="%backendVersion" GridPane.rowIndex="1" />
+                        <Label fx:id="backend" styleClass="tools" text="Backend" GridPane.columnIndex="1" />
+                        <Label fx:id="backendVersion" text="Backend Version" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                     </children>
+                  </GridPane>
+                  <Hyperlink onAction="#evtChanges" text="%changes" />
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+   </center>
+   <bottom>
+      <Hyperlink onAction="#evtBack" styleClass="iconButton" text="%back" BorderPane.alignment="CENTER" />
+   </bottom>
+</BorderPane>

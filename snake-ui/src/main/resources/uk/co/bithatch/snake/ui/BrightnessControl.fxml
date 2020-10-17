@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" styleClass="control" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.BrightnessControl">
+   <children>
+      <HBox prefWidth="300.0">
+         <children>
+            <Label styleClass="header" text="%brightness" />
+         </children>
+      </HBox>
+      <HBox alignment="CENTER_LEFT">
+         <children>
+            <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@icons/brightness32.png" />
+               </image></ImageView>
+            <Slider fx:id="brightness" blockIncrement="1.0" majorTickUnit="1.0" max="2.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" />
+            <Label fx:id="brightnessText" text="Brightness" />
+         </children>
+      </HBox>
+      <VBox fx:id="regions" alignment="CENTER" prefWidth="280.0" styleClass="regions" />
+   </children>
+</VBox>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
+
+<fx:root styleClass="text-separator" type="StackPane" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <HBox fx:id="box" alignment="CENTER_LEFT" StackPane.alignment="CENTER_LEFT">
+         <children>
+            <Pane minHeight="1.0" minWidth="50.0" styleClass="line" />
+            <Label fx:id="text" styleClass="text" text="Some Text" />
+            <Pane maxWidth="1.7976931348623157E308" minHeight="1.0" styleClass="line" HBox.hgrow="ALWAYS" />
+         </children>
+      </HBox>
+   </children>
+</fx:root>

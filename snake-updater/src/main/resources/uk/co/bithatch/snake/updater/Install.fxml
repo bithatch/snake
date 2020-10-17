@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.updater.Install">
+	<top>
+		<BorderPane fx:id="titleBar" BorderPane.alignment="CENTER_RIGHT">
+			<left>
+				<HBox alignment="CENTER" styleClass="iconBar" BorderPane.alignment="CENTER" />
+			</left>
+			<right>
+				<HBox alignment="CENTER_RIGHT" styleClass="iconBar" BorderPane.alignment="CENTER">
+					<children>
+						<Hyperlink onAction="#evtMin" styleClass="smallIconButton" text="%min" />
+						<Hyperlink onAction="#evtClose" styleClass="smallIconButton" text="%close" />
+					</children>
+				</HBox>
+			</right>
+			<center>
+				<HBox alignment="CENTER" BorderPane.alignment="CENTER">
+					<children>
+						<ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+							<image>
+								<Image url="@/uk/co/bithatch/snake/updater/appicon/razer-color-64.png" />
+							</image>
+						</ImageView>
+						<Label fx:id="title" styleClass="titleBar" text="%title" />
+					</children>
+				</HBox>
+			</center>
+		</BorderPane>
+	</top>
+   <center>
+      <VBox alignment="CENTER" styleClass="tools" BorderPane.alignment="CENTER">
+         <children>
+            <BorderPane fx:id="options">
+               <center>
+                  <BorderPane>
+                     <left>
+                        <Label text="%target" BorderPane.alignment="CENTER" />
+                     </left>
+                     <center>
+                        <TextField fx:id="installLocation" BorderPane.alignment="CENTER" />
+                     </center>
+                     <right>
+                        <Button mnemonicParsing="false" onAction="#evtBrowse" text="%browse" BorderPane.alignment="CENTER" />
+                     </right>
+                     <bottom>
+                        <CheckBox fx:id="installShortcut" mnemonicParsing="false" selected="true" styleClass="tools" text="%installShortcut" BorderPane.alignment="CENTER" />
+                     </bottom>
+                  </BorderPane>
+               </center>
+               <bottom>
+                  <Hyperlink fx:id="install" onAction="#evtInstall" styleClass="largeIconButton" text="%install" BorderPane.alignment="CENTER" />
+               </bottom>
+            </BorderPane>
+            <VBox fx:id="progressContainer" alignment="CENTER" styleClass="tools">
+               <children>
+                  <Label fx:id="status" text="Status" wrapText="true" />
+                  <ProgressIndicator fx:id="progress" progress="0.0" />
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+   </center>
+</BorderPane>

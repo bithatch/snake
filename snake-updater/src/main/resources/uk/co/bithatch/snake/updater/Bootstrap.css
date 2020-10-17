@@ -1,0 +1,99 @@
+/* Black and Green - Default Style for Snake, A front-end for OpenRazer to control Razer devices */
+
+/* Define custom fonts */
+
+@font-face {
+    src: url('FROSTBITE-Narrow.ttf');
+}
+
+* {
+	-fx-background: #000000ff;
+	-fx-accent: #05ff05;
+	-fx-base: #0f0f0f;
+	-fx-inner-background: #0f0f0f;
+	-fx-default-background: #000000;
+	-fx-focus-color: #05ff05;
+	-fx-dark-text-color: #d3d3d3;
+	-fx-mid-text-color: #ffffff;
+	-fx-light-text-color: #a9a9a9;
+}
+
+.tooltip {
+	-fx-text-fill: #ffffff;
+	-fx-background-color: #000000;
+	-fx-effect: dropshadow(gaussian, rgba(0.0,0.0,0.0,0.2), 10.0, 0.5, 2.0, 2.0);
+}
+
+.shadowed {
+	-fx-background-insets: 0.0 0.0 0.0 11.0;
+	-fx-padding: 0.0 0.0 0.0 11.0;
+	-fx-effect: dropshadow(gaussian, #d3d3d37f, 11.0, 0.5, 2.0, 2.0);
+}
+
+.popover > .border {
+	-fx-fill: #000000;
+}
+
+.popover > .content {
+	-fx-background-color: #000000;
+}
+
+.titleBar {
+    -fx-font-size: 32.0px;
+    -fx-text-fill: -fx-accent;
+    -fx-font-family: 'FROSTBITE Narrow';
+}
+
+.tools {
+    -fx-padding: 1em 1em 1em 1em;
+    -fx-spacing: 1em;
+}
+
+/* Logical information message level styles */
+
+.danger {
+    -fx-text-fill: red;
+}
+
+.warning {
+    -fx-text-fill: orange;
+}
+
+.success {
+    -fx-text-fill: green;
+}
+
+.info {
+    -fx-text-fill: blue;
+}
+
+/* Various icon, image and icon button styles */
+
+.icon, .iconButton, .smallIconButton, .largeIconButton, .iconButton:visited, .smallIconButton:visited, .largeIconButton:visited {
+	-fx-underline: false;
+    -fx-border-width: 0;
+    -fx-text-fill: -fx-dark-text-color;
+}
+
+.iconButton:pressed, .iconButton:hover, .smallIconButton:pressed, .smallIconButton:hover, .largeIconButton:pressed, .largeIconButton:hover {
+    -fx-text-fill: -fx-accent;
+}
+
+.icon, .iconButton {
+    -fx-font-size: 32px;
+}
+
+.smallIconButton {
+    -fx-font-size: 22px;
+}
+
+.largeIconButton, .largeIcon, .titleIcon {
+    -fx-text-fill: -fx-accent;
+    -fx-font-size: 72px;
+}
+
+.titleImage {
+	-fx-fit-height: 96px;
+	-fx-fit-width: 96px;
+    -fx-padding: 0 0.25em 0 0;
+}

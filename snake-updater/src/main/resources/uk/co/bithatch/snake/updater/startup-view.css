@@ -1,0 +1,34 @@
+
+.button, .check-box .box {
+	-fx-background-color: primary-light-color;
+}
+
+
+.button:pressed, .check-box:pressed .box, .check-box:selected .box {
+	-fx-background-color: primary-color;
+}
+
+
+
+.header, .button, .check-box .box {
+	-fx-effect: dropshadow(gaussian, rgba(0.0, 0.0, 0.0, 0.26),15.0, 0.16, 0.0, 4.0); 
+}
+
+
+#primary {
+	-fx-background-color: rgba(0, 255, 0, 0.5);
+	-fx-max-height: 5;
+}
+
+#secondary {
+	-fx-background-color: rgba(255, 165, 0, 0.5);
+	-fx-max-height: 5;
+}
+
+SVGPath {
+	-fx-fill: #757575;
+}
+
+#cancelPath {
+	-fx-fill: red;
+}

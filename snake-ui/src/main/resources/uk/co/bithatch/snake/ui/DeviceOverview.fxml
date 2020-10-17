@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane focusTraversable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="deviceOverview" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.DeviceOverview">
+   <left>
+      <ImageView fx:id="deviceImage" fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true" styleClass="deviceImage" BorderPane.alignment="CENTER" />
+   </left>
+   <center>
+      <VBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" BorderPane.alignment="CENTER">
+         <children>
+            <Label fx:id="deviceName" styleClass="title" text="Device Name" />
+            <Label fx:id="deviceSerial" styleClass="deviceSerial" text="Device Serial" />
+            <Label fx:id="deviceFirmware" styleClass="deviceFirmware" text="Device Firmware" />
+            <HBox alignment="CENTER_LEFT" styleClass="status">
+               <children>
+                  <ImageView fx:id="effect" fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true" styleClass="statusImage" />
+                  <Label fx:id="brightnessLabel" text="%brightness">
+                     <graphic>
+                        <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@icons/brightness24.png" />
+                           </image>
+                        </ImageView>
+                     </graphic></Label>
+                  <Label fx:id="brightness" text="99%" />
+                  <Label fx:id="battery" styleClass="smallIcon" text="%batteryFull" />
+                  <Label fx:id="charging" styleClass="smallIcon" text="%charging" />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </center>
+   <right>
+      <HBox alignment="CENTER" fillHeight="false" BorderPane.alignment="CENTER">
+         <children>
+            <Hyperlink fx:id="macros" onAction="#evtMacros" styleClass="iconButton">
+               <graphic>
+                  <ImageView fitHeight="48.0" fitWidth="48.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@icons/macros48.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+               <tooltip>
+                  <Tooltip styleClass="tooltip" text="%macros" />
+               </tooltip></Hyperlink>
+            <Hyperlink onAction="#evtSelect" styleClass="iconButton">
+               <graphic>
+                  <ImageView fitHeight="48.0" fitWidth="48.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@icons/details48.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+               <tooltip>
+                  <Tooltip styleClass="tooltip" text="%details" />
+               </tooltip></Hyperlink>
+         </children>
+      </HBox>
+   </right>
+</BorderPane>

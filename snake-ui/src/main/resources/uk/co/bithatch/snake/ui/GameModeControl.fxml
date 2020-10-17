@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="300.0" styleClass="control" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.GameModeControl">
+   <children>
+      <HBox>
+         <children>
+            <Label styleClass="header" text="%gameMode" />
+         </children>
+      </HBox>
+      <HBox>
+         <children>
+            <Label fx:id="off" text="%off" />
+            <Slider fx:id="gameMode" blockIncrement="1.0" majorTickUnit="1.0" max="1.0" minorTickCount="0" prefWidth="64.0" showTickMarks="true" snapToTicks="true" />
+            <Label fx:id="on" text="%on" />
+         </children>
+      </HBox>
+   </children>
+</VBox>

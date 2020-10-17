@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.ColorPicker?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.MatrixOptions">
+   <children>
+      <BorderPane fx:id="header" styleClass="nav">
+         <center>
+            <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
+               <children>
+                  <Group>
+                     <children>
+                        <ImageView fx:id="deviceImage" fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true" styleClass="titleImage" />
+                        <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true" styleClass="titleImage" x="60.0" y="6.0">
+                           <image>
+                              <Image url="@effects/matrix32.png" />
+                           </image>
+                        </ImageView>
+                     </children>
+                  </Group>
+                  <VBox>
+                     <children>
+                        <Label styleClass="title" text="%matrix" />
+                        <Label fx:id="deviceName" text="Device Name" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+         </center>
+         <right>
+            <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
+               <children>
+                  <Hyperlink onAction="#evtBack" styleClass="iconButton" text="%back" />
+               </children>
+            </HBox>
+         </right>
+      </BorderPane>
+      <StackPane VBox.vgrow="ALWAYS">
+         <children>
+            <Region fx:id="background" prefHeight="200.0" prefWidth="200.0" />
+            <BorderPane fx:id="container" styleClass="emphasis">
+               <center>
+                  <BorderPane BorderPane.alignment="CENTER">
+                     <top>
+                        <HBox styleClass="tools" BorderPane.alignment="CENTER_LEFT">
+                           <children>
+                              <Hyperlink onAction="#evtReset" text="%reset" />
+                              <Hyperlink onAction="#evtSelectAll" text="%selectAll" />
+                           </children>
+                        </HBox>
+                     </top>
+                     <center>
+                        <ScrollPane fitToHeight="true" fitToWidth="true" vbarPolicy="NEVER" BorderPane.alignment="CENTER">
+                           <content>
+                              <HBox fx:id="scrollView" alignment="CENTER" prefHeight="400.0" prefWidth="600.0" />
+                           </content>
+                        </ScrollPane>
+                     </center>
+                  </BorderPane>
+               </center>
+               <top>
+                  <VBox alignment="CENTER" fillWidth="false" styleClass="tools" BorderPane.alignment="CENTER">
+                     <children>
+                        <HBox alignment="CENTER" fillHeight="false">
+                           <children>
+                              <Label fx:id="layoutLabel" text="%layoutLabel" />
+                              <Label fx:id="layout" text="Layout" />
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER" fillHeight="false">
+                           <children>
+                              <Label fx:id="colorLabel" text="%colorLabel" />
+                              <ColorPicker fx:id="color" onAction="#evtColor" />
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+               </top></BorderPane>
+         </children>
+      </StackPane>
+   </children>
+</VBox>
