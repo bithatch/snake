@@ -1,3 +1,7 @@
+# WARNING 
+
+* I am in the final phases of the first release, hopefully to be complete before the weekend of 17th Octoboer is over.  The installers aren't quite ready yet, but the brave are welcome to checkout the source and try it out now. *
+
 #Snake
 
 ![Snake Overview](images/overview.png  "Overview")
