@@ -1,0 +1,12 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Version=1.0
+Terminal=false
+Icon=snake-razer.png
+Name=Snake
+Comment=Control and configure your Razer devices
+Exec=/usr/bin/snake
+Categories=Utility;Core
+StartupNotify=false
+Type=Application
+Keywords=razer;snake;mamba;chroma;deathadder

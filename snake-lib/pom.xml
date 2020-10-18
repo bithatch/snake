@@ -10,25 +10,9 @@
 	</parent>
 	<dependencies>
 		<dependency>
-			<groupId>com.github.hypfvieh</groupId>
-			<artifactId>dbus-java</artifactId>
-			<version>3.2.3</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>3.11</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-			<version>2.8.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -40,18 +24,12 @@
 			<artifactId>slf4j-simple</artifactId>
 			<version>2.0.0-alpha1</version>
 		</dependency>
-
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.8.6</version>
+		</dependency>
 	</dependencies>
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.0</version>
-				<configuration>
-					<release>14</release>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+	<name>Snake - API</name>
+	<description>Provides a Java API to Razer devices. Implements are provided by separate modules, such as snake-backend-openrazer.</description>
 </project>

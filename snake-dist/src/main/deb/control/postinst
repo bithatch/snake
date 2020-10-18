@@ -1,0 +1,20 @@
+#!/bin/sh
+# postinst script for snake
+
+# source debconf stuff
+. /usr/share/debconf/confmodule
+
+case "$1" in
+    configure)
+    ;;
+    
+    triggered|abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+exit 0

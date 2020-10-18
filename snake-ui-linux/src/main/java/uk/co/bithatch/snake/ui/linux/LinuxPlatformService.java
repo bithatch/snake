@@ -15,14 +15,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.ui.App;
 import uk.co.bithatch.snake.ui.PlatformService;
 
 public class LinuxPlatformService implements PlatformService {
 
-	private static final String STABLE_CHANNEL = System.getProperty("forker.relaseChannel", "http://blue/repository");
-	private static final String BETA_CHANNEL = System.getProperty("forker.betaChannel", "http://blue/beta");
+	private static final String STABLE_CHANNEL = System.getProperty("forker.releaseChannel", "http://www.bithatch.co.uk/repositories/snake/stable");
+	private static final String BETA_CHANNEL = System.getProperty("forker.betaChannel", "http://www.bithatch.co.uk/repositories/snake/snapshot");
 
 	private static final String SNAKE_RAZER_DESKTOP = "snake-razer.desktop";
 

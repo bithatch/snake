@@ -7,9 +7,11 @@ import java.io.PrintWriter;
 import java.lang.System.Logger.Level;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.ServiceLoader;
 import java.util.Stack;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -46,6 +48,7 @@ public class App extends Application {
 
 	private static List<String> argsList;
 	private ScheduledExecutorService scheduler;
+	private List<Backend> backends = new ArrayList<>();
 
 	public static void applyStyles(Parent root) {
 		ObservableList<String> ss = root.getStylesheets();
@@ -437,7 +440,20 @@ public class App extends Application {
 		cfg.trayIconProperty()
 				.addListener((e) -> Platform.setImplicitExit(cfg.trayIconProperty().getValue() == TrayIcon.OFF));
 
-		backend = Backend.get();
+		String activeBackend = PREFS.get("backend", "");
+		for(Backend possibleBackend : ServiceLoader.load(Backend.class)) {
+			if(activeBackend.equals("") || activeBackend.equals(possibleBackend.getClass().getName())) {
+				LOG.log(Level.INFO, String.format("Backend %s* available.", possibleBackend.getName()));
+				backend = possibleBackend;
+			}
+			else
+				LOG.log(Level.INFO, String.format("Backend %s available.", possibleBackend.getName()));
+			backends.add(possibleBackend);
+		}
+		if(backend == null && !backends.isEmpty())
+			backend = backends.get(0);
+		if(backend == null)
+			throw new IllegalStateException("No backend modules available on the classpath or module path. You need at least one backend. For example, snake-backend-openrazer is the default backend.");
 		backend.init();
 
 		/* The tray */

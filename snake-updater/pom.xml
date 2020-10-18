@@ -30,7 +30,7 @@
 		<dependency>
 			<groupId>uk.co.bithatch</groupId>
 			<artifactId>FX-BorderlessScene</artifactId>
-			<version>4.4.1-SNAPSHOT</version>
+			<version>5.0.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sshtools</groupId>
@@ -41,44 +41,12 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.0</version>
-				<configuration>
-					<release>15</release>
-				</configuration>
-			</plugin>
-			<plugin>
 				<groupId>org.openjfx</groupId>
 				<artifactId>javafx-maven-plugin</artifactId>
-				<version>0.0.4</version>
-				<!-- <configuration>
-					<mainClass>org.update4j.demo.bootstrap.JavaFxDelegate</mainClass>
-				</configuration> -->
+				<version>0.0.5</version>
 			</plugin>
-			<!-- <plugin>
-				<groupId>com.zenjava</groupId>
-				<artifactId>javafx-maven-plugin</artifactId>
-				<version>8.8.3</version>
-				<configuration>
-					<mainClass>org.update4j.demo.bootstrap.JavaFxDelegate</mainClass>
-				</configuration>
-			</plugin> -->
 		</plugins>
 	</build>
-	<repositories>
-		<repository>
-			<id>jitpack.io</id>
-			<url>https://jitpack.io</url>
-			<releases />
-		</repository>
-		<repository>
-			<id>oss-snapshots</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-			<snapshots />
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-		</repository>
-	</repositories>
+	<name>Snake - Updater</name>
+	<description>Updater and installer UI implemented based on JAdaptive's Forker Updater library.</description>
 </project>

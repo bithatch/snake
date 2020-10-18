@@ -9,129 +9,538 @@
 		<artifactId>snake</artifactId>
 	</parent>
 	<packaging>pom</packaging>
-	<build>
-		<plugins>
+	<properties>
+		<snakeRemoteRepositories>http://www.bithatch.co.uk/repositories</snakeRemoteRepositories>
+		<snakeRemoteSnapshot>${snakeRemoteRepositories}/snake/snapshot</snakeRemoteSnapshot>
+		<snakeRemoteStable>${snakeRemoteRepositories}/snake/stable</snakeRemoteStable>
+		<snakeRemoteNoRuntimeSnapshot>${snakeRemoteRepositories}/snake-noruntime/snapshot</snakeRemoteNoRuntimeSnapshot>
+		<snakeRemoteNoRuntimeStable>${snakeRemoteRepositories}/snake-noruntime/stable</snakeRemoteNoRuntimeStable>
 
-			<plugin>
-				<groupId>com.sshtools</groupId>
-				<artifactId>forker-updater-maven-plugin</artifactId>
-				<version>1.7-SNAPSHOT</version>
-				<executions>
-					<execution>
-						<id>updater</id>
-						<phase>package</phase>
-						<goals>
-							<goal>updates</goal>
-						</goals>
-						<configuration>
-							<launcherScriptName>snake</launcherScriptName>
-							<remoteBase>http://blue/repository</remoteBase>
-							<mainClass>uk.co.bithatch.snake.ui/uk.co.bithatch.snake.ui.App</mainClass>
-							<remotesFromOriginalSource>true</remotesFromOriginalSource>
-							<image>false</image>
-							<vmArgs>
-								<vmArg>-Xmx64m</vmArg>
-							</vmArgs>
-							<id>snake</id>
-							<forkerArgs>
-								<forkerArg>level FINE</forkerArg>
-								<forkerArg>restart-on 90</forkerArg>
-								<forkerArg>single-instance</forkerArg>
-								<forkerArg>install-location ${installer.home}/snake-razer</forkerArg>
-							</forkerArgs>
-							<bootstrapFiles>
-								<bootstrapFile>
-									<source>${basedir}/../README.md</source>
-									<target>docs</target>
-								</bootstrapFile>
-								<bootstrapFile>
-									<source>${basedir}/../CHANGES.md</source>
-									<target>docs</target>
-								</bootstrapFile>
-							</bootstrapFiles>
-							<bootstrapModules>
-								<bootstrapModule>javafx-base</bootstrapModule>
-								<bootstrapModule>javafx-base-linux</bootstrapModule>
-								<bootstrapModule>javafx-controls</bootstrapModule>
-								<bootstrapModule>javafx-controls-linux</bootstrapModule>
-								<bootstrapModule>javafx-fxml</bootstrapModule>
-								<bootstrapModule>javafx-fxml-linux</bootstrapModule>
-								<bootstrapModule>javafx-graphics</bootstrapModule>
-								<bootstrapModule>javafx-graphics-linux</bootstrapModule>
-								<bootstrapModule>FX-BorderlessScene</bootstrapModule>
-							</bootstrapModules>
-							<bootstrapOnlyModules>
-								<bootstrapOnlyModule>snake-updater</bootstrapOnlyModule>
-							</bootstrapOnlyModules>
-							<systemModules>
-								<systemModule>java.prefs</systemModule>
-								<systemModule>java.xml</systemModule>
-								<systemModule>jdk.unsupported</systemModule>
-								<systemModule>jdk.crypto.ec</systemModule>
-								
-								<systemModule>java.instrument</systemModule>
-								<systemModule>java.management</systemModule>
-								<systemModule>jdk.attach</systemModule>
-								<systemModule>jdk.management.agent</systemModule>
-								<systemModule>jdk.xml.dom</systemModule>
-								<systemModule>jdk.jsobject</systemModule>
-								<systemModule>java.net.http</systemModule>
-								
-								<!-- TODO separate this in forker? -->
-								<systemModule>java.desktop</systemModule>
-								
-								<!-- TODO separate this in forker? -->
-								<systemModule>java.scripting</systemModule>
-								
-								<!-- TODO separate this in forker? -->
-								<systemModule>java.management</systemModule>
+		<snakeLocalRepositories>../../bithatch.github.io/repositories</snakeLocalRepositories>
+		<snakeLocalSnapshot>${snakeLocalRepositories}/snake/snapshot</snakeLocalSnapshot>
+		<snakeLocalStable>${snakeLocalRepositories}/snake/stable</snakeLocalStable>
+		<snakeLocalNoRuntimeSnapshot>${snakeLocalRepositories}/snake-noruntime/snapshot</snakeLocalNoRuntimeSnapshot>
+		<snakeLocalNoRuntimeStable>${snakeLocalRepositories}/snake-noruntime/stable</snakeLocalNoRuntimeStable>
 
-								<!-- TODO Because of Gson, consider finding a library that doesnt 
-									link to SQL -->
-								<systemModule>java.sql</systemModule>
-							</systemModules>
-							<classpathJars>
-								<classpathJar>asm</classpathJar>
-							</classpathJars>
-							<automaticModules>
-								<automaticModule>FX-BorderlessScene</automaticModule>
-								<automaticModule>dbus-java</automaticModule>
-								<automaticModule>java-utils</automaticModule>
-								<automaticModule>jnr-ffi</automaticModule>
-								<automaticModule>jnr-unixsocket</automaticModule>
-								<automaticModule>jnr-a64asm</automaticModule>
-								<automaticModule>jnr-x86asm</automaticModule>
-								<automaticModule>jnr-enxio</automaticModule>
-								<automaticModule>jnr-posix</automaticModule>
-								<automaticModule>icon-generator-common</automaticModule>
-								<automaticModule>icon-generator-javafx</automaticModule>
-							</automaticModules>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>com.github.hazendaz.maven</groupId>
-				<artifactId>makeself-maven-plugin</artifactId>
-				<version>1.2.0</version>
-				<executions>
-					<execution>
-						<id>package</id>
-						<phase>package</phase>
-						<goals>
-							<goal>makeself</goal>
-						</goals>
-						<configuration>
-							<label>${project.name}</label>
-							<archiveDir>image</archiveDir>
-							<fileName>snake-installer.sh</fileName>
-							<startupScript>bin/snake</startupScript>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+		<snakeSnapshotInstallers>../../bithatch.github.io/downloads/snake/snapshot</snakeSnapshotInstallers>
+		<snakeStableInstallers>../../bithatch.github.io/downloads/snake/stable</snakeStableInstallers>
+
+		<!-- TODO set this according to project.version -->
+		<snakeRemote>${snakeRemoteSnapshot}</snakeRemote>
+		<snakeRemoteNoRuntime>${snakeRemoteNoRuntimeSnapshot}</snakeRemoteNoRuntime>
+		<snakeInstallers>${snakeSnapshotInstallers}</snakeInstallers>
+		<snakeLocal>${snakeLocalSnapshot}</snakeLocal>
+		<snakeLocalNoRuntime>${snakeLocalNoRuntimeSnapshot}</snakeLocalNoRuntime>
+
+		<timestamp>${maven.build.timestamp}</timestamp>
+		<maven.build.timestamp.format>yyyyMMddHHmmSS</maven.build.timestamp.format>
+	</properties>
+	<profiles>
+		<profile>
+			<activation>
+				<os>
+					<family>Linux</family>
+				</os>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>${project.groupId}</groupId>
+					<version>${project.version}</version>
+					<artifactId>snake-ui-linux</artifactId>
+				</dependency>
+				<dependency>
+					<groupId>${project.groupId}</groupId>
+					<version>${project.version}</version>
+					<artifactId>snake-backend-openrazer</artifactId>
+				</dependency>
+			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.sshtools</groupId>
+						<artifactId>forker-updater-maven-plugin</artifactId>
+						<version>1.7-SNAPSHOT</version>
+						<executions>
+							<execution>
+								<id>updater</id>
+								<phase>package</phase>
+								<goals>
+									<goal>updates</goal>
+								</goals>
+								<configuration>
+									<repositoryDirectory>${project.build.directory}/repository</repositoryDirectory>
+									<launcherScriptName>snake</launcherScriptName>
+									<remoteBase>${snakeRemote}</remoteBase>
+									<mainClass>uk.co.bithatch.snake.ui/uk.co.bithatch.snake.ui.App</mainClass>
+									<remotesFromOriginalSource>false</remotesFromOriginalSource>
+									<image>false</image>
+									<vmArgs>
+										<vmArg>-Xmx64m</vmArg>
+									</vmArgs>
+									<id>snake</id>
+									<forkerArgs>
+										<forkerArg>jvmarg -Dforker.releaseChannel=${snakeRemoteStable}</forkerArg>
+										<forkerArg>jvmarg -Dforker.betaChannel=${snakeRemoteSnapshot}</forkerArg>
+										<forkerArg>restart-on 90</forkerArg>
+										<forkerArg>single-instance</forkerArg>
+										<forkerArg>install-location ${installer.home}/snake-razer</forkerArg>
+									</forkerArgs>
+									<bootstrapFiles>
+										<bootstrapFile>
+											<source>${basedir}/../README.md</source>
+											<target>docs</target>
+										</bootstrapFile>
+										<bootstrapFile>
+											<source>${basedir}/../CHANGES.md</source>
+											<target>docs</target>
+										</bootstrapFile>
+									</bootstrapFiles>
+									<bootstrapModules>
+										<bootstrapModule>javafx-base</bootstrapModule>
+										<bootstrapModule>javafx-base-linux</bootstrapModule>
+										<bootstrapModule>javafx-controls</bootstrapModule>
+										<bootstrapModule>javafx-controls-linux</bootstrapModule>
+										<bootstrapModule>javafx-fxml</bootstrapModule>
+										<bootstrapModule>javafx-fxml-linux</bootstrapModule>
+										<bootstrapModule>javafx-graphics</bootstrapModule>
+										<bootstrapModule>javafx-graphics-linux</bootstrapModule>
+										<bootstrapModule>FX-BorderlessScene</bootstrapModule>
+									</bootstrapModules>
+									<bootstrapOnlyModules>
+										<bootstrapOnlyModule>snake-updater</bootstrapOnlyModule>
+									</bootstrapOnlyModules>
+									<systemModules>
+										<systemModule>java.prefs</systemModule>
+										<systemModule>java.xml</systemModule>
+										<systemModule>jdk.unsupported</systemModule>
+										<systemModule>jdk.crypto.ec</systemModule>
+
+										<systemModule>java.instrument</systemModule>
+										<systemModule>java.management</systemModule>
+										<systemModule>jdk.attach</systemModule>
+										<systemModule>jdk.management.agent</systemModule>
+										<systemModule>jdk.xml.dom</systemModule>
+										<systemModule>jdk.jsobject</systemModule>
+										<systemModule>java.net.http</systemModule>
+
+										<!-- TODO separate this in forker? -->
+										<systemModule>java.desktop</systemModule>
+
+										<!-- TODO separate this in forker? -->
+										<systemModule>java.scripting</systemModule>
+
+										<!-- TODO separate this in forker? -->
+										<systemModule>java.management</systemModule>
+
+										<!-- TODO Because of Gson, consider finding a library that doesnt 
+											link to SQL -->
+										<systemModule>java.sql</systemModule>
+									</systemModules>
+									<classpathJars>
+										<classpathJar>asm</classpathJar>
+									</classpathJars>
+									<automaticModules>
+										<automaticModule>FX-BorderlessScene</automaticModule>
+										<automaticModule>dbus-java</automaticModule>
+										<automaticModule>java-utils</automaticModule>
+										<automaticModule>jnr-ffi</automaticModule>
+										<automaticModule>jnr-unixsocket</automaticModule>
+										<automaticModule>jnr-a64asm</automaticModule>
+										<automaticModule>jnr-x86asm</automaticModule>
+										<automaticModule>jnr-enxio</automaticModule>
+										<automaticModule>jnr-posix</automaticModule>
+										<automaticModule>icon-generator-common</automaticModule>
+										<automaticModule>icon-generator-javafx</automaticModule>
+									</automaticModules>
+								</configuration>
+							</execution>
+
+							<execution>
+								<id>updater-noruntime</id>
+								<phase>package</phase>
+								<goals>
+									<goal>updates</goal>
+								</goals>
+								<configuration>
+									<repositoryDirectory>${project.build.directory}/repository-noruntime</repositoryDirectory>
+									<launcherScriptName>snake</launcherScriptName>
+									<remoteBase>${snakeRemoteNoRuntime}</remoteBase>
+									<mainClass>uk.co.bithatch.snake.ui/uk.co.bithatch.snake.ui.App</mainClass>
+									<remotesFromOriginalSource>false</remotesFromOriginalSource>
+									<imageDirectory>${project.build.directory}/image-noruntime</imageDirectory>
+									<image>false</image>
+									<link>false</link>
+									<vmArgs>
+										<vmArg>-Xmx64m</vmArg>
+									</vmArgs>
+									<id>snake</id>
+									<forkerArgs>
+										<forkerArg>jvmarg -Dforker.releaseChannel=${snakeRemoteNoRuntimeStable}</forkerArg>
+										<forkerArg>jvmarg -Dforker.betaChannel=${snakeRemoteNoRuntimeSnapshot}</forkerArg>
+										<forkerArg>restart-on 90</forkerArg>
+										<forkerArg>single-instance</forkerArg>
+										<forkerArg>install-location ${installer.home}/snake-razer</forkerArg>
+									</forkerArgs>
+									<bootstrapFiles>
+										<bootstrapFile>
+											<source>${basedir}/../README.md</source>
+											<target>docs</target>
+										</bootstrapFile>
+										<bootstrapFile>
+											<source>${basedir}/../CHANGES.md</source>
+											<target>docs</target>
+										</bootstrapFile>
+									</bootstrapFiles>
+									<bootstrapModules>
+										<bootstrapModule>javafx-base</bootstrapModule>
+										<bootstrapModule>javafx-base-linux</bootstrapModule>
+										<bootstrapModule>javafx-controls</bootstrapModule>
+										<bootstrapModule>javafx-controls-linux</bootstrapModule>
+										<bootstrapModule>javafx-fxml</bootstrapModule>
+										<bootstrapModule>javafx-fxml-linux</bootstrapModule>
+										<bootstrapModule>javafx-graphics</bootstrapModule>
+										<bootstrapModule>javafx-graphics-linux</bootstrapModule>
+										<bootstrapModule>FX-BorderlessScene</bootstrapModule>
+									</bootstrapModules>
+									<bootstrapOnlyModules>
+										<bootstrapOnlyModule>snake-updater</bootstrapOnlyModule>
+									</bootstrapOnlyModules>
+									<systemModules>
+										<systemModule>java.prefs</systemModule>
+										<systemModule>java.xml</systemModule>
+										<systemModule>jdk.unsupported</systemModule>
+										<systemModule>jdk.crypto.ec</systemModule>
+
+										<systemModule>java.instrument</systemModule>
+										<systemModule>java.management</systemModule>
+										<systemModule>jdk.attach</systemModule>
+										<systemModule>jdk.management.agent</systemModule>
+										<systemModule>jdk.xml.dom</systemModule>
+										<systemModule>jdk.jsobject</systemModule>
+										<systemModule>java.net.http</systemModule>
+
+										<!-- TODO separate this in forker? -->
+										<systemModule>java.desktop</systemModule>
+
+										<!-- TODO separate this in forker? -->
+										<systemModule>java.scripting</systemModule>
+
+										<!-- TODO separate this in forker? -->
+										<systemModule>java.management</systemModule>
+
+										<!-- TODO Because of Gson, consider finding a library that doesnt 
+											link to SQL -->
+										<systemModule>java.sql</systemModule>
+									</systemModules>
+									<classpathJars>
+										<classpathJar>asm</classpathJar>
+									</classpathJars>
+									<automaticModules>
+										<automaticModule>FX-BorderlessScene</automaticModule>
+										<automaticModule>dbus-java</automaticModule>
+										<automaticModule>java-utils</automaticModule>
+										<automaticModule>jnr-ffi</automaticModule>
+										<automaticModule>jnr-unixsocket</automaticModule>
+										<automaticModule>jnr-a64asm</automaticModule>
+										<automaticModule>jnr-x86asm</automaticModule>
+										<automaticModule>jnr-enxio</automaticModule>
+										<automaticModule>jnr-posix</automaticModule>
+										<automaticModule>icon-generator-common</automaticModule>
+										<automaticModule>icon-generator-javafx</automaticModule>
+									</automaticModules>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>com.github.hazendaz.maven</groupId>
+						<artifactId>makeself-maven-plugin</artifactId>
+						<version>1.2.0</version>
+						<executions>
+							<execution>
+								<id>package</id>
+								<phase>package</phase>
+								<goals>
+									<goal>makeself</goal>
+								</goals>
+								<configuration>
+									<label>${project.name}</label>
+									<archiveDir>image</archiveDir>
+									<fileName>snake-x86_64-installer.sh</fileName>
+									<startupScript>bin/snake</startupScript>
+								</configuration>
+							</execution>
+							<execution>
+								<id>package-noruntime</id>
+								<phase>package</phase>
+								<goals>
+									<goal>makeself</goal>
+								</goals>
+								<configuration>
+									<label>${project.name}</label>
+									<archiveDir>image-noruntime</archiveDir>
+									<fileName>snake-installer-noruntime.sh</fileName>
+									<startupScript>bin/snake</startupScript>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
+					<plugin>
+						<artifactId>jdeb</artifactId>
+						<groupId>org.vafer</groupId>
+						<version>1.2</version>
+						<executions>
+							<execution>
+								<phase>package</phase>
+								<id>snake-deb</id>
+								<goals>
+									<goal>jdeb</goal>
+								</goals>
+								<configuration>
+									<skipPOMs>false</skipPOMs>
+									<installDir>/usr/lib/snake-razer</installDir>
+									<controlDir>${project.basedir}/src/main/deb/control</controlDir>
+									<deb>${project.basedir}/target/snake-x86_64.deb</deb>
+									<dataSet>
+										<data>
+											<type>directory</type>
+											<src>${project.build.directory}/image</src>
+											<includes>app/**/*,conf/**/*,legal/**/*,docs/**/*,lib/**/*</includes>
+											<mapper>
+												<type>perm</type>
+												<user>root</user>
+												<prefix>/usr/lib/snake-razer</prefix>
+												<group>root</group>
+												<filemode>644</filemode>
+											</mapper>
+										</data>
+
+										<data>
+											<type>directory</type>
+											<src>${project.build.directory}/image</src>
+											<includes>bin/**/*</includes>
+											<mapper>
+												<type>perm</type>
+												<strip>1</strip>
+												<user>root</user>
+												<prefix>/usr/lib/snake-razer/bin</prefix>
+												<group>root</group>
+												<filemode>755</filemode>
+											</mapper>
+										</data>
+										<data>
+											<type>file</type>
+											<src>${project.build.directory}/image/app.cfg</src>
+											<mapper>
+												<type>perm</type>
+												<strip>1</strip>
+												<prefix>/usr/lib/snake-razer</prefix>
+												<user>root</user>
+												<group>root</group>
+												<filemode>644</filemode>
+											</mapper>
+										</data>
+										<data>
+											<type>file</type>
+											<src>${project.build.directory}/image/manifest.xml</src>
+											<mapper>
+												<type>perm</type>
+												<strip>1</strip>
+												<user>root</user>
+												<prefix>/usr/lib/snake-razer</prefix>
+												<group>root</group>
+												<filemode>644</filemode>
+											</mapper>
+										</data>
+										<data>
+											<type>file</type>
+											<src>${basedir}/../snake-ui/src/main/resources/uk/co/bithatch/snake/ui/appicon/razer-color-512.png</src>
+											<dst>snake-razer.png</dst>
+											<mapper>
+												<type>perm</type>
+												<strip>1</strip>
+												<prefix>/usr/share/pixmaps</prefix>
+												<user>root</user>
+												<group>root</group>
+												<filemode>644</filemode>
+											</mapper>
+										</data>
+										<data>
+											<type>file</type>
+											<src>${basedir}/src/main/freedesktop/snake-razer.desktop</src>
+											<mapper>
+												<type>perm</type>
+												<strip>1</strip>
+												<prefix>/usr/share/applications</prefix>
+												<user>root</user>
+												<group>root</group>
+												<filemode>644</filemode>
+											</mapper>
+										</data>
+										<data>
+											<type>link</type>
+											<linkName>/usr/bin/snake</linkName>
+											<linkTarget>/usr/lib/snake-razer/bin/snake</linkTarget>
+											<symlink>true</symlink>
+										</data>
+									</dataSet>
+								</configuration>
+							</execution>
+							<execution>
+								<phase>package</phase>
+								<id>snake-deb-noruntime</id>
+								<goals>
+									<goal>jdeb</goal>
+								</goals>
+								<configuration>
+									<skipPOMs>false</skipPOMs>
+									<installDir>/usr/lib/snake-razer</installDir>
+									<controlDir>${project.basedir}/src/main/deb-noruntime/control</controlDir>
+									<deb>${project.basedir}/target/snake-noruntime.deb</deb>
+									<dataSet>
+										<data>
+											<type>directory</type>
+											<src>${project.build.directory}/image-noruntime</src>
+											<includes>app/**/*</includes>
+											<mapper>
+												<type>perm</type>
+												<user>root</user>
+												<prefix>/usr/lib/snake-razer</prefix>
+												<group>root</group>
+												<filemode>644</filemode>
+											</mapper>
+										</data>
+
+										<data>
+											<type>directory</type>
+											<src>${project.build.directory}/image-noruntime</src>
+											<includes>bin/**/*</includes>
+											<mapper>
+												<type>perm</type>
+												<strip>1</strip>
+												<user>root</user>
+												<prefix>/usr/lib/snake-razer/bin</prefix>
+												<group>root</group>
+												<filemode>755</filemode>
+											</mapper>
+										</data>
+										<data>
+											<type>file</type>
+											<src>${project.build.directory}/image-noruntime/app.cfg</src>
+											<mapper>
+												<type>perm</type>
+												<strip>1</strip>
+												<prefix>/usr/lib/snake-razer</prefix>
+												<user>root</user>
+												<group>root</group>
+												<filemode>644</filemode>
+											</mapper>
+										</data>
+										<data>
+											<type>file</type>
+											<src>${project.build.directory}/image-noruntime/manifest.xml</src>
+											<mapper>
+												<type>perm</type>
+												<strip>1</strip>
+												<user>root</user>
+												<prefix>/usr/lib/snake-razer</prefix>
+												<group>root</group>
+												<filemode>644</filemode>
+											</mapper>
+										</data>
+										<data>
+											<type>file</type>
+											<src>${basedir}/../snake-ui/src/main/resources/uk/co/bithatch/snake/ui/appicon/razer-color-512.png</src>
+											<dst>snake-razer.png</dst>
+											<mapper>
+												<type>perm</type>
+												<strip>1</strip>
+												<prefix>/usr/share/pixmaps</prefix>
+												<user>root</user>
+												<group>root</group>
+												<filemode>644</filemode>
+											</mapper>
+										</data>
+										<data>
+											<type>file</type>
+											<src>${basedir}/src/main/freedesktop/snake-razer.desktop</src>
+											<mapper>
+												<type>perm</type>
+												<strip>1</strip>
+												<prefix>/usr/share/applications</prefix>
+												<user>root</user>
+												<group>root</group>
+												<filemode>644</filemode>
+											</mapper>
+										</data>
+										<data>
+											<type>link</type>
+											<linkName>/usr/bin/snake</linkName>
+											<linkTarget>/usr/lib/snake-razer/bin/snake</linkTarget>
+											<symlink>true</symlink>
+										</data>
+									</dataSet>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
+					<!-- Copy the installer to the bithatch site -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>3.0.0</version>
+						<executions>
+							<execution>
+								<id>copy-installers</id>
+								<phase>package</phase>
+								<goals>
+									<goal>run</goal>
+								</goals>
+								<configuration>
+									<target>
+										<mkdir dir="${snakeInstallers}" />
+										<copy todir="${snakeInstallers}">
+											<fileset dir="${project.build.directory}">
+												<include name="*.sh" />
+												<include name="*.deb" />
+												<include name="*.rpm" />
+											</fileset>
+										</copy>
+										<mkdir dir="${snakeLocal}" />
+										<copy todir="${snakeLocal}">
+											<fileset dir="${project.build.directory}/repository">
+												<include name="**/*" />
+											</fileset>
+										</copy>
+										<mkdir dir="${snakeLocalNoRuntime}" />
+										<copy todir="${snakeLocalNoRuntime}">
+											<fileset
+												dir="${project.build.directory}/repository-noruntime">
+												<include name="**/*" />
+											</fileset>
+										</copy>
+										<tar destfile="${snakeInstallers}/snake-x86_64.tar.gz"
+											compression="gzip">
+											<tarfileset dir="${project.build.directory}/image"
+												prefix="snake" />
+										</tar>
+										<tar destfile="${snakeInstallers}/snake-noruntime.tar.gz"
+											compression="gzip">
+											<tarfileset
+												dir="${project.build.directory}/image-noruntime"
+												prefix="snake" />
+										</tar>
+									</target>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
@@ -141,12 +550,9 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<version>${project.version}</version>
-			<artifactId>snake-ui-linux</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<version>${project.version}</version>
 			<artifactId>snake-updater</artifactId>
 		</dependency>
 	</dependencies>
+	<name>Snake - Distribution</name>
+	<description>Builds installers and repositories for distributing the Snake app (currently Linux only).</description>
 </project>

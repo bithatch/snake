@@ -1,0 +1,12 @@
+Package: snake
+Version: [[project.version]]-[[timestamp]]
+Section: comm 
+Priority: optional
+Architecture: all
+Essential: no
+Recommends: openjdk-15-jdk | openjdk-15-jre | default-jdk | default-jre, openrazer-daemon
+Installed-Size: 1024
+Maintainer: Bithatch <tanktarta@gmail.com>
+Description: A graphical tool for controlling and configuring Razer devices on Linux.
+ You will need a Java runtime of at least version 15 as well as the OpenRazer
+ drivers (https://openrazer.github.io/).

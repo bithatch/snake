@@ -9,7 +9,10 @@
 	<modules>
 		<module>snake-ui</module>
 		<module>snake-lib</module>
+		<module>snake-backend-openrazer</module>
 		<module>snake-ui-linux</module>
+		<!--<module>snake-theme-default</module>-->
+		<module>snake-app-linux</module>
 		<module>snake-updater</module>
 		<module>snake-dist</module>
 	</modules>
@@ -19,5 +22,67 @@
 		<maven.compiler.target>15</maven.compiler.target>
 	</properties>
 	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.8.0</version>
+					<configuration>
+						<release>15</release>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
+	<repositories>
+		<repository>
+			<id>javassh-opensource-snapshots</id>
+			<name>artifactory.javassh.com-snapshots</name>
+			<url>http://artifactory.javassh.com/opensource-snapshots</url>
+			<snapshots />
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+		<repository>
+			<id>javassh-opensource-releases</id>
+			<name>artifactory.javassh.com-releases</name>
+			<url>http://artifactory.javassh.com/opensource-releases</url>
+			<releases />
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>oss-snapshots</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<snapshots />
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>javassh-opensource-snapshots</id>
+			<name>artifactory.javassh.com-snapshots</name>
+			<url>http://artifactory.javassh.com/opensource-snapshots</url>
+			<snapshots />
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</pluginRepository>
+		<pluginRepository>
+			<id>javassh-opensource-releases</id>
+			<name>artifactory.javassh.com-releases</name>
+			<url>http://artifactory.javassh.com/opensource-releases</url>
+			<releases />
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
+	<name>Snake - Parent</name>
+	<description>The parent module for all Snake modules.</description>
 </project>

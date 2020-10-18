@@ -4,8 +4,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import uk.co.bithatch.snake.lib.backend.openrazer.OpenRazerBackend;
-
 public interface Backend extends AutoCloseable, Grouping {
 
 	public interface BackendListener {
@@ -40,10 +38,6 @@ public interface Backend extends AutoCloseable, Grouping {
 	}
 
 	String getVersion();
-
-	static Backend get() {
-		return new OpenRazerBackend();
-	}
 
 	default int getBattery() {
 		int l = 0;

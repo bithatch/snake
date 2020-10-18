@@ -35,13 +35,14 @@ The self extracting installer is the easiest to use. You will be asked for a loc
 #### From The Command Line
 
 ```
-wget http://github.io/brett-smith/snake/downloads/snake-installer.sh
-sh snake-installer.sh &
+wget -O snake-x86_64-installer.sh \
+ http://www.bithatch.co.uk/downloads/snake/snapshot/snake-x86_64-installer.sh && \
+ sh snake-x86_64-installer.sh
 ```
 
 #### From Your Desktop
 
- *  Download [snake-installer.sh](http://github.io/brett-smith/snake/downloads/snake-installer.sh).
+ *  Download [snake-x86_64-installer.sh](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-x86_64-installer.sh).
  *  Add Execute permission to the downloaded *snake-installer.sh* in your file manager.
  *  Use the Open action in your file manager to start the installer.
 
@@ -52,23 +53,24 @@ Another option is to download the archived version of the app, extract it to whe
 #### From The Command Line
 
 ```
-wget http://github.io/brett-smith/snake/downloads/snake.tgz
-tar xzf snake.tgz
+wget -O snake-x86_64.tar.gz \
+ http://www.bithatch.co.uk/downloads/snake/snapshot/snake-x86_64-tar.gz
+tar xzf snake-x86_64-tar.gz
 cd snake
 bin/snake &
 ```
 
 #### From Your Desktop
 
- *  Download [snake.tgz](http://github.io/brett-smith/snake/downloads/snake.tgz) and extract it to an empty folder on your computer.
+ *  Download [snake-x86_64.tar.gz](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-x86_64-tar.gz) and extract it to an empty folder on your computer.
  *  Use the Open action in your file manager to locate and start `bin/snake` in the extracted folder.
  
 ### No-Runtime Packages
 
 The above packages all include a stripped down X86_64 Java runtime so you do not need to install your own. If you  have another architecture such as X86 or Arm, or just want a smaller download, you can use your own runtime. It just needs to be at least [Java 15](https://adoptopenjdk.net/). 
 
- * [Tar Archive](http://github.io/brett-smith/snake/downloads/snake-no-runtime.tgz)
- * [Zip Archive](http://github.io/brett-smith/snake/downloads/snake-no-runtime.zip)
+ * [Installer](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-noruntime-installer.sh)
+ * [Tar Archive](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-noruntime.tar.gz)
  
 All these packages include the `bin/snake` launcher script. You may need to edit this if you want to use a runtime other than the system default.
  
@@ -76,12 +78,14 @@ All these packages include the `bin/snake` launcher script. You may need to edit
 
 There are many packaging formats for Linux, so I will only be providing a few common ones. 
 
- * [Generic X86_64 DEB package](http://github.io/brett-smith/snake/downloads/snake.deb)
- * [Generic X86_64 RPM package](http://github.io/brett-smith/snake/downloads/snake.deb)
+ * [X86_64 DEB package](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-x86_64.deb)
+ * [X86_64 RPM package](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-x86_64.rpm)
+ * [Generic No Runtime DEB package](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-noruntime.deb)
+ * [Generic No Runtime RPM package](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-noruntime.rpm)
  
 Install according to your distributions instructions. Usually it should just be a case of clicking on the downloaded file. 
 
-** I do not currently provide repositories for these packages, and they do not support the automatic updating that the other generic packages do.**
+** I do not currently provide repositories for these OS specific packages, but they will mostly auto update in the same way as other packages.**
 
 ## Updating
 
@@ -116,7 +120,7 @@ Further dependencies may be needed for building deployable packages.
 ```
 git clone https://github.com/brett-smith/snake.git
 cd snake
-mvn clean package
+mvn clean install
 ```
 
 If the build completes OK, you can then run or install Snake.
@@ -126,7 +130,8 @@ If the build completes OK, you can then run or install Snake.
 Once build, you can run directly.
 
 ```
-TODO
+cd snake-app-linux
+mvn javafx:run
 ```
 
 ### Install
@@ -134,7 +139,7 @@ TODO
 Or you can install what you have built.
 
 ```
-snake-dist/target/snake-installer.sh
+snake-dist/target/snake-x86_64-installer.sh
 ```
 
 ## Options
@@ -182,3 +187,92 @@ The system tray icon runs in the background and provides quick access to common 
  ![Snake Tray](images/tray.png  "Snake Tray")
  
  It can also show a summary of the battery status (when configuration).
+
+## Device Overview
+
+Device Overview is the first screen you see when opening Snake. It lists all of the supported Razer devices that the driver has discovered. 
+
+If an expected device is not listed, please check if it works with other OpenRazer clients. If it does not, it is likely you want to direct any feature requests to the OpenRazer project.
+
+If you have lots of devices, you can use the search and filter options to narrow down what is shown, although this is most useful when testing Snake with lots of 'Fake Drivers' that OpenRazer can supply.
+
+Either double click anywhere on the row or click the Slider icon on the far right of each row to see the details for that device.
+
+## Device Details
+
+Double clicking on a device in the over page will show the configuration screen for that device.
+
+It will show all of the supported *Controls*, depending on what device is in use.
+
+ ![Device Details](images/device.png  "Device Details")
+
+For example, controls are provided for :-
+
+ * Brightness. Will allow configuration of both overall brightness, and per region brightness.
+ * Effects. Choose and configure various standard Razer effects.
+ * Poll Rate. Low level setting for mice.
+ * DPI. Dots per inch setting, changes the accuracy of your mouse movements.
+ * Battery. Shows battery status and allows configuration of low-battery thresholds. 
+
+ 
+ At any time, clicking on the *Back* icon at the top right of the screen will return you to the *Device Overview* screen.
+ 
+### Effects
+ 
+ Many devices are capable of multiple effects. Some of those effects have their own configuration, and often it is possible to configure different effects for each region.
+ 
+#### None
+ 
+ This effect type simply turns off all lighting. There is no further configuration.
+ 
+#### Static
+
+The simplest effect,  just sets a fixed colour either on the whole device or individual regions. 
+
+ ![Static Effect](images/static.png  "Static")
+ 
+#### Wave
+
+The region or device will show a multi-colours moving wave, in one of two directions. 
+
+ ![Wave Effect](images/wave.png  "Wave")
+ 
+#### Spectrum
+
+The region or device will cycle at a fixed speed through all colours. 
+
+#### Reactive
+
+The region or device will light up on key or button clicks or mouse wheel movement.
+
+Configuration allows changing of the colour and sensitivity of these reactions.
+
+ ![Reactive Effect](images/reactive.png  "Reactive")
+
+#### Breath
+
+The region or device will gently pulsate different colours.
+
+Configuration allows changing of the colours and a special random mode.
+
+ ![Breath](images/breath.png  "Breath")
+ 
+#### Matrix
+
+The Matrix effect may only be set on the whole device, and allows each LED to be individually configured.
+
+The exact layout of the screen will depend on the device. If it is a keyboard, a virtual keyboard will be shown, otherwise just a row of numbered LED lights will be seen.
+
+ ![Matrix](images/matrix.png  "Matrix")
+
+## Macros
+
+The Macro UI is available, but due to coming changes in OpenRazer this is likely to radically change, so I won't go into any detail here.
+
+ ![Macros](images/macros.png  "Macros")
+
+### Recording Macros
+
+** Note, Recording functionality is not complete, but will be before final release. You can manually edit macros though.  **
+
+ ![Record](images/record.png  "Record")
