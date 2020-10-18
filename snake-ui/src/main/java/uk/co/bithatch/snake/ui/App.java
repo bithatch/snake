@@ -445,11 +445,11 @@ public class App extends Application {
 		String activeBackend = PREFS.get("backend", "");
 		for(Backend possibleBackend : ServiceLoader.load(Backend.class)) {
 			if(activeBackend.equals("") || activeBackend.equals(possibleBackend.getClass().getName())) {
-				LOG.log(Level.INFO, String.format("Backend %s* available.", possibleBackend.getName()));
+				LOG.log(Level.DEBUG, String.format("Backend %s* available.", possibleBackend.getName()));
 				backend = possibleBackend;
 			}
 			else
-				LOG.log(Level.INFO, String.format("Backend %s available.", possibleBackend.getName()));
+				LOG.log(Level.DEBUG, String.format("Backend %s available.", possibleBackend.getName()));
 			backends.add(possibleBackend);
 		}
 		if(backend == null && !backends.isEmpty())
