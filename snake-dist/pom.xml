@@ -266,7 +266,7 @@
 								<configuration>
 									<label>${project.name}</label>
 									<archiveDir>image</archiveDir>
-									<fileName>snake-x86_64-installer.sh</fileName>
+									<fileName>snake-amd64-installer.sh</fileName>
 									<startupScript>bin/snake</startupScript>
 								</configuration>
 							</execution>
@@ -301,7 +301,7 @@
 									<skipPOMs>false</skipPOMs>
 									<installDir>/usr/lib/snake-razer</installDir>
 									<controlDir>${project.basedir}/src/main/deb/control</controlDir>
-									<deb>${project.basedir}/target/snake-x86_64.deb</deb>
+									<deb>${project.basedir}/target/snake-amd64.deb</deb>
 									<dataSet>
 										<data>
 											<type>directory</type>
@@ -486,6 +486,139 @@
 						</executions>
 					</plugin>
 
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>rpm-maven-plugin</artifactId>
+						<version>2.2.0</version>
+						<extensions>true</extensions>
+						<executions>
+							<execution>
+								<id>snake-rpm</id>
+								<phase>package</phase>
+								<goals>
+									<goal>rpm</goal>
+								</goals>
+								<configuration>
+									<name>snake</name>
+									<group>Application/Internet</group>
+									<packager>Bithatch</packager>
+									<copyright>2020 Bithatch</copyright>
+									<prefix>/usr</prefix>
+									<needarch>amd64</needarch>
+									<defaultFilemode>644</defaultFilemode>
+									<gpg>
+										<keyname>${gpgKeyName}</keyname>
+									</gpg>
+									<defineStatements>
+										<defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
+									</defineStatements>
+									<mappings>
+										<mapping>
+											<directory>/usr/lib/snake-razer/app</directory>
+											<username>root</username>
+											<groupname>root</groupname>
+											<sources>
+												<source>
+													<location>${project.build.directory}/image/app</location>
+												</source>
+											</sources>
+										</mapping>
+										<mapping>
+											<directory>/usr/lib/snake-razer/lib</directory>
+											<username>root</username>
+											<groupname>root</groupname>
+											<sources>
+												<source>
+													<location>${project.build.directory}/image/lib</location>
+												</source>
+											</sources>
+										</mapping>
+										<mapping>
+											<directory>/usr/lib/snake-razer/docs</directory>
+											<username>root</username>
+											<groupname>root</groupname>
+											<sources>
+												<source>
+													<location>${project.build.directory}/image/docs</location>
+												</source>
+											</sources>
+										</mapping>
+										<mapping>
+											<directory>/usr/lib/snake-razer/legal</directory>
+											<username>root</username>
+											<groupname>root</groupname>
+											<sources>
+												<source>
+													<location>${project.build.directory}/image/legal</location>
+												</source>
+											</sources>
+										</mapping>
+										<mapping>
+											<directory>/usr/lib/snake-razer</directory>
+											<username>root</username>
+											<groupname>root</groupname>
+											<sources>
+												<source>
+													<location>${project.build.directory}/image/app.cfg</location>
+												</source>
+												<source>
+													<location>${project.build.directory}/image/manifest.xml</location>
+												</source>
+											</sources>
+										</mapping>
+										<mapping>
+											<directory>/usr/lib/snake-razer/bin</directory>
+											<filemode>755</filemode>
+											<username>root</username>
+											<groupname>root</groupname>
+											<sources>
+												<source>
+													<location>${project.build.directory}/image/bin</location>
+												</source>
+											</sources>
+										</mapping>
+										<mapping>
+											<directory>/</directory>
+											<username>root</username>
+											<groupname>root</groupname>
+											<sources>
+												<softLinkSource>
+													<destination>/usr/bin/snake</destination>
+													<location>${project.build.directory}/image/bin/snake</location>
+												</softLinkSource>
+											</sources>
+										</mapping>
+										<mapping>
+											<directory>/usr/share/applications</directory>
+											<username>root</username>
+											<groupname>root</groupname>
+											<sources>
+												<source>
+													<location>src/main/freedesktop/snake-razer.desktop</location>
+												</source>
+											</sources>
+										</mapping>
+										<mapping>
+											<directory>/usr/share/pixmaps</directory>
+											<username>root</username>
+											<groupname>root</groupname>
+											<sources>
+												<source>
+													<destination>snake-razer.png</destination>
+													<location>${basedir}/../snake-ui/src/main/resources/uk/co/bithatch/snake/ui/appicon/razer-color-512.png</location>
+												</source>
+											</sources>
+										</mapping>
+									</mappings>
+								</configuration>
+							</execution>
+						</executions>
+
+						
+
+					</plugin>
+
+
 					<!-- Copy the installer to the bithatch site -->
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
@@ -505,8 +638,13 @@
 											<fileset dir="${project.build.directory}">
 												<include name="*.sh" />
 												<include name="*.deb" />
+											</fileset>
+										</copy>
+										<copy todir="${snakeInstallers}">
+											<fileset dir="${project.build.directory}/rpm/snake/RPMS/amd64">
 												<include name="*.rpm" />
 											</fileset>
+											<globmapper from="snake-*.amd64.rpm" to="snake-amd64.rpm"/>
 										</copy>
 										<mkdir dir="${snakeLocal}" />
 										<copy todir="${snakeLocal}">
@@ -521,7 +659,7 @@
 												<include name="**/*" />
 											</fileset>
 										</copy>
-										<tar destfile="${snakeInstallers}/snake-x86_64.tar.gz"
+										<tar destfile="${snakeInstallers}/snake-amd64.tar.gz"
 											compression="gzip">
 											<tarfileset dir="${project.build.directory}/image"
 												prefix="snake" />

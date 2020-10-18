@@ -35,14 +35,14 @@ The self extracting installer is the easiest to use. You will be asked for a loc
 #### From The Command Line
 
 ```
-wget -O snake-x86_64-installer.sh \
- http://www.bithatch.co.uk/downloads/snake/snapshot/snake-x86_64-installer.sh && \
- sh snake-x86_64-installer.sh
+wget -O snake-amd64-installer.sh \
+ http://www.bithatch.co.uk/downloads/snake/snapshot/snake-amd64-installer.sh && \
+ sh snake-amd64-installer.sh
 ```
 
 #### From Your Desktop
 
- *  Download [snake-x86_64-installer.sh](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-x86_64-installer.sh).
+ *  Download [snake-amd64-installer.sh](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-amd64-installer.sh).
  *  Add Execute permission to the downloaded *snake-installer.sh* in your file manager.
  *  Use the Open action in your file manager to start the installer.
 
@@ -53,21 +53,21 @@ Another option is to download the archived version of the app, extract it to whe
 #### From The Command Line
 
 ```
-wget -O snake-x86_64.tar.gz \
- http://www.bithatch.co.uk/downloads/snake/snapshot/snake-x86_64-tar.gz
-tar xzf snake-x86_64-tar.gz
+wget -O snake-amd64.tar.gz \
+ http://www.bithatch.co.uk/downloads/snake/snapshot/snake-amd64-tar.gz
+tar xzf snake-amd64-tar.gz
 cd snake
 bin/snake &
 ```
 
 #### From Your Desktop
 
- *  Download [snake-x86_64.tar.gz](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-x86_64-tar.gz) and extract it to an empty folder on your computer.
+ *  Download [snake-amd64.tar.gz](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-amd64-tar.gz) and extract it to an empty folder on your computer.
  *  Use the Open action in your file manager to locate and start `bin/snake` in the extracted folder.
  
 ### No-Runtime Packages
 
-The above packages all include a stripped down X86_64 Java runtime so you do not need to install your own. If you  have another architecture such as X86 or Arm, or just want a smaller download, you can use your own runtime. It just needs to be at least [Java 15](https://adoptopenjdk.net/). 
+The above packages all include a stripped down amd64 Java runtime so you do not need to install your own. If you  have another architecture such as X86 or Arm, or just want a smaller download, you can use your own runtime. It just needs to be at least [Java 15](https://adoptopenjdk.net/). 
 
  * [Installer](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-noruntime-installer.sh)
  * [Tar Archive](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-noruntime.tar.gz)
@@ -78,8 +78,8 @@ All these packages include the `bin/snake` launcher script. You may need to edit
 
 There are many packaging formats for Linux, so I will only be providing a few common ones. 
 
- * [X86_64 DEB package](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-x86_64.deb)
- * [X86_64 RPM package](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-x86_64.rpm)
+ * [amd64 DEB package](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-amd64.deb)
+ * [amd64 RPM package](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-amd64.rpm)
  * [Generic No Runtime DEB package](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-noruntime.deb)
  * [Generic No Runtime RPM package](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-noruntime.rpm)
  
@@ -139,7 +139,7 @@ mvn javafx:run
 Or you can install what you have built.
 
 ```
-snake-dist/target/snake-x86_64-installer.sh
+snake-dist/target/snake-amd64-installer.sh
 ```
 
 ## Options
