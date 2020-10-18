@@ -269,6 +269,8 @@ public class App extends Application {
 	private boolean waitingForExitChoice;
 	private Window window;
 
+	private boolean backendInited;
+
 	public void clearLoadQueue() {
 		loadQueue.shutdownNow();
 		loadQueue = Executors.newSingleThreadExecutor();
@@ -452,12 +454,6 @@ public class App extends Application {
 		}
 		if(backend == null && !backends.isEmpty())
 			backend = backends.get(0);
-		if(backend == null)
-			throw new IllegalStateException("No backend modules available on the classpath or module path. You need at least one backend. For example, snake-backend-openrazer is the default backend.");
-		backend.init();
-
-		/* The tray */
-		tray = new Tray(this);
 
 		// Setup the window
 		this.primaryStage = primaryStage;
@@ -528,6 +524,15 @@ public class App extends Application {
 
 		/* The main view */
 		try {
+			if(!backendInited) {
+				if(backend == null)
+					throw new IllegalStateException("No backend modules available on the classpath or module path. You need at least one backend. For example, snake-backend-openrazer is the default backend.");
+				backend.init();
+				backendInited = true;
+
+				/* The tray */
+				tray = new Tray(this);
+			}
 			Overview fc = openScene(Overview.class, null);
 			stackPane.getChildren().add(fc.getScene().getRoot());
 			controllers.clear();
