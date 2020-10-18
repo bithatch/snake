@@ -81,7 +81,7 @@ There are many packaging formats for Linux, so I will only be providing a few co
  * [amd64 DEB package](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-amd64.deb)
  * [amd64 RPM package](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-amd64.rpm)
  * [Generic No Runtime DEB package](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-noruntime.deb)
- * [Generic No Runtime RPM package](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-noruntime.rpm)
+ * [Generic No Runtime RPM package](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-noruntime.noarch.rpm)
  
 Install according to your distributions instructions. Usually it should just be a case of clicking on the downloaded file. 
 

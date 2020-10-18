@@ -500,10 +500,12 @@
 								</goals>
 								<configuration>
 									<name>snake</name>
-									<group>Application/Internet</group>
+									<group>Applications/System</group>
 									<packager>Bithatch</packager>
 									<copyright>2020 Bithatch</copyright>
 									<prefix>/usr</prefix>
+									<icon>${basedir}/src/main/icons/razer-color-256.gif</icon>
+									<license>GPLv3</license>
 									<needarch>amd64</needarch>
 									<defaultFilemode>644</defaultFilemode>
 									<gpg>
@@ -612,6 +614,109 @@
 									</mappings>
 								</configuration>
 							</execution>
+							
+							<execution>
+								<id>snake-rpm-noruntime</id>
+								<phase>package</phase>
+								<goals>
+									<goal>rpm</goal>
+								</goals>
+								<configuration>
+									<name>snake-noruntime</name>
+									<license>GPLv3</license>
+									<group>Applications/System</group>
+									<packager>Bithatch</packager>
+									<icon>${basedir}/src/main/icons/razer-color-256.gif</icon>
+									<copyright>2020 Bithatch</copyright>
+									<prefix>/usr</prefix>
+									<needarch>noarch</needarch>
+									<defaultFilemode>644</defaultFilemode>
+									<gpg>
+										<keyname>${gpgKeyName}</keyname>
+									</gpg>
+									<defineStatements>
+										<defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
+									</defineStatements>
+									<mappings>
+										<mapping>
+											<directory>/usr/lib/snake-razer/app</directory>
+											<username>root</username>
+											<groupname>root</groupname>
+											<sources>
+												<source>
+													<location>${project.build.directory}/image-noruntime/app</location>
+												</source>
+											</sources>
+										</mapping>
+										<mapping>
+											<directory>/usr/lib/snake-razer/docs</directory>
+											<username>root</username>
+											<groupname>root</groupname>
+											<sources>
+												<source>
+													<location>${project.build.directory}/image-noruntime/docs</location>
+												</source>
+											</sources>
+										</mapping>
+										<mapping>
+											<directory>/usr/lib/snake-razer</directory>
+											<username>root</username>
+											<groupname>root</groupname>
+											<sources>
+												<source>
+													<location>${project.build.directory}/image-noruntime/app.cfg</location>
+												</source>
+												<source>
+													<location>${project.build.directory}/image-noruntime/manifest.xml</location>
+												</source>
+											</sources>
+										</mapping>
+										<mapping>
+											<directory>/usr/lib/snake-razer/bin</directory>
+											<filemode>755</filemode>
+											<username>root</username>
+											<groupname>root</groupname>
+											<sources>
+												<source>
+													<location>${project.build.directory}/image-noruntime/bin</location>
+												</source>
+											</sources>
+										</mapping>
+										<mapping>
+											<directory>/</directory>
+											<username>root</username>
+											<groupname>root</groupname>
+											<sources>
+												<softLinkSource>
+													<destination>/usr/bin/snake</destination>
+													<location>${project.build.directory}/image/bin/snake</location>
+												</softLinkSource>
+											</sources>
+										</mapping>
+										<mapping>
+											<directory>/usr/share/applications</directory>
+											<username>root</username>
+											<groupname>root</groupname>
+											<sources>
+												<source>
+													<location>src/main/freedesktop/snake-razer.desktop</location>
+												</source>
+											</sources>
+										</mapping>
+										<mapping>
+											<directory>/usr/share/pixmaps</directory>
+											<username>root</username>
+											<groupname>root</groupname>
+											<sources>
+												<source>
+													<destination>snake-razer.png</destination>
+													<location>${basedir}/../snake-ui/src/main/resources/uk/co/bithatch/snake/ui/appicon/razer-color-512.png</location>
+												</source>
+											</sources>
+										</mapping>
+									</mappings>
+								</configuration>
+							</execution>
 						</executions>
 
 						
@@ -645,6 +750,12 @@
 												<include name="*.rpm" />
 											</fileset>
 											<globmapper from="snake-*.amd64.rpm" to="snake-amd64.rpm"/>
+										</copy>
+										<copy todir="${snakeInstallers}">
+											<fileset dir="${project.build.directory}/rpm/snake-noruntime/RPMS/noarch">
+												<include name="*.rpm" />
+											</fileset>
+											<globmapper from="snake-*.noarch.rpm" to="snake-noruntime.noarch.rpm"/>
 										</copy>
 										<mkdir dir="${snakeLocal}" />
 										<copy todir="${snakeLocal}">

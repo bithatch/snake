@@ -28,7 +28,7 @@
 				<artifactId>javafx-maven-plugin</artifactId>
 				<version>0.0.5</version>
 				<configuration>
-					<mainClass>uk.co.bithatch.snake.ui/uk.co.bithatch.snake.ui.App</mainClass>
+					<mainClass>uk.co.bithatch.snake.app.linux/uk.co.bithatch.snake.app.linux.App</mainClass>
 				</configuration>
 			</plugin>
 		</plugins>
