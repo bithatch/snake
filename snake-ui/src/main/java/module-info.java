@@ -21,6 +21,8 @@ module uk.co.bithatch.snake.ui {
 		uk.co.bithatch.snake.ui.BreathEffectOptions, 
 		uk.co.bithatch.snake.ui.StaticEffectOptions, 
 		uk.co.bithatch.snake.ui.ReactiveEffectOptions, 
-		uk.co.bithatch.snake.ui.MatrixEffectOptions;
+		uk.co.bithatch.snake.ui.MatrixEffectOptions, 
+		uk.co.bithatch.snake.ui.RippleEffectOptions, 
+		uk.co.bithatch.snake.ui.StarlightEffectOptions; 
 }
 

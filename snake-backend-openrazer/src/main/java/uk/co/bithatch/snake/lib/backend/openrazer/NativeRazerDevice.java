@@ -65,9 +65,13 @@ import uk.co.bithatch.snake.lib.Region.Name;
 import uk.co.bithatch.snake.lib.effects.Breath;
 import uk.co.bithatch.snake.lib.effects.Effect;
 import uk.co.bithatch.snake.lib.effects.Matrix;
+import uk.co.bithatch.snake.lib.effects.On;
 import uk.co.bithatch.snake.lib.effects.None;
+import uk.co.bithatch.snake.lib.effects.Pulsate;
 import uk.co.bithatch.snake.lib.effects.Reactive;
+import uk.co.bithatch.snake.lib.effects.Ripple;
 import uk.co.bithatch.snake.lib.effects.Spectrum;
+import uk.co.bithatch.snake.lib.effects.Starlight;
 import uk.co.bithatch.snake.lib.effects.Static;
 import uk.co.bithatch.snake.lib.effects.Wave;
 
@@ -76,9 +80,6 @@ public class NativeRazerDevice implements Device {
 	final static System.Logger LOG = System.getLogger(NativeRazerDevice.class.getName());
 
 	final static long MAX_CACHE_AGE = TimeUnit.DAYS.toMillis(7);
-
-	final static List<Class<? extends Effect>> allEffects = Arrays.asList(None.class, Static.class, Breath.class,
-			Reactive.class, Spectrum.class, Wave.class);
 
 	abstract class AbstractRazerRegion<I extends DBusInterface> implements Region {
 		I underlying;
@@ -90,12 +91,18 @@ public class NativeRazerDevice implements Device {
 		DBusConnection conn;
 		String effectPrefix;
 		Set<Class<? extends Effect>> supportedEffects = new LinkedHashSet<>();
+		Map<String, List<Class<?>>> methods = new HashMap<>();
 
 		AbstractRazerRegion(Class<I> clazz, Name name, DBusConnection conn, String effectPrefix) {
 			this.effectPrefix = effectPrefix;
 			this.clazz = clazz;
 			this.name = name;
 			this.conn = conn;
+		}
+
+		protected boolean hasMethod(String name, Class<?>... classes) {
+			List<Class<?>> sig = methods.get(name);
+			return sig != null && sig.equals(Arrays.asList(classes));
 		}
 
 		@Override
@@ -130,7 +137,6 @@ public class NativeRazerDevice implements Device {
 		@SuppressWarnings("unchecked")
 		@Override
 		public final void load(String path) throws Exception {
-
 			underlying = conn.getRemoteObject("org.razer", String.format("/org/razer/device/%s", path), clazz, true);
 
 			Introspectable intro = conn.getRemoteObject("org.razer", String.format("/org/razer/device/%s", path),
@@ -155,25 +161,68 @@ public class NativeRazerDevice implements Device {
 							Node in = ichildren.item(j);
 							if (in.getNodeName().equalsIgnoreCase("method")) {
 								Node nattr = in.getAttributes().getNamedItem("name");
-								for (Class<? extends Effect> clazz : allEffects) {
-									if (nattr != null && nattr.getNodeValue()
-											.startsWith("set" + effectPrefix + clazz.getSimpleName())) {
-										supportedEffects.add(clazz);
+
+								List<Class<?>> sig = new ArrayList<>();
+								NodeList achildren = in.getChildNodes();
+								for (int aj = 0; aj < achildren.getLength(); aj++) {
+									Node ain = achildren.item(aj);
+									if (ain.getNodeName().equalsIgnoreCase("arg")) {
+
+										Node naattr = ain.getAttributes().getNamedItem("type");
+										if (naattr != null) {
+											String natype = naattr.getNodeValue();
+											if (natype.equals("y"))
+												sig.add(byte.class);
+											else if (natype.equals("b"))
+												sig.add(boolean.class);
+											else if (natype.equals("n") || natype.equals("q"))
+												sig.add(short.class);
+											else if (natype.equals("i") || natype.equals("i"))
+												sig.add(int.class);
+											else if (natype.equals("x") || natype.equals("t"))
+												sig.add(long.class);
+											else if (natype.equals("d"))
+												sig.add(double.class);
+											else if (natype.equals("s"))
+												sig.add(String.class);
+
+											/*
+											 * TODO: Other types we don't really care about at the moment, as the
+											 * signatures are only used for capabilities, which only use the above
+											 * primitive types
+											 */
+										}
 									}
 								}
+								methods.put(nattr.getNodeValue(), sig);
+
 							}
 						}
-						if (!supportedEffects.isEmpty()) {
-							caps.add(Capability.EFFECT_PER_REGION);
-							caps.add(Capability.EFFECTS);
-						}
-						ok = true;
 						break;
 					}
 				}
 			}
-			if (!ok)
-				throw new UnsupportedOperationException(String.format("Region %s not supported.", name.name()));
+
+			if (hasMethod("set" + effectPrefix + "None"))
+				supportedEffects.add(None.class);
+			if (hasMethod("set" + effectPrefix + "Static", byte.class, byte.class, byte.class))
+				supportedEffects.add(Static.class);
+			if (hasMethod("set" + effectPrefix + "BreathRandom"))
+				supportedEffects.add(Breath.class);
+			if (hasMethod("set" + effectPrefix + "Reactive", byte.class, byte.class, byte.class, byte.class))
+				supportedEffects.add(Reactive.class);
+			if (hasMethod("set" + effectPrefix + "Spectrum"))
+				supportedEffects.add(Spectrum.class);
+			if (hasMethod("set" + effectPrefix + "Wave", int.class))
+				supportedEffects.add(Wave.class);
+
+			onCaps(caps);
+			if (supportedEffects.isEmpty()) {
+				if (!ok)
+					throw new UnsupportedOperationException(String.format("Region %s not supported.", name.name()));
+			}
+			caps.add(Capability.EFFECT_PER_REGION);
+			caps.add(Capability.EFFECTS);
 
 			try {
 				brightness = doGetBrightness();
@@ -188,9 +237,6 @@ public class NativeRazerDevice implements Device {
 					LOG.log(Level.DEBUG, String.format("Region %s on device %s does not support separate brightness.",
 							name.name(), NativeRazerDevice.class.getName()));
 			}
-
-			caps.add(Capability.EFFECT_PER_REGION);
-			onCaps(caps);
 
 			Preferences regionPrefs = regionPrefs();
 			String effect = regionPrefs.get("effect", "");
@@ -227,8 +273,6 @@ public class NativeRazerDevice implements Device {
 			}
 		}
 
-		protected abstract short doGetBrightness();
-
 		@Override
 		public void setEffect(Effect effect) {
 			if (!Objects.equals(effect, this.effect)) {
@@ -263,10 +307,37 @@ public class NativeRazerDevice implements Device {
 				doSetReactive((Reactive) effect);
 			} else if (effect instanceof Static) {
 				doSetStatic((Static) effect);
+			} else if (effect instanceof On) {
+				doSetOn((On) effect);
 			} else if (effect instanceof Wave) {
 				doSetWave((Wave) effect);
 			} else if (effect instanceof Matrix) {
 				doSetMatrix((Matrix) effect);
+			} else if (effect instanceof Pulsate) {
+				doSetPulsate((Pulsate) effect);
+			} else if (effect instanceof Starlight) {
+				Starlight starlight = (Starlight) effect;
+				switch (starlight.getMode()) {
+				case DUAL:
+					doSetStarlightDual(starlight);
+					break;
+				case SINGLE:
+					doSetStarlightSingle(starlight);
+					break;
+				default:
+					doSetStarlightRandom(starlight);
+					break;
+				}
+			} else if (effect instanceof Ripple) {
+				Ripple ripple = (Ripple) effect;
+				switch (ripple.getMode()) {
+				case SINGLE:
+					doSetRipple(ripple);
+					break;
+				default:
+					doSetRippleRandomColour(ripple);
+					break;
+				}
 			} else
 				throw new UnsupportedOperationException(
 						String.format("Effect %s not supported by region %s", effect.getClass(), name));
@@ -291,25 +362,75 @@ public class NativeRazerDevice implements Device {
 			return effect;
 		}
 
-		protected abstract void doSetBreathDual(Breath breath);
+		protected void doSetBreathDual(Breath breath) {
+			throw new UnsupportedOperationException();
+		}
 
-		protected abstract void doSetBreathRandom();
+		protected void doSetBreathRandom() {
+			throw new UnsupportedOperationException();
+		}
 
-		protected abstract void doSetBreathSingle(Breath breath);
+		protected void doSetBreathSingle(Breath breath) {
+			throw new UnsupportedOperationException();
+		}
 
-		protected abstract void doSetBrightness(int brightness);
+		protected void doSetBrightness(int brightness) {
+			throw new UnsupportedOperationException();
+		}
 
-		protected abstract void doSetNone();
+		protected void doSetNone() {
+			throw new UnsupportedOperationException();
+		}
 
-		protected abstract void doSetReactive(Reactive reactive);
+		protected void doSetReactive(Reactive reactive) {
+			throw new UnsupportedOperationException();
+		}
 
-		protected abstract void doSetSpectrum();
+		protected void doSetSpectrum() {
+			throw new UnsupportedOperationException();
+		}
 
-		protected abstract void doSetStatic(Static staticEffect);
+		protected void doSetStatic(Static staticEffect) {
+			throw new UnsupportedOperationException();
+		}
 
-		protected abstract void doSetWave(Wave wave);
+		protected void doSetOn(On monoStaticEffect) {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetWave(Wave wave) {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetPulsate(Pulsate pulsate) {
+			throw new UnsupportedOperationException();
+		}
 
 		protected void doSetMatrix(Matrix matrix) {
+			throw new UnsupportedOperationException();
+		}
+
+		protected short doGetBrightness() {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetRipple(Ripple ripple) {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetRippleRandomColour(Ripple ripple) {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetStarlightDual(Starlight starlight) {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetStarlightRandom(Starlight starlight) {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetStarlightSingle(Starlight starlight) {
 			throw new UnsupportedOperationException();
 		}
 	}
@@ -376,6 +497,63 @@ public class NativeRazerDevice implements Device {
 		}
 	}
 
+	class NativeRazerRegionCustom extends AbstractRazerRegion<RazerRegionCustom> {
+
+		public NativeRazerRegionCustom(DBusConnection connection) {
+			super(RazerRegionCustom.class, Name.BW2013, connection, "");
+		}
+
+		@Override
+		protected void onCaps(Set<Capability> caps) {
+			if (hasMethod("setRipple", byte.class, byte.class, byte.class, double.class)) {
+				caps.add(Capability.RIPPLE_SINGLE);
+				supportedEffects.add(Ripple.class);
+			}
+			if (hasMethod("setRippleRandomColour", double.class)) {
+				caps.add(Capability.RIPPLE_RANDOM);
+				supportedEffects.add(Ripple.class);
+			}
+		}
+
+		@Override
+		protected void doSetRipple(Ripple ripple) {
+			underlying.setRipple((byte) ripple.getColor()[0], (byte) ripple.getColor()[1], (byte) ripple.getColor()[2],
+					(double) ripple.getRefreshRate());
+		}
+
+		@Override
+		protected void doSetRippleRandomColour(Ripple ripple) {
+			underlying.setRippleRandomColour((double) ripple.getRefreshRate());
+		}
+
+	}
+
+	class NativeRazerRegionBW2013 extends AbstractRazerRegion<RazerRegionBW2013> {
+
+		public NativeRazerRegionBW2013(DBusConnection connection) {
+			super(RazerRegionBW2013.class, Name.BW2013, connection, "");
+		}
+
+		@Override
+		protected void onCaps(Set<Capability> caps) {
+			if (hasMethod("setPulsate"))
+				supportedEffects.add(Pulsate.class);
+			if (hasMethod("setStatic"))
+				supportedEffects.add(On.class);
+		}
+
+		@Override
+		protected void doSetPulsate(Pulsate pulsate) {
+			underlying.setPulsate();
+		}
+
+		@Override
+		protected void doSetOn(On monoStaticEffect) {
+			underlying.setStatic();
+		}
+
+	}
+
 	class NativeRazerRegionChroma extends AbstractRazerRegion<RazerRegionChroma> {
 
 		public NativeRazerRegionChroma(DBusConnection connection) {
@@ -391,20 +569,20 @@ public class NativeRazerDevice implements Device {
 			int x = dim[1];
 			byte[] b = new byte[(y * 3) + (y * x * 3)];
 			int q = 0;
-			if(cells != null) {
-			for (int yy = 0; yy < y; yy++) {
-				b[q++] = (byte) yy;
-				b[q++] = (byte) 0;
-				b[q++] = (byte) (x - 1);
-				if(cells[yy] != null)
-				for (int xx = 0; xx < x; xx++) {
-					if (cells[yy][xx] != null) {
-						b[q++] = (byte) (cells[yy][xx][0] & 0xff);
-						b[q++] = (byte) (cells[yy][xx][1] & 0xff);
-						b[q++] = (byte) (cells[yy][xx][2] & 0xff);
-					}
+			if (cells != null) {
+				for (int yy = 0; yy < y; yy++) {
+					b[q++] = (byte) yy;
+					b[q++] = (byte) 0;
+					b[q++] = (byte) (x - 1);
+					if (cells[yy] != null)
+						for (int xx = 0; xx < x; xx++) {
+							if (cells[yy][xx] != null) {
+								b[q++] = (byte) (cells[yy][xx][0] & 0xff);
+								b[q++] = (byte) (cells[yy][xx][1] & 0xff);
+								b[q++] = (byte) (cells[yy][xx][2] & 0xff);
+							}
+						}
 				}
-			}
 			}
 			/* TODO only need to do this once when the matrix is initially selected */
 			underlying.setCustom();
@@ -418,6 +596,19 @@ public class NativeRazerDevice implements Device {
 			if (((NativeRazerDevice) getDevice()).device.hasMatrix()) {
 				supportedEffects.add(Matrix.class);
 			}
+			if (hasMethod("setStarlightDual", byte.class, byte.class, byte.class, byte.class, byte.class, byte.class,
+					byte.class)) {
+				caps.add(Capability.STARLIGHT_DUAL);
+				supportedEffects.add(Starlight.class);
+			}
+			if (hasMethod("setStarlightRandom", byte.class)) {
+				caps.add(Capability.STARLIGHT_RANDOM);
+				supportedEffects.add(Starlight.class);
+			}
+			if (hasMethod("setStarlightSingle", byte.class, byte.class, byte.class, byte.class)) {
+				caps.add(Capability.STARLIGHT_SINGLE);
+				supportedEffects.add(Starlight.class);
+			}
 		}
 
 		@Override
@@ -429,7 +620,25 @@ public class NativeRazerDevice implements Device {
 		protected void doSetBreathDual(Breath breath) {
 			underlying.setBreathDual((byte) breath.getColor1()[0], (byte) breath.getColor1()[1],
 					(byte) breath.getColor1()[2], (byte) breath.getColor2()[0], (byte) breath.getColor2()[1],
-					(byte) breath.getColor1()[2]);
+					(byte) breath.getColor2()[2]);
+		}
+
+		@Override
+		protected void doSetStarlightRandom(Starlight starlight) {
+			underlying.setStarlightRandom((byte) starlight.getSpeed());
+		}
+
+		@Override
+		protected void doSetStarlightDual(Starlight starlight) {
+			underlying.setStarlightDual((byte) starlight.getColor1()[0], (byte) starlight.getColor1()[1],
+					(byte) starlight.getColor1()[2], (byte) starlight.getColor2()[0], (byte) starlight.getColor2()[1],
+					(byte) starlight.getColor2()[2], (byte) starlight.getSpeed());
+		}
+
+		@Override
+		protected void doSetStarlightSingle(Starlight starlight) {
+			underlying.setStarlightSingle((byte) starlight.getColor()[0], (byte) starlight.getColor()[1],
+					(byte) starlight.getColor()[2], (byte) starlight.getSpeed());
 		}
 
 		@Override
@@ -686,6 +895,16 @@ public class NativeRazerDevice implements Device {
 
 	private Effect effect;
 
+	private int maxDpi;
+
+	private String deviceName;
+
+	private String driverVersion;
+
+	private int pollRate;
+
+	private String firmware;
+
 	NativeRazerDevice(String path, DBusConnection conn, OpenRazerBackend backend) throws Exception {
 		this.path = path;
 		this.conn = conn;
@@ -906,22 +1125,30 @@ public class NativeRazerDevice implements Device {
 
 	@Override
 	public String getName() {
-		return device.getDeviceName();
+		if (deviceName == null)
+			deviceName = device.getDeviceName();
+		return deviceName;
 	}
 
 	@Override
 	public String getDriverVersion() {
-		return device.getDriverVersion();
+		if (driverVersion == null)
+			driverVersion = device.getDriverVersion();
+		return driverVersion;
 	}
 
 	@Override
 	public String getFirmware() {
-		return device.getFirmware();
+		if (firmware == null)
+			firmware = device.getFirmware();
+		return firmware;
 	}
 
 	@Override
 	public int getPollRate() {
-		return device.getPollRate();
+		if (pollRate == -1)
+			pollRate = device.getPollRate();
+		return pollRate;
 	}
 
 	@Override
@@ -931,6 +1158,7 @@ public class NativeRazerDevice implements Device {
 
 	@Override
 	public void setPollRate(int pollRate) {
+		this.pollRate = pollRate;
 		device.setPollRate((short) pollRate);
 		fireChange(null);
 	}
@@ -983,7 +1211,8 @@ public class NativeRazerDevice implements Device {
 			regionList = new ArrayList<Region>();
 			for (Region r : Arrays.asList(new NativeRazerRegionChroma(conn), new NativeRazerRegionLeft(conn),
 					new NativeRazerRegionRight(conn), new NativeRazerRegionLogo(conn),
-					new NativeRazerRegionScroll(conn))) {
+					new NativeRazerRegionScroll(conn), new NativeRazerRegionBW2013(conn),
+					new NativeRazerRegionCustom(conn))) {
 				try {
 					r.load(path);
 					regionList.add(r);
@@ -1004,7 +1233,9 @@ public class NativeRazerDevice implements Device {
 	@Override
 	public int getMaxDPI() {
 		assertCap(Capability.DPI);
-		return dpi.maxDPI();
+		if (maxDpi == -1)
+			maxDpi = dpi.maxDPI();
+		return maxDpi;
 	}
 
 	@Override

@@ -19,13 +19,15 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import uk.co.bithatch.snake.lib.Device;
+import uk.co.bithatch.snake.lib.Device.Listener;
 import uk.co.bithatch.snake.lib.Lit;
 import uk.co.bithatch.snake.lib.Region;
-import uk.co.bithatch.snake.lib.Device.Listener;
 import uk.co.bithatch.snake.lib.effects.Breath;
 import uk.co.bithatch.snake.lib.effects.Effect;
 import uk.co.bithatch.snake.lib.effects.Matrix;
 import uk.co.bithatch.snake.lib.effects.Reactive;
+import uk.co.bithatch.snake.lib.effects.Ripple;
+import uk.co.bithatch.snake.lib.effects.Starlight;
 import uk.co.bithatch.snake.lib.effects.Static;
 import uk.co.bithatch.snake.lib.effects.Wave;
 import uk.co.bithatch.snake.ui.SlideyStack.Direction;
@@ -64,7 +66,7 @@ public class EffectsControl extends ControlController implements Listener {
 				if (clazz != null) {
 					try {
 						Effect effect = device.createEffect(clazz);
-						context.getScheduler().execute(() ->device.setEffect(effect));
+						context.getScheduler().execute(() -> device.setEffect(effect));
 						adjustingSingle = true;
 						try {
 							for (ComboBox<Class<? extends Effect>> sl : others) {
@@ -156,7 +158,7 @@ public class EffectsControl extends ControlController implements Listener {
 						var efClazz = br.getSelectionModel().getSelectedItem();
 						if (!adjustingSingle && r.getSupportedEffects().contains(efClazz)) {
 							Effect effect = getDevice().createEffect(efClazz);
-							context.getScheduler().execute(() ->r.setEffect(effect));
+							context.getScheduler().execute(() -> r.setEffect(effect));
 							adjustingOverall = true;
 							try {
 								overallEffect.getSelectionModel().select(getDevice().getEffect().getClass());
@@ -239,6 +241,10 @@ public class EffectsControl extends ControlController implements Listener {
 			efClazz = ReactiveOptions.class;
 		} else if (clazz.equals(Matrix.class)) {
 			efClazz = MatrixOptions.class;
+		} else if (clazz.equals(Starlight.class)) {
+			efClazz = StarlightOptions.class;
+		} else if (clazz.equals(Ripple.class)) {
+			efClazz = RippleOptions.class;
 		}
 		return efClazz;
 	}

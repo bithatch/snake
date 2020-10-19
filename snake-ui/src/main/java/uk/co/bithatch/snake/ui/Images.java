@@ -9,7 +9,7 @@ import uk.co.bithatch.snake.lib.effects.Effect;
 public class Images {
 
 	public static URL getEffectImage(int size, Class<? extends Effect> effect) {
-		return checkResource(effect.getClass().getName(),
+		return checkResource(effect.getName(),
 				App.class.getResource("effects/" + effect.getSimpleName().toLowerCase() + size + ".png"));
 	}
 

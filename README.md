@@ -212,8 +212,8 @@ For example, controls are provided for :-
  * Effects. Choose and configure various standard Razer effects.
  * Poll Rate. Low level setting for mice.
  * DPI. Dots per inch setting, changes the accuracy of your mouse movements.
- * Battery. Shows battery status and allows configuration of low-battery thresholds. 
-
+ * Battery. Shows battery status and allows configuration of low-battery thresholds.
+ * Game Mode.  Turn game mode on or off. When on, the Windows key will be disabled.
  
  At any time, clicking on the *Back* icon at the top right of the screen will return you to the *Device Overview* screen.
  

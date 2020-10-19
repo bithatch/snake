@@ -331,8 +331,10 @@ public class App extends Application {
 	public void open() {
 		if (!Platform.isFxApplicationThread())
 			Platform.runLater(() -> open());
-		else
+		else {
 			primaryStage.show();
+			primaryStage.toFront();			
+		}
 	}
 
 	public <C extends Controller> C openScene(Class<C> controller) throws IOException {

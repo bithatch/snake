@@ -13,7 +13,7 @@ public class Ripple extends Effect {
 	private Mode mode = Mode.SINGLE;
 
 	private int[] color = new int[] { 0, 255, 0 };
-	private int refreshRate = 100;
+	private double refreshRate = 100;
 
 	public Ripple() {
 	}
@@ -34,11 +34,11 @@ public class Ripple extends Effect {
 		this.color = color;
 	}
 
-	public int getRefreshRate() {
+	public double getRefreshRate() {
 		return refreshRate;
 	}
 
-	public void setRefreshRate(int refreshRate) {
+	public void setRefreshRate(double refreshRate) {
 		this.refreshRate = refreshRate;
 	}
 
@@ -48,7 +48,9 @@ public class Ripple extends Effect {
 		int result = 1;
 		result = prime * result + Arrays.hashCode(color);
 		result = prime * result + ((mode == null) ? 0 : mode.hashCode());
-		result = prime * result + refreshRate;
+		long temp;
+		temp = Double.doubleToLongBits(refreshRate);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
 		return result;
 	}
 
@@ -65,7 +67,7 @@ public class Ripple extends Effect {
 			return false;
 		if (mode != other.mode)
 			return false;
-		if (refreshRate != other.refreshRate)
+		if (Double.doubleToLongBits(refreshRate) != Double.doubleToLongBits(other.refreshRate))
 			return false;
 		return true;
 	}
@@ -73,14 +75,14 @@ public class Ripple extends Effect {
 	@Override
 	protected void onSave(Preferences prefs) {
 		prefs.put("mode", mode.name());
-		prefs.putInt("refreshRate", refreshRate);
+		prefs.putDouble("refreshRate", refreshRate);
 		prefs.put("color", Colors.toHex(color));
 	}
 
 	@Override
 	protected void onLoad(Preferences prefs) {
 		mode = Mode.valueOf(prefs.get("mode", Mode.RANDOM.name()));
-		refreshRate = prefs.getInt("refreshRate", 100);
+		refreshRate = prefs.getDouble("refreshRate", 100);
 		color = Colors.fromHex(prefs.get("color", "#00ff00"));
 	}
 
