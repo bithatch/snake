@@ -1,6 +1,6 @@
 # WARNING 
 
-* I am in the final phases of the first release, hopefully to be complete before the weekend of 17th October is over.  The installers aren't quite ready yet, but the brave are welcome to checkout the source and try it out now. *
+**No packages are available for download, not will the update system work until the new domain bithatch.co.uk is fully live.**
 
 #Snake
 
