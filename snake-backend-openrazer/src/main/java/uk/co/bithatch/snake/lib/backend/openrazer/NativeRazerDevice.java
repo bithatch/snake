@@ -69,7 +69,7 @@ import uk.co.bithatch.snake.lib.effects.Breath;
 import uk.co.bithatch.snake.lib.effects.Effect;
 import uk.co.bithatch.snake.lib.effects.Matrix;
 import uk.co.bithatch.snake.lib.effects.On;
-import uk.co.bithatch.snake.lib.effects.None;
+import uk.co.bithatch.snake.lib.effects.Off;
 import uk.co.bithatch.snake.lib.effects.Pulsate;
 import uk.co.bithatch.snake.lib.effects.Reactive;
 import uk.co.bithatch.snake.lib.effects.Ripple;
@@ -86,7 +86,7 @@ public class NativeRazerDevice implements Device {
 
 	abstract class AbstractRazerRegion<I extends DBusInterface> implements Region {
 		I underlying;
-		Effect effect = new None();
+		Effect effect = new Off();
 		Class<I> clazz;
 		short brightness = -1;
 		Name name;
@@ -144,8 +144,8 @@ public class NativeRazerDevice implements Device {
 			loadIntrospection(path);
 			loadInterfaces(path);
 
-			if (hasMethod("set" + effectPrefix + "None"))
-				supportedEffects.add(None.class);
+			if (hasMethod("set" + effectPrefix + "Off"))
+				supportedEffects.add(Off.class);
 			if (hasMethod("set" + effectPrefix + "Static", byte.class, byte.class, byte.class))
 				supportedEffects.add(Static.class);
 			if (hasMethod("set" + effectPrefix + "BreathRandom"))
@@ -181,7 +181,11 @@ public class NativeRazerDevice implements Device {
 			Preferences regionPrefs = regionPrefs();
 			String effect = regionPrefs.get("effect", "");
 			if (!effect.equals("")) {
-				setEffect(createEffect((Class<? extends Effect>) getClass().getClassLoader().loadClass(effect)));
+				try {
+					setEffect(createEffect((Class<? extends Effect>) getClass().getClassLoader().loadClass(effect)));
+				} catch (Exception e) {
+					LOG.log(Level.ERROR, String.format("Failed to set configured effect %s.", effect), e);
+				}
 			}
 		}
 
@@ -202,7 +206,6 @@ public class NativeRazerDevice implements Device {
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			document = db.parse(source);
 		}
-		
 
 		protected boolean loadMethods(Class<?> clazz) {
 			NodeList nl = document.getElementsByTagName("interface");
@@ -316,8 +319,8 @@ public class NativeRazerDevice implements Device {
 					doSetBreathRandom();
 					break;
 				}
-			} else if (effect instanceof None) {
-				doSetNone();
+			} else if (effect instanceof Off) {
+				doSetOff();
 			} else if (effect instanceof Spectrum) {
 				doSetSpectrum();
 			} else if (effect instanceof Reactive) {
@@ -395,7 +398,7 @@ public class NativeRazerDevice implements Device {
 			throw new UnsupportedOperationException();
 		}
 
-		protected void doSetNone() {
+		protected void doSetOff() {
 			throw new UnsupportedOperationException();
 		}
 
@@ -487,7 +490,7 @@ public class NativeRazerDevice implements Device {
 		}
 
 		@Override
-		protected void doSetNone() {
+		protected void doSetOff() {
 			underlying.setLeftNone();
 		}
 
@@ -514,10 +517,9 @@ public class NativeRazerDevice implements Device {
 		}
 	}
 
-
 	class NativeRazerRegionChroma extends AbstractRazerRegion<RazerRegionChroma> {
-		RazerRegionBW2013 underlyingBw2013;
-		RazerRegionCustom underlyingCustom;
+		RazerBW2013 underlyingBw2013;
+		RazerCustom underlyingCustom;
 
 		public NativeRazerRegionChroma(DBusConnection connection) {
 			super(RazerRegionChroma.class, Name.CHROMA, connection, "");
@@ -528,14 +530,14 @@ public class NativeRazerDevice implements Device {
 			super.loadInterfaces(path);
 			try {
 				underlyingBw2013 = conn.getRemoteObject("org.razer", String.format("/org/razer/device/%s", path),
-						RazerRegionBW2013.class, true);
-				loadMethods(RazerRegionBW2013.class);
+						RazerBW2013.class, true);
+				loadMethods(RazerBW2013.class);
 			} catch (Exception e) {
 			}
 			try {
 				underlyingCustom = conn.getRemoteObject("org.razer", String.format("/org/razer/device/%s", path),
-						RazerRegionCustom.class, true);
-				loadMethods(RazerRegionCustom.class);
+						RazerCustom.class, true);
+				loadMethods(RazerCustom.class);
 			} catch (Exception e) {
 			}
 		}
@@ -650,7 +652,7 @@ public class NativeRazerDevice implements Device {
 		}
 
 		@Override
-		protected void doSetNone() {
+		protected void doSetOff() {
 			underlying.setNone();
 		}
 
@@ -733,7 +735,7 @@ public class NativeRazerDevice implements Device {
 		}
 
 		@Override
-		protected void doSetNone() {
+		protected void doSetOff() {
 			underlying.setRightNone();
 		}
 
@@ -757,6 +759,31 @@ public class NativeRazerDevice implements Device {
 		@Override
 		protected void doSetWave(Wave wave) {
 			underlying.setRightWave(wave.getDirection().ordinal() + 1);
+		}
+	}
+
+	class NativeRazerRegionBacklight extends AbstractRazerRegion<RazerRegionBacklight> {
+
+		public NativeRazerRegionBacklight(DBusConnection connection) {
+			super(RazerRegionBacklight.class, Name.BACKLIGHT, connection, "Backlight");
+		}
+
+		@Override
+		protected void doSetOff() {
+			underlying.setBacklightActive(false);
+		}
+
+		@Override
+		protected void doSetOn(On on) {
+			underlying.setBacklightActive(true);
+		}
+
+		@Override
+		protected void onCaps(Set<Capability> caps) {
+			if (hasMethod("setBacklightActive", boolean.class)) {
+				supportedEffects.add(On.class);
+				supportedEffects.add(Off.class);
+			}
 		}
 	}
 
@@ -795,8 +822,11 @@ public class NativeRazerDevice implements Device {
 		}
 
 		@Override
-		protected void doSetNone() {
-			underlying.setLogoNone();
+		protected void doSetOff() {
+			if (hasMethod("setLogoActive", boolean.class)) {
+				underlying.setLogoActive(false);
+			} else
+				underlying.setLogoNone();
 		}
 
 		@Override
@@ -819,6 +849,19 @@ public class NativeRazerDevice implements Device {
 		@Override
 		protected void doSetWave(Wave wave) {
 			underlying.setLogoWave(wave.getDirection().ordinal() + 1);
+		}
+
+		@Override
+		protected void doSetOn(On on) {
+			underlying.setLogoActive(true);
+		}
+
+		@Override
+		protected void onCaps(Set<Capability> caps) {
+			if (hasMethod("setLogoActive", boolean.class)) {
+				supportedEffects.add(On.class);
+				supportedEffects.add(Off.class);
+			}
 		}
 	}
 
@@ -857,8 +900,16 @@ public class NativeRazerDevice implements Device {
 		}
 
 		@Override
-		protected void doSetNone() {
-			underlying.setScrollNone();
+		protected void doSetOff() {
+			if (hasMethod("setScrollActive", boolean.class)) {
+				underlying.setScrollActive(false);
+			} else
+				underlying.setScrollNone();
+		}
+
+		@Override
+		protected void doSetOn(On on) {
+			underlying.setScrollActive(true);
 		}
 
 		@Override
@@ -881,6 +932,14 @@ public class NativeRazerDevice implements Device {
 		@Override
 		protected void doSetWave(Wave wave) {
 			underlying.setScrollWave(wave.getDirection().ordinal() + 1);
+		}
+
+		@Override
+		protected void onCaps(Set<Capability> caps) {
+			if (hasMethod("setScrollActive", boolean.class)) {
+				supportedEffects.add(On.class);
+				supportedEffects.add(Off.class);
+			}
 		}
 	}
 
@@ -1051,7 +1110,7 @@ public class NativeRazerDevice implements Device {
 			if (r.getCapabilities().contains(Capability.EFFECT_PER_REGION)) {
 				caps.add(Capability.EFFECTS);
 			}
-			
+
 			caps.addAll(r.getCapabilities());
 		}
 
@@ -1217,8 +1276,7 @@ public class NativeRazerDevice implements Device {
 			regionList = new ArrayList<Region>();
 			for (Region r : Arrays.asList(new NativeRazerRegionChroma(conn), new NativeRazerRegionLeft(conn),
 					new NativeRazerRegionRight(conn), new NativeRazerRegionLogo(conn),
-					new NativeRazerRegionScroll(conn)/*, new NativeRazerRegionBW2013(conn),
-					new NativeRazerRegionCustom(conn)*/)) {
+					new NativeRazerRegionScroll(conn), new NativeRazerRegionBacklight(conn))) {
 				try {
 					r.load(path);
 					regionList.add(r);

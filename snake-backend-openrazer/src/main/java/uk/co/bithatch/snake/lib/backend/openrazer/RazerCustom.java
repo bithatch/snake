@@ -8,6 +8,5 @@ public interface RazerCustom extends DBusInterface {
 
 	void setRipple(byte red1, byte green1, byte blue1, double refreshRate);
 
-	void setRippleRandomColour();
-
+	void setRippleRandomColour(double refreshRate);
 }

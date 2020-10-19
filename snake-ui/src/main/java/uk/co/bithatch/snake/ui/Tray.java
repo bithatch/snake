@@ -162,7 +162,7 @@ public class Tray implements AutoCloseable, BackendListener, Listener {
 			});
 			mi.setImage(Images.getEffectImage(24, fx));
 			menu.add(mi);
-			if (fx.equals(lit.getEffect().getClass()) && AbstractEffectController.hasController(fx)) {
+			if (lit.getEffect() != null && fx.equals(lit.getEffect().getClass()) && AbstractEffectController.hasController(fx)) {
 				configurable = fx;
 			}
 		}

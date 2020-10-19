@@ -26,5 +26,7 @@ public interface RazerRegionLogo extends DBusInterface {
 	
 	void setLogoWave(int direction);
 	
+	void setLogoActive(boolean active);
 	
+	boolean getLogoActive();
 }

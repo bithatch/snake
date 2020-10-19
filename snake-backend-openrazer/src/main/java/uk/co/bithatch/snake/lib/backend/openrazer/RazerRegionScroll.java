@@ -26,5 +26,9 @@ public interface RazerRegionScroll extends DBusInterface {
 	
 	void setScrollWave(int direction);
 	
+	boolean getScrollActive();
+	
+	void setScrollActive(boolean active);
+	
 	
 }
