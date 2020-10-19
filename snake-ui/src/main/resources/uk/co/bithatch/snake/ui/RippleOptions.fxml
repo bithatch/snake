@@ -15,7 +15,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.RippleOptions">
    <center>
-      <VBox styleClass="tools">
+      <VBox fillWidth="false" styleClass="tools">
          <children>
             <RadioButton fx:id="single" mnemonicParsing="false" selected="true" text="%single">
                <toggleGroup>
@@ -29,12 +29,8 @@
                </children>
             </HBox>
             <RadioButton fx:id="random" mnemonicParsing="false" text="%random" toggleGroup="$mode" />
-            <HBox>
-               <children>
-                  <Label text="%refreshRate" />
-                  <Slider fx:id="refreshRate" max="255.0" />
-               </children>
-            </HBox>
+            <Label styleClass="emphasis" text="%refreshRate" />
+            <Slider fx:id="refreshRate" max="255.0" prefWidth="200.0" />
          </children>
       </VBox>
    </center>

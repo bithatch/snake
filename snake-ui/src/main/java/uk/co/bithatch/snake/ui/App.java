@@ -29,6 +29,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Background;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
@@ -279,7 +280,7 @@ public class App extends Application {
 	public void close() {
 		close(Configuration.getDefault().trayIconProperty().getValue() == TrayIcon.OFF);
 	}
-	
+
 	public void close(boolean shutdown) {
 		if (!Platform.isFxApplicationThread())
 			Platform.runLater(() -> close(shutdown));
@@ -333,7 +334,7 @@ public class App extends Application {
 			Platform.runLater(() -> open());
 		else {
 			primaryStage.show();
-			primaryStage.toFront();			
+			primaryStage.toFront();
 		}
 	}
 
@@ -366,7 +367,7 @@ public class App extends Application {
 	}
 
 	public void pop() {
-		if(!controllers.isEmpty()) {
+		if (!controllers.isEmpty()) {
 			stackPane.pop();
 			Controller c = controllers.pop();
 			c.cleanUp();
@@ -375,22 +376,21 @@ public class App extends Application {
 
 	@SuppressWarnings("unchecked")
 	public <C extends Controller> C push(Class<C> controller, Controller from, Direction direction) {
-		if(controllers.size() > 0) {
+		if (controllers.size() > 0) {
 			Controller c = controllers.peek();
-			if(c.getClass().equals(controller)) {
+			if (c.getClass().equals(controller)) {
 				/* Already on same type, on same device? */
-				if(c instanceof AbstractDeviceController && from instanceof AbstractDeviceController) {
-					((AbstractDeviceController)c).setDevice(((AbstractDeviceController)from).getDevice());
+				if (c instanceof AbstractDeviceController && from instanceof AbstractDeviceController) {
+					((AbstractDeviceController) c).setDevice(((AbstractDeviceController) from).getDevice());
 				}
 				if (primaryScene instanceof BorderlessScene) {
 					/* TODO: Not totally sure why ... */
 					setColors(primaryScene);
 				}
-				return (C)c;
+				return (C) c;
 			}
 		}
-		
-		
+
 		try {
 			C fc = openScene(controller, null);
 			if (fc instanceof AbstractDeviceController && from instanceof AbstractDeviceController) {
@@ -418,7 +418,7 @@ public class App extends Application {
 		controllers.remove(c);
 		stackPane.remove(c.getScene().getRoot());
 	}
-	
+
 	public ScheduledExecutorService getScheduler() {
 		return scheduler;
 	}
@@ -432,7 +432,7 @@ public class App extends Application {
 				return 0;
 			});
 		}
-		
+
 		scheduler = Executors.newScheduledThreadPool(1);
 
 		Font.loadFont(App.class.getResource("RazerSymbols.ttf").toExternalForm(), 12);
@@ -445,16 +445,15 @@ public class App extends Application {
 				.addListener((e) -> Platform.setImplicitExit(cfg.trayIconProperty().getValue() == TrayIcon.OFF));
 
 		String activeBackend = PREFS.get("backend", "");
-		for(Backend possibleBackend : ServiceLoader.load(Backend.class)) {
-			if(activeBackend.equals("") || activeBackend.equals(possibleBackend.getClass().getName())) {
+		for (Backend possibleBackend : ServiceLoader.load(Backend.class)) {
+			if (activeBackend.equals("") || activeBackend.equals(possibleBackend.getClass().getName())) {
 				LOG.log(Level.DEBUG, String.format("Backend %s* available.", possibleBackend.getName()));
 				backend = possibleBackend;
-			}
-			else
+			} else
 				LOG.log(Level.DEBUG, String.format("Backend %s available.", possibleBackend.getName()));
 			backends.add(possibleBackend);
 		}
-		if(backend == null && !backends.isEmpty())
+		if (backend == null && !backends.isEmpty())
 			backend = backends.get(0);
 
 		// Setup the window
@@ -480,9 +479,9 @@ public class App extends Application {
 
 		if (PlatformService.get().isUpdated())
 			push(Changes.class, Direction.FROM_TOP);
-		
+
 		/* Autostart by default */
-		if(!PREFS.getBoolean("installed", false)) {
+		if (!PREFS.getBoolean("installed", false)) {
 			PlatformService.get().setStartOnLogin(true);
 			PREFS.putBoolean("installed", true);
 		}
@@ -526,19 +525,29 @@ public class App extends Application {
 
 		/* The main view */
 		try {
-			if(!backendInited) {
-				if(backend == null)
-					throw new IllegalStateException("No backend modules available on the classpath or module path. You need at least one backend. For example, snake-backend-openrazer is the default backend.");
+			if (!backendInited) {
+				if (backend == null)
+					throw new IllegalStateException(
+							"No backend modules available on the classpath or module path. You need at least one backend. For example, snake-backend-openrazer is the default backend.");
 				backend.init();
 				backendInited = true;
 
 				/* The tray */
 				tray = new Tray(this);
 			}
-			Overview fc = openScene(Overview.class, null);
-			stackPane.getChildren().add(fc.getScene().getRoot());
-			controllers.clear();
-			controllers.push(fc);
+
+			if (backend.getDevices().size() == 1) {
+				DeviceDetails details = openScene(DeviceDetails.class);
+				details.setDevice(backend.getDevices().get(0));
+				stackPane.getChildren().add(details.getScene().getRoot());
+				controllers.clear();
+				controllers.push(details);
+			} else {
+				Overview fc = openScene(Overview.class, null);
+				stackPane.getChildren().add(fc.getScene().getRoot());
+				controllers.clear();
+				controllers.push(fc);
+			}
 		} catch (Exception e) {
 			Error fc = openScene(Error.class, null);
 			fc.setError(e);
@@ -595,6 +604,10 @@ public class App extends Application {
 
 	public Controller peek() {
 		return controllers.peek();
+	}
+
+	public Stack<Controller> getControllers() {
+		return controllers;
 	}
 
 }

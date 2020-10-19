@@ -7,6 +7,8 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
@@ -56,7 +58,14 @@
          <right>
             <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
                <children>
-                  <Label text="%brightness" />
+                  <Label text="%brightness">
+                     <graphic>
+                        <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@icons/brightness24.png" />
+                           </image>
+                        </ImageView>
+                     </graphic></Label>
                   <Slider fx:id="brightness" />
                   <Label fx:id="battery" rotate="-90.0" styleClass="iconButton" />
                </children>

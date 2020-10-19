@@ -2,7 +2,7 @@ package uk.co.bithatch.snake.ui;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -15,7 +15,7 @@ public abstract class AbstractDetailsController extends AbstractDeviceController
 	@FXML
 	private ImageView deviceImage;
 	@FXML
-	private Button back;
+	private Hyperlink back;
 	@FXML
 	private BorderPane header;
 
@@ -29,6 +29,8 @@ public abstract class AbstractDetailsController extends AbstractDeviceController
 
 		deviceImage.setImage(new Image(getDevice().getImage(), true));
 		deviceName.textProperty().set(getDevice().getName());
+		
+		back.visibleProperty().set(!context.getControllers().isEmpty());
 
 		onSetDeviceDetails();
 	}

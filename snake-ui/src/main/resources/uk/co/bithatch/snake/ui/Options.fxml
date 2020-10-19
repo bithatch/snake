@@ -6,6 +6,7 @@
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.BorderPane?>
@@ -18,7 +19,7 @@
 
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.Options">
 	<children>
-		<BorderPane fx:id="optionsHeader" styleClass="nav">
+		<BorderPane fx:id="optionsHeader" styleClass="nav" VBox.vgrow="NEVER">
 			<center>
 				<HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
 					<children>
@@ -31,93 +32,101 @@
 				<Hyperlink onAction="#evtBack" styleClass="iconButton" text="%back" BorderPane.alignment="CENTER" />
 			</right>
 		</BorderPane>
-		<FlowPane prefWrapLength="500.0" rowValignment="TOP">
-			<children>
-				<VBox id="tools" fillWidth="false" styleClass="tools">
-					<children>
-						<Label styleClass="title" text="%appearance" />
-						<Label styleClass="emphasis" text="%color" />
-						<ColorPicker fx:id="color" />
-						<CheckBox fx:id="decorated" mnemonicParsing="false" text="%decorated" />
-						<Label fx:id="transparencyLabel" styleClass="gapLeft" text="%transparency" />
-						<Slider fx:id="transparency" prefWidth="200.0" styleClass="gapLeft" />
-					</children>
-				</VBox>
-				<VBox id="trayOptions" prefWidth="300.0" styleClass="tools">
-					<children>
-						<Label styleClass="title" text="%tray" />
-						<GridPane>
-							<columnConstraints>
-								<ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-								<ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-								<ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-								<ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                        <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-							</columnConstraints>
-							<rowConstraints>
-								<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-								<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-							</rowConstraints>
-							<children>
-								<RadioButton fx:id="noTrayIcon" mnemonicParsing="false" GridPane.rowIndex="1">
-									<toggleGroup>
-										<ToggleGroup fx:id="trayIconGroup" />
-									</toggleGroup>
-								</RadioButton>
-								<RadioButton fx:id="autoTrayIcon" mnemonicParsing="false" toggleGroup="$trayIconGroup" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-								<RadioButton fx:id="darkTrayIcon" mnemonicParsing="false" toggleGroup="$trayIconGroup" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-								<RadioButton fx:id="lightTrayIcon" mnemonicParsing="false" toggleGroup="$trayIconGroup" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-								<Label fx:id="noTrayIconLabel" text="%noTrayIcon" textAlignment="CENTER" />
-								<Label fx:id="autoTrayIconLabel" text="%autoTrayIcon" textAlignment="CENTER" GridPane.columnIndex="1" />
-								<Label fx:id="darkTrayIconLabel" text="%darkTrayIcon" textAlignment="CENTER" GridPane.columnIndex="2" />
-								<Label fx:id="lightTrayIconLabel" text="%lightTrayIcon" textAlignment="CENTER" GridPane.columnIndex="3" />
-                        <Label fx:id="colorTrayIconLabel" text="%colorTrayIcon" textAlignment="CENTER" GridPane.columnIndex="4" />
-                        <RadioButton fx:id="colorTrayIcon" mnemonicParsing="false" toggleGroup="$trayIconGroup" GridPane.columnIndex="4" GridPane.rowIndex="1" />
-							</children>
-						</GridPane>
-                  <VBox>
-                     <children>
-                        <CheckBox fx:id="startOnLogin" mnemonicParsing="false" text="%startOnLogin" />
-      						<CheckBox fx:id="showBattery" mnemonicParsing="false" text="%showBattery" />
-                        <CheckBox fx:id="whenLow" mnemonicParsing="false" styleClass="gapLeft" text="%whenLow" />
-                     </children>
-                     <styleClass>
-                        <String fx:value="gapLeft" />
-                        <String fx:value="tools" />
-                     </styleClass>
-                  </VBox>
-					</children>
-				</VBox>
-            <HBox fx:id="updatesContainer" prefWidth="560.0" styleClass="tools">
-               <children>
-                  <VBox fillWidth="false" maxHeight="-Infinity" maxWidth="-Infinity" styleClass="tools">
-                     <children>
-                        <Label maxWidth="-Infinity" prefWidth="200.0" styleClass="title" text="%updates" />
-                        <VBox fillWidth="false" styleClass="tools">
+      <ScrollPane fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS">
+         <content>
+      		<FlowPane prefWrapLength="2000.0" rowValignment="TOP">
+      			<children>
+      				<VBox id="tools" fillWidth="false" styleClass="tools">
+      					<children>
+      						<Label styleClass="title" text="%appearance" />
+      						<Label styleClass="emphasis" text="%color" />
+      						<ColorPicker fx:id="color" />
+      						<CheckBox fx:id="decorated" mnemonicParsing="false" text="%decorated" />
+      						<Label fx:id="transparencyLabel" styleClass="gapLeft" text="%transparency" />
+      						<Slider fx:id="transparency" prefWidth="200.0" styleClass="gapLeft" />
+      					</children>
+      				</VBox>
+      				<VBox id="trayOptions" fillWidth="false" styleClass="tools">
+      					<children>
+      						<Label styleClass="title" text="%tray" />
+      						<GridPane>
+      							<columnConstraints>
+      								<ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+      								<ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+      								<ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+      								<ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                              <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+      							</columnConstraints>
+      							<rowConstraints>
+      								<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      								<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      							</rowConstraints>
+      							<children>
+      								<RadioButton fx:id="noTrayIcon" mnemonicParsing="false" GridPane.rowIndex="1">
+      									<toggleGroup>
+      										<ToggleGroup fx:id="trayIconGroup" />
+      									</toggleGroup>
+      								</RadioButton>
+      								<RadioButton fx:id="autoTrayIcon" mnemonicParsing="false" toggleGroup="$trayIconGroup" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+      								<RadioButton fx:id="darkTrayIcon" mnemonicParsing="false" toggleGroup="$trayIconGroup" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+      								<RadioButton fx:id="lightTrayIcon" mnemonicParsing="false" toggleGroup="$trayIconGroup" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+      								<Label fx:id="noTrayIconLabel" text="%noTrayIcon" textAlignment="CENTER" />
+      								<Label fx:id="autoTrayIconLabel" text="%autoTrayIcon" textAlignment="CENTER" GridPane.columnIndex="1" />
+      								<Label fx:id="darkTrayIconLabel" text="%darkTrayIcon" textAlignment="CENTER" GridPane.columnIndex="2" />
+      								<Label fx:id="lightTrayIconLabel" text="%lightTrayIcon" textAlignment="CENTER" GridPane.columnIndex="3" />
+                              <Label fx:id="colorTrayIconLabel" text="%colorTrayIcon" textAlignment="CENTER" GridPane.columnIndex="4" />
+                              <RadioButton fx:id="colorTrayIcon" mnemonicParsing="false" toggleGroup="$trayIconGroup" GridPane.columnIndex="4" GridPane.rowIndex="1" />
+      							</children>
+      						</GridPane>
+                        <VBox>
                            <children>
-                              <CheckBox fx:id="checkForUpdates" mnemonicParsing="false" text="%checkForUpdates" />
-                              <CheckBox fx:id="updateAutomatically" mnemonicParsing="false" prefWidth="200.0" styleClass="gapLeft" text="%updateAutomatically" />
-                              <CheckBox fx:id="betas" mnemonicParsing="false" styleClass="gapLeft" text="%betas" />
+                              <CheckBox fx:id="startOnLogin" mnemonicParsing="false" text="%startOnLogin" />
+            						<CheckBox fx:id="showBattery" mnemonicParsing="false" text="%showBattery" />
+                              <CheckBox fx:id="whenLow" mnemonicParsing="false" styleClass="gapLeft" text="%whenLow" />
+                           </children>
+                           <styleClass>
+                              <String fx:value="gapLeft" />
+                              <String fx:value="tools" />
+                           </styleClass>
+                        </VBox>
+      					</children>
+      				</VBox>
+                  <HBox fx:id="updatesContainer" fillHeight="false" styleClass="tools">
+                     <children>
+                        <VBox fillWidth="false" maxHeight="-Infinity" maxWidth="-Infinity" styleClass="tools">
+                           <children>
+                              <Label maxWidth="-Infinity" prefWidth="200.0" styleClass="title" text="%updates" />
+                              <VBox fillWidth="false" styleClass="tools">
+                                 <children>
+                                    <CheckBox fx:id="checkForUpdates" mnemonicParsing="false" text="%checkForUpdates" />
+                                    <CheckBox fx:id="updateAutomatically" mnemonicParsing="false" prefWidth="200.0" styleClass="gapLeft" text="%updateAutomatically" />
+                                    <CheckBox fx:id="betas" mnemonicParsing="false" styleClass="gapLeft" text="%betas" />
+                                 </children>
+                              </VBox>
+                           </children>
+                        </VBox>
+                        <VBox fx:id="updates" alignment="CENTER" fillWidth="false" styleClass="gapTop">
+                           <children>
+                              <Hyperlink fx:id="startUpdate" alignment="CENTER" onAction="#evtStartUpdate" text="%download">
+                                 <styleClass>
+                                    <String fx:value="iconButton" />
+                                    <String fx:value="warning" />
+                                 </styleClass>
+                              </Hyperlink>
+                              <Label alignment="CENTER" styleClass="small" text="%updateAvailable" textAlignment="CENTER" wrapText="true" />
+                              <Label fx:id="availableVersion" alignment="CENTER" styleClass="emphasis,small" text="Version Available" />
+                              <Label fx:id="installedVersion" alignment="CENTER" styleClass="emphasis,small" text="Version Installed" />
                            </children>
                         </VBox>
                      </children>
-                  </VBox>
-                  <VBox fx:id="updates" alignment="CENTER" fillWidth="false" styleClass="gapTop">
-                     <children>
-                        <Hyperlink fx:id="startUpdate" alignment="CENTER" onAction="#evtStartUpdate" text="%download">
-                           <styleClass>
-                              <String fx:value="iconButton" />
-                              <String fx:value="warning" />
-                           </styleClass>
-                        </Hyperlink>
-                        <Label alignment="CENTER" styleClass="small" text="%updateAvailable" textAlignment="CENTER" wrapText="true" />
-                        <Label fx:id="availableVersion" alignment="CENTER" styleClass="emphasis,small" text="Version Available" />
-                        <Label fx:id="installedVersion" alignment="CENTER" styleClass="emphasis,small" text="Version Installed" />
-                     </children>
-                  </VBox>
-               </children>
-            </HBox>
-			</children>
-		</FlowPane>
+                  </HBox>
+      			</children>
+      		</FlowPane>
+         </content>
+         <styleClass>
+            <String fx:value="transparentBackground" />
+            <String fx:value="focusless" />
+         </styleClass>
+      </ScrollPane>
 	</children>
 </VBox>

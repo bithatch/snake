@@ -51,7 +51,7 @@
          <right>
             <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
                <children>
-                  <Hyperlink onAction="#evtBack" styleClass="iconButton" text="%back" />
+                  <Hyperlink fx:id="back" onAction="#evtBack" styleClass="iconButton" text="%back" />
                </children>
             </HBox>
          </right>

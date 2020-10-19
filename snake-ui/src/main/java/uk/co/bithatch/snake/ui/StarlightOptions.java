@@ -8,6 +8,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Slider;
 import javafx.scene.control.ToggleGroup;
+import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.effects.Starlight;
 import uk.co.bithatch.snake.lib.effects.Starlight.Mode;
 import uk.co.bithatch.snake.ui.SlideyStack.Direction;
@@ -48,12 +49,31 @@ public class StarlightOptions extends AbstractEffectController<Starlight> {
 
 	@Override
 	protected void onConfigure() throws Exception {
-		color.disableProperty().bind(Bindings.not(single.selectedProperty()));
-		color1.disableProperty().bind(Bindings.not(dual.selectedProperty()));
-		color2.disableProperty().bind(Bindings.not(dual.selectedProperty()));
+
+		colorLabel.managedProperty().bind(colorLabel.visibleProperty());
+		color1Label.managedProperty().bind(color1Label.visibleProperty());
+		color2Label.managedProperty().bind(color2Label.visibleProperty());
+		random.managedProperty().bind(random.visibleProperty());
+		single.managedProperty().bind(single.visibleProperty());
+		dual.managedProperty().bind(dual.visibleProperty());
+		color.managedProperty().bind(color.visibleProperty());
+		
+		colorLabel.visibleProperty().bind(single.visibleProperty());
+		color1Label.visibleProperty().bind(color1.visibleProperty());
+		color2Label.visibleProperty().bind(color2.visibleProperty());
+		
 		colorLabel.setLabelFor(color);
 		color1Label.setLabelFor(color1);
 		color2Label.setLabelFor(color2);
+		
+		color.disableProperty().bind(Bindings.not(single.selectedProperty()));
+		color1.disableProperty().bind(Bindings.not(dual.selectedProperty()));
+		color2.disableProperty().bind(Bindings.not(dual.selectedProperty()));
+
+		color.visibleProperty().bind(single.visibleProperty());
+		color1.visibleProperty().bind(dual.visibleProperty());
+		color2.visibleProperty().bind(dual.visibleProperty());
+		
 		dual.selectedProperty().addListener((e) -> {
 			if (dual.isSelected())
 				setDual();
@@ -141,6 +161,9 @@ public class StarlightOptions extends AbstractEffectController<Starlight> {
 			color1.valueProperty().set(UIHelpers.toColor(effect.getColor1()));
 			color2.valueProperty().set(UIHelpers.toColor(effect.getColor2()));
 			speed.valueProperty().set(effect.getSpeed());
+			random.visibleProperty().set(getRegion().getCapabilities().contains(Capability.STARLIGHT_RANDOM));
+			single.visibleProperty().set(getRegion().getCapabilities().contains(Capability.STARLIGHT_SINGLE));
+			dual.visibleProperty().set(getRegion().getCapabilities().contains(Capability.STARLIGHT_DUAL));
 		} finally {
 			adjusting = false;
 		}

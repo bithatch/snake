@@ -26,7 +26,7 @@
          <right>
             <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
                <children>
-                  <Hyperlink onAction="#evtBack" styleClass="iconButton" text="%back" />
+                  <Hyperlink fx:id="back" onAction="#evtBack" styleClass="iconButton" text="%back" />
                </children>
             </HBox>
          </right>
@@ -35,10 +35,10 @@
    <center>
       <StackPane BorderPane.alignment="CENTER">
          <children>
-            <Region fx:id="background" prefHeight="200.0" prefWidth="200.0" />
+            <Region fx:id="background" />
             <ScrollPane fx:id="scroll" hbarPolicy="NEVER">
                <content>
-                  <FlowPane fx:id="controls" prefWrapLength="600.0" rowValignment="TOP" styleClass="tools" />
+                  <FlowPane fx:id="controls" prefWrapLength="2000.0" rowValignment="TOP" styleClass="tools" />
                </content>
                <styleClass>
                   <String fx:value="focusless" />

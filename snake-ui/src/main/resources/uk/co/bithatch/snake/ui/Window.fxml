@@ -13,7 +13,7 @@
    <top>
       <BorderPane fx:id="titleBar" BorderPane.alignment="CENTER_RIGHT">
          <left>
-            <HBox alignment="CENTER" styleClass="iconBar" BorderPane.alignment="CENTER">
+            <HBox alignment="CENTER" fillHeight="false" styleClass="iconBar" BorderPane.alignment="CENTER">
                <children>
                   <Hyperlink onAction="#evtAbout" styleClass="iconButton" text="%about" />
                   <Hyperlink fx:id="options" onAction="#evtOptions" styleClass="iconButton" text="%options" />
@@ -21,7 +21,7 @@
             </HBox>
          </left>
          <right>
-            <HBox alignment="CENTER_RIGHT" styleClass="iconBar" BorderPane.alignment="CENTER">
+            <HBox alignment="CENTER_RIGHT" fillHeight="false" styleClass="iconBar" BorderPane.alignment="CENTER">
                <children>
                   <Hyperlink fx:id="min" onAction="#evtMin" styleClass="smallIconButton" text="%min" />
                   <Hyperlink fx:id="max" onAction="#evtMax" styleClass="smallIconButton" text="%max" />
@@ -30,7 +30,7 @@
             </HBox>
          </right>
          <center>
-            <HBox alignment="CENTER" BorderPane.alignment="CENTER">
+            <HBox alignment="CENTER" fillHeight="false" BorderPane.alignment="CENTER">
                <children>
                   <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
                      <image>
@@ -46,7 +46,7 @@
    <center>
       <AnchorPane BorderPane.alignment="CENTER">
          <children>
-            <StackPane fx:id="content" prefHeight="150.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+            <StackPane fx:id="content" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
          </children></AnchorPane>
    </center>
 </BorderPane>

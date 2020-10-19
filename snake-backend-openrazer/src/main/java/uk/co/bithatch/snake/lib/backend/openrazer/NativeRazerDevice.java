@@ -30,15 +30,18 @@ import java.util.prefs.Preferences;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
+import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.Introspectable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -92,6 +95,7 @@ public class NativeRazerDevice implements Device {
 		String effectPrefix;
 		Set<Class<? extends Effect>> supportedEffects = new LinkedHashSet<>();
 		Map<String, List<Class<?>>> methods = new HashMap<>();
+		private Document document;
 
 		AbstractRazerRegion(Class<I> clazz, Name name, DBusConnection conn, String effectPrefix) {
 			this.effectPrefix = effectPrefix;
@@ -137,8 +141,57 @@ public class NativeRazerDevice implements Device {
 		@SuppressWarnings("unchecked")
 		@Override
 		public final void load(String path) throws Exception {
-			underlying = conn.getRemoteObject("org.razer", String.format("/org/razer/device/%s", path), clazz, true);
+			loadIntrospection(path);
+			loadInterfaces(path);
 
+			if (hasMethod("set" + effectPrefix + "None"))
+				supportedEffects.add(None.class);
+			if (hasMethod("set" + effectPrefix + "Static", byte.class, byte.class, byte.class))
+				supportedEffects.add(Static.class);
+			if (hasMethod("set" + effectPrefix + "BreathRandom"))
+				supportedEffects.add(Breath.class);
+			if (hasMethod("set" + effectPrefix + "Reactive", byte.class, byte.class, byte.class, byte.class))
+				supportedEffects.add(Reactive.class);
+			if (hasMethod("set" + effectPrefix + "Spectrum"))
+				supportedEffects.add(Spectrum.class);
+			if (hasMethod("set" + effectPrefix + "Wave", int.class))
+				supportedEffects.add(Wave.class);
+
+			onCaps(caps);
+			if (supportedEffects.isEmpty()) {
+				throw new UnsupportedOperationException(String.format("Region %s not supported.", name.name()));
+			}
+			caps.add(Capability.EFFECT_PER_REGION);
+			caps.add(Capability.EFFECTS);
+
+			try {
+				brightness = doGetBrightness();
+				caps.add(Capability.BRIGHTNESS_PER_REGION);
+
+				if (LOG.isLoggable(Level.DEBUG))
+					LOG.log(Level.DEBUG, String.format("Region %s on device %s supports separate brightness.",
+							name.name(), NativeRazerDevice.class.getName()));
+			} catch (Exception e) {
+
+				if (LOG.isLoggable(Level.DEBUG))
+					LOG.log(Level.DEBUG, String.format("Region %s on device %s does not support separate brightness.",
+							name.name(), NativeRazerDevice.class.getName()));
+			}
+
+			Preferences regionPrefs = regionPrefs();
+			String effect = regionPrefs.get("effect", "");
+			if (!effect.equals("")) {
+				setEffect(createEffect((Class<? extends Effect>) getClass().getClassLoader().loadClass(effect)));
+			}
+		}
+
+		protected void loadInterfaces(String path) throws DBusException {
+			underlying = conn.getRemoteObject("org.razer", String.format("/org/razer/device/%s", path), clazz, true);
+			loadMethods(clazz);
+		}
+
+		protected void loadIntrospection(String path)
+				throws DBusException, ParserConfigurationException, SAXException, IOException {
 			Introspectable intro = conn.getRemoteObject("org.razer", String.format("/org/razer/device/%s", path),
 					Introspectable.class, true);
 			InputSource source = new InputSource(new StringReader(intro.Introspect()));
@@ -147,7 +200,11 @@ public class NativeRazerDevice implements Device {
 			dbf.setValidating(false);
 			dbf.setNamespaceAware(true);
 			DocumentBuilder db = dbf.newDocumentBuilder();
-			Document document = db.parse(source);
+			document = db.parse(source);
+		}
+		
+
+		protected boolean loadMethods(Class<?> clazz) {
 			NodeList nl = document.getElementsByTagName("interface");
 			boolean ok = false;
 			for (int i = 0; i < nl.getLength(); i++) {
@@ -202,47 +259,7 @@ public class NativeRazerDevice implements Device {
 					}
 				}
 			}
-
-			if (hasMethod("set" + effectPrefix + "None"))
-				supportedEffects.add(None.class);
-			if (hasMethod("set" + effectPrefix + "Static", byte.class, byte.class, byte.class))
-				supportedEffects.add(Static.class);
-			if (hasMethod("set" + effectPrefix + "BreathRandom"))
-				supportedEffects.add(Breath.class);
-			if (hasMethod("set" + effectPrefix + "Reactive", byte.class, byte.class, byte.class, byte.class))
-				supportedEffects.add(Reactive.class);
-			if (hasMethod("set" + effectPrefix + "Spectrum"))
-				supportedEffects.add(Spectrum.class);
-			if (hasMethod("set" + effectPrefix + "Wave", int.class))
-				supportedEffects.add(Wave.class);
-
-			onCaps(caps);
-			if (supportedEffects.isEmpty()) {
-				if (!ok)
-					throw new UnsupportedOperationException(String.format("Region %s not supported.", name.name()));
-			}
-			caps.add(Capability.EFFECT_PER_REGION);
-			caps.add(Capability.EFFECTS);
-
-			try {
-				brightness = doGetBrightness();
-				caps.add(Capability.BRIGHTNESS_PER_REGION);
-
-				if (LOG.isLoggable(Level.DEBUG))
-					LOG.log(Level.DEBUG, String.format("Region %s on device %s supports separate brightness.",
-							name.name(), NativeRazerDevice.class.getName()));
-			} catch (Exception e) {
-
-				if (LOG.isLoggable(Level.DEBUG))
-					LOG.log(Level.DEBUG, String.format("Region %s on device %s does not support separate brightness.",
-							name.name(), NativeRazerDevice.class.getName()));
-			}
-
-			Preferences regionPrefs = regionPrefs();
-			String effect = regionPrefs.get("effect", "");
-			if (!effect.equals("")) {
-				setEffect(createEffect((Class<? extends Effect>) getClass().getClassLoader().loadClass(effect)));
-			}
+			return ok;
 		}
 
 		protected void onCaps(Set<Capability> caps) {
@@ -497,67 +514,30 @@ public class NativeRazerDevice implements Device {
 		}
 	}
 
-	class NativeRazerRegionCustom extends AbstractRazerRegion<RazerRegionCustom> {
-
-		public NativeRazerRegionCustom(DBusConnection connection) {
-			super(RazerRegionCustom.class, Name.BW2013, connection, "");
-		}
-
-		@Override
-		protected void onCaps(Set<Capability> caps) {
-			if (hasMethod("setRipple", byte.class, byte.class, byte.class, double.class)) {
-				caps.add(Capability.RIPPLE_SINGLE);
-				supportedEffects.add(Ripple.class);
-			}
-			if (hasMethod("setRippleRandomColour", double.class)) {
-				caps.add(Capability.RIPPLE_RANDOM);
-				supportedEffects.add(Ripple.class);
-			}
-		}
-
-		@Override
-		protected void doSetRipple(Ripple ripple) {
-			underlying.setRipple((byte) ripple.getColor()[0], (byte) ripple.getColor()[1], (byte) ripple.getColor()[2],
-					(double) ripple.getRefreshRate());
-		}
-
-		@Override
-		protected void doSetRippleRandomColour(Ripple ripple) {
-			underlying.setRippleRandomColour((double) ripple.getRefreshRate());
-		}
-
-	}
-
-	class NativeRazerRegionBW2013 extends AbstractRazerRegion<RazerRegionBW2013> {
-
-		public NativeRazerRegionBW2013(DBusConnection connection) {
-			super(RazerRegionBW2013.class, Name.BW2013, connection, "");
-		}
-
-		@Override
-		protected void onCaps(Set<Capability> caps) {
-			if (hasMethod("setPulsate"))
-				supportedEffects.add(Pulsate.class);
-			if (hasMethod("setStatic"))
-				supportedEffects.add(On.class);
-		}
-
-		@Override
-		protected void doSetPulsate(Pulsate pulsate) {
-			underlying.setPulsate();
-		}
-
-		@Override
-		protected void doSetOn(On monoStaticEffect) {
-			underlying.setStatic();
-		}
-
-	}
 
 	class NativeRazerRegionChroma extends AbstractRazerRegion<RazerRegionChroma> {
+		RazerRegionBW2013 underlyingBw2013;
+		RazerRegionCustom underlyingCustom;
 
 		public NativeRazerRegionChroma(DBusConnection connection) {
 			super(RazerRegionChroma.class, Name.CHROMA, connection, "");
+		}
+
+		@Override
+		protected void loadInterfaces(String path) throws DBusException {
+			super.loadInterfaces(path);
+			try {
+				underlyingBw2013 = conn.getRemoteObject("org.razer", String.format("/org/razer/device/%s", path),
+						RazerRegionBW2013.class, true);
+				loadMethods(RazerRegionBW2013.class);
+			} catch (Exception e) {
+			}
+			try {
+				underlyingCustom = conn.getRemoteObject("org.razer", String.format("/org/razer/device/%s", path),
+						RazerRegionCustom.class, true);
+				loadMethods(RazerRegionCustom.class);
+			} catch (Exception e) {
+			}
 		}
 
 		@Override
@@ -608,6 +588,18 @@ public class NativeRazerDevice implements Device {
 			if (hasMethod("setStarlightSingle", byte.class, byte.class, byte.class, byte.class)) {
 				caps.add(Capability.STARLIGHT_SINGLE);
 				supportedEffects.add(Starlight.class);
+			}
+			if (hasMethod("setPulsate"))
+				supportedEffects.add(Pulsate.class);
+			if (hasMethod("setStatic"))
+				supportedEffects.add(On.class);
+			if (hasMethod("setRipple", byte.class, byte.class, byte.class, double.class)) {
+				caps.add(Capability.RIPPLE_SINGLE);
+				supportedEffects.add(Ripple.class);
+			}
+			if (hasMethod("setRippleRandomColour", double.class)) {
+				caps.add(Capability.RIPPLE_RANDOM);
+				supportedEffects.add(Ripple.class);
 			}
 		}
 
@@ -682,6 +674,27 @@ public class NativeRazerDevice implements Device {
 		@Override
 		protected void doSetWave(Wave wave) {
 			underlying.setWave(wave.getDirection().ordinal() + 1);
+		}
+
+		@Override
+		protected void doSetRipple(Ripple ripple) {
+			underlyingCustom.setRipple((byte) ripple.getColor()[0], (byte) ripple.getColor()[1],
+					(byte) ripple.getColor()[2], (double) ripple.getRefreshRate());
+		}
+
+		@Override
+		protected void doSetRippleRandomColour(Ripple ripple) {
+			underlyingCustom.setRippleRandomColour((double) ripple.getRefreshRate());
+		}
+
+		@Override
+		protected void doSetPulsate(Pulsate pulsate) {
+			underlyingBw2013.setPulsate();
+		}
+
+		@Override
+		protected void doSetOn(On monoStaticEffect) {
+			underlyingBw2013.setStatic();
 		}
 	}
 
@@ -871,38 +884,30 @@ public class NativeRazerDevice implements Device {
 		}
 	}
 
-	RazerDevice device;
-	String path;
-	RazerDPI dpi;
-	List<Listener> listeners = new ArrayList<>();
-	List<Region> regionList;
-	Preferences prefs;
-	RazerBrightness brightness;
-	RazerBattery battery;
-	RazerMacro macros;
-	short lastBrightness;
-	Set<Capability> caps = new HashSet<>();
-	DBusConnection conn;
-	RazerGameMode gameMode;
-	Set<Class<? extends Effect>> supportedEffects = new LinkedHashSet<>();
-	Map<BrandingImage, String> brandingImages = new HashMap<>();
+	private RazerDevice device;
+	private String path;
+	private RazerDPI dpi;
+	private List<Listener> listeners = new ArrayList<>();
+	private List<Region> regionList;
+	private Preferences prefs;
+	private RazerBrightness brightness;
+	private RazerBattery battery;
+	private RazerMacro macros;
+	private short lastBrightness = -1;
+	private Set<Capability> caps = new HashSet<>();
+	private DBusConnection conn;
+	private RazerGameMode gameMode;
+	private Set<Class<? extends Effect>> supportedEffects = new LinkedHashSet<>();
+	private Map<BrandingImage, String> brandingImages = new HashMap<>();
 
 	private int batteryLevel;
-
 	private boolean wasCharging;
-
 	private ScheduledFuture<?> batteryTask;
-
 	private Effect effect;
-
 	private int maxDpi;
-
 	private String deviceName;
-
 	private String driverVersion;
-
 	private int pollRate;
-
 	private String firmware;
 
 	NativeRazerDevice(String path, DBusConnection conn, OpenRazerBackend backend) throws Exception {
@@ -1042,11 +1047,12 @@ public class NativeRazerDevice implements Device {
 
 			if (r.getCapabilities().contains(Capability.BRIGHTNESS_PER_REGION)) {
 				caps.add(Capability.BRIGHTNESS);
-				caps.add(Capability.BRIGHTNESS_PER_REGION);
 			}
 			if (r.getCapabilities().contains(Capability.EFFECT_PER_REGION)) {
 				caps.add(Capability.EFFECTS);
 			}
+			
+			caps.addAll(r.getCapabilities());
 		}
 
 		/*
@@ -1211,8 +1217,8 @@ public class NativeRazerDevice implements Device {
 			regionList = new ArrayList<Region>();
 			for (Region r : Arrays.asList(new NativeRazerRegionChroma(conn), new NativeRazerRegionLeft(conn),
 					new NativeRazerRegionRight(conn), new NativeRazerRegionLogo(conn),
-					new NativeRazerRegionScroll(conn), new NativeRazerRegionBW2013(conn),
-					new NativeRazerRegionCustom(conn))) {
+					new NativeRazerRegionScroll(conn)/*, new NativeRazerRegionBW2013(conn),
+					new NativeRazerRegionCustom(conn)*/)) {
 				try {
 					r.load(path);
 					regionList.add(r);

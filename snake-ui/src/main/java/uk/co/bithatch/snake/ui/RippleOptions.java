@@ -7,6 +7,7 @@ import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Slider;
+import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.effects.Ripple;
 import uk.co.bithatch.snake.lib.effects.Ripple.Mode;
 import uk.co.bithatch.snake.ui.SlideyStack.Direction;
@@ -34,6 +35,12 @@ public class RippleOptions extends AbstractEffectController<Ripple> {
 	protected void onConfigure() throws Exception {
 		color.disableProperty().bind(Bindings.not(single.selectedProperty()));
 		colorLabel.setLabelFor(color);
+		colorLabel.managedProperty().bind(colorLabel.visibleProperty());
+		colorLabel.visibleProperty().bind(color.visibleProperty());;
+		color.managedProperty().bind(color.visibleProperty());
+		color.visibleProperty().bind(single.visibleProperty());
+		random.managedProperty().bind(random.visibleProperty());
+		single.managedProperty().bind(single.visibleProperty());
 		single.selectedProperty().addListener((e) -> {
 			if (single.isSelected())
 				setSingle();
@@ -106,6 +113,8 @@ public class RippleOptions extends AbstractEffectController<Ripple> {
 			}
 			refreshRate.valueProperty().set(effect.getRefreshRate());
 			color.valueProperty().set(UIHelpers.toColor(effect.getColor()));
+			random.visibleProperty().set(getRegion().getCapabilities().contains(Capability.RIPPLE_RANDOM));
+			single.visibleProperty().set(getRegion().getCapabilities().contains(Capability.RIPPLE_SINGLE));
 		} finally {
 			adjusting = false;
 		}
