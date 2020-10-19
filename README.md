@@ -217,6 +217,28 @@ For example, controls are provided for :-
  
  At any time, clicking on the *Back* icon at the top right of the screen will return you to the *Device Overview* screen.
  
+### Brightness
+
+Controls the intensity of  all lights in a region, or overall on the device. If the device only supports a single lighting region, only a single slider will be shown.
+
+ ![Brightness](images/brightness.png  "Brightness")
+ 
+### Poll Rate
+
+A low level setting that determines the speed at which your computer communicates with this device.
+
+ ![Poll Rate](images/pollrate.png  "Poll Rate")
+ 
+### DPI
+
+Dots per inch setting, changes the accuracy of your mouse movements.
+
+The maximum setting here can differ between devices. The higher the number, the faster the mouse pointer will move across the screen as you physically move the house. A lower number means the mouse pointer will move slower across the screen with more accuracy.
+
+A value of 1000 to 2000 is probably comfortable for daily usage.
+
+ ![DPI](images/dpi.png  "DPI")
+ 
 ### Effects
  
  Many devices are capable of multiple effects. Some of those effects have their own configuration, and often it is possible to configure different effects for each region.
