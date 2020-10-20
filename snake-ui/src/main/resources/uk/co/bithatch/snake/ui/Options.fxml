@@ -3,6 +3,7 @@
 <?import java.lang.String?>
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ColorPicker?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.RadioButton?>
@@ -39,6 +40,8 @@
       				<VBox id="tools" fillWidth="false" styleClass="tools">
       					<children>
       						<Label styleClass="title" text="%appearance" />
+                        <Label styleClass="emphasis" text="%theme" />
+                        <ComboBox fx:id="theme" onAction="#evtTheme" prefWidth="150.0" />
       						<Label styleClass="emphasis" text="%color" />
       						<ColorPicker fx:id="color" />
       						<CheckBox fx:id="decorated" mnemonicParsing="false" text="%decorated" />

@@ -1,0 +1,15 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>snake-theme-agreenfuture</artifactId>
+	<parent>
+		<groupId>uk.co.bithatch</groupId>
+		<version>1.0-SNAPSHOT</version>
+		<artifactId>snake</artifactId>
+	</parent>
+	<dependencies>
+	</dependencies>
+	<name>Snake - A Green Future - Snake's Default Theme</name>
+	<description>The default Snake theme.</description>
+</project>

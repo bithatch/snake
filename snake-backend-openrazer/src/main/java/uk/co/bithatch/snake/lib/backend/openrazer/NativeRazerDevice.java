@@ -144,7 +144,7 @@ public class NativeRazerDevice implements Device {
 			loadIntrospection(path);
 			loadInterfaces(path);
 
-			if (hasMethod("set" + effectPrefix + "Off"))
+			if (hasMethod("set" + effectPrefix + "None"))
 				supportedEffects.add(Off.class);
 			if (hasMethod("set" + effectPrefix + "Static", byte.class, byte.class, byte.class))
 				supportedEffects.add(Static.class);
@@ -963,7 +963,7 @@ public class NativeRazerDevice implements Device {
 	private boolean wasCharging;
 	private ScheduledFuture<?> batteryTask;
 	private Effect effect;
-	private int maxDpi;
+	private int maxDpi = -1;
 	private String deviceName;
 	private String driverVersion;
 	private int pollRate;

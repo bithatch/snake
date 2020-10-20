@@ -11,6 +11,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ColorPicker;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
@@ -32,6 +33,8 @@ public class Options extends AbstractDeviceController {
 	private ColorPicker color;
 	@FXML
 	private CheckBox decorated;
+	@FXML
+	private ComboBox<Theme> theme;
 	@FXML
 	private BorderPane optionsHeader;
 	@FXML
@@ -96,6 +99,8 @@ public class Options extends AbstractDeviceController {
 		whenLow.visibleProperty().bind(showBattery.visibleProperty());
 		whenLow.managedProperty().bind(whenLow.visibleProperty());
 		showBattery.managedProperty().bind(showBattery.visibleProperty());
+		theme.itemsProperty().get().addAll(Theme.getThemes());
+		theme.getSelectionModel().select(Theme.getActiveTheme());
 		showBattery.visibleProperty().set(context.getBackend().getCapabilities().contains(Capability.BATTERY));
 		if (PlatformService.isPlatformSupported()) {
 			PlatformService ps = PlatformService.get();
@@ -223,6 +228,10 @@ public class Options extends AbstractDeviceController {
 	@FXML
 	void evtStartUpdate(ActionEvent evt) {
 		System.exit(100);
+	}
+
+	@FXML
+	void evtTheme(ActionEvent evt) {
 	}
 
 	@FXML

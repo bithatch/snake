@@ -11,7 +11,7 @@
 		<module>snake-lib</module>
 		<module>snake-backend-openrazer</module>
 		<module>snake-ui-linux</module>
-		<!--<module>snake-theme-default</module>-->
+		<module>snake-theme-agreenfuture</module>
 		<module>snake-app-linux</module>
 		<module>snake-updater</module>
 		<module>snake-dist</module>
@@ -30,6 +30,14 @@
 					<version>3.8.0</version>
 					<configuration>
 						<release>15</release>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<version>3.0.0-M1</version>
+					<configuration>
+						<skip>true</skip>
 					</configuration>
 				</plugin>
 			</plugins>

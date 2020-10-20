@@ -73,7 +73,7 @@
 									<remoteBase>${snakeRemote}</remoteBase>
 									<mainClass>uk.co.bithatch.snake.ui/uk.co.bithatch.snake.ui.App</mainClass>
 									<remotesFromOriginalSource>false</remotesFromOriginalSource>
-									<image>false</image>
+									<image>true</image>
 									<vmArgs>
 										<vmArg>-Xmx64m</vmArg>
 									</vmArgs>
@@ -168,7 +168,7 @@
 									<mainClass>uk.co.bithatch.snake.ui/uk.co.bithatch.snake.ui.App</mainClass>
 									<remotesFromOriginalSource>false</remotesFromOriginalSource>
 									<imageDirectory>${project.build.directory}/image-noruntime</imageDirectory>
-									<image>false</image>
+									<image>true</image>
 									<link>false</link>
 									<vmArgs>
 										<vmArg>-Xmx64m</vmArg>
@@ -614,7 +614,7 @@
 									</mappings>
 								</configuration>
 							</execution>
-							
+
 							<execution>
 								<id>snake-rpm-noruntime</id>
 								<phase>package</phase>
@@ -719,7 +719,7 @@
 							</execution>
 						</executions>
 
-						
+
 
 					</plugin>
 
@@ -746,16 +746,20 @@
 											</fileset>
 										</copy>
 										<copy todir="${snakeInstallers}">
-											<fileset dir="${project.build.directory}/rpm/snake/RPMS/amd64">
+											<fileset
+												dir="${project.build.directory}/rpm/snake/RPMS/amd64">
 												<include name="*.rpm" />
 											</fileset>
-											<globmapper from="snake-*.amd64.rpm" to="snake-amd64.rpm"/>
+											<globmapper from="snake-*.amd64.rpm"
+												to="snake-amd64.rpm" />
 										</copy>
 										<copy todir="${snakeInstallers}">
-											<fileset dir="${project.build.directory}/rpm/snake-noruntime/RPMS/noarch">
+											<fileset
+												dir="${project.build.directory}/rpm/snake-noruntime/RPMS/noarch">
 												<include name="*.rpm" />
 											</fileset>
-											<globmapper from="snake-*.noarch.rpm" to="snake-noruntime.noarch.rpm"/>
+											<globmapper from="snake-*.noarch.rpm"
+												to="snake-noruntime.noarch.rpm" />
 										</copy>
 										<mkdir dir="${snakeLocal}" />
 										<copy todir="${snakeLocal}">
@@ -790,6 +794,9 @@
 			</build>
 		</profile>
 	</profiles>
+	<build>
+		<finalName>snake</finalName>
+	</build>
 	<dependencies>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
