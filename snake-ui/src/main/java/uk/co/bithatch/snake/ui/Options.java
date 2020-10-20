@@ -100,7 +100,6 @@ public class Options extends AbstractDeviceController {
 		whenLow.managedProperty().bind(whenLow.visibleProperty());
 		showBattery.managedProperty().bind(showBattery.visibleProperty());
 		theme.itemsProperty().get().addAll(Theme.getThemes());
-		theme.getSelectionModel().select(Theme.getActiveTheme());
 		showBattery.visibleProperty().set(context.getBackend().getCapabilities().contains(Capability.BATTERY));
 		if (PlatformService.isPlatformSupported()) {
 			PlatformService ps = PlatformService.get();
@@ -167,10 +166,10 @@ public class Options extends AbstractDeviceController {
 		});
 		optionsHeader.setBackground(createHeaderBackground());
 		decorated.selectedProperty().bindBidirectional(cfg.decoratedProperty());
+		theme.getSelectionModel().select(cfg.themeProperty().getValue());
 		transparencyLabel.setLabelFor(transparency);
 		transparency.disableProperty().bind(decorated.selectedProperty());
 		transparency.valueProperty().bindBidirectional(cfg.transparencyProperty());
-		color.valueProperty().bindBidirectional(cfg.colorProperty());
 		if (context.getWindow() != null) {
 			context.getWindow().getOptions().visibleProperty().set(false);
 		}
@@ -232,6 +231,7 @@ public class Options extends AbstractDeviceController {
 
 	@FXML
 	void evtTheme(ActionEvent evt) {
+		Configuration.getDefault().themeProperty().setValue(theme.getSelectionModel().getSelectedItem());
 	}
 
 	@FXML

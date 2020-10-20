@@ -1,6 +1,7 @@
 package uk.co.bithatch.snake.ui;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -20,7 +21,7 @@ public class Configuration {
 		OFF, AUTO, DARK, LIGHT, COLOR
 	}
 
-	private Property<Color> color = new SimpleObjectProperty<>();
+	private Property<Theme> theme = new SimpleObjectProperty<>();
 	private BooleanProperty decorated = new SimpleBooleanProperty();
 	private IntegerProperty x = new SimpleIntegerProperty();
 	private IntegerProperty y = new SimpleIntegerProperty();
@@ -49,6 +50,23 @@ public class Configuration {
 		@Override
 		public void changed(ObservableValue<? extends Color> observable, Color oldValue, Color newValue) {
 			putColor(key, node, newValue);
+		}
+
+	}
+
+	class ThemePreferenceUpdateChangeListener implements ChangeListener<Theme> {
+
+		private Preferences node;
+		private String key;
+
+		ThemePreferenceUpdateChangeListener(Preferences node, String key) {
+			this.node = node;
+			this.key = key;
+		}
+
+		@Override
+		public void changed(ObservableValue<? extends Theme> observable, Theme oldValue, Theme newValue) {
+			node.put(key, newValue.getId());
 		}
 
 	}
@@ -107,10 +125,6 @@ public class Configuration {
 	public Configuration(Preferences node) {
 		this.node = node;
 
-		color.setValue(getColor("color", node, Color.web("#000000")));
-		color.addListener(new ColorPreferenceUpdateChangeListener(node, "color"));
-		color.addListener((e) -> transparency.setValue(calcTrans()));
-
 		showBattery.setValue(node.getBoolean("showBattery", true));
 		showBattery.addListener(new BooleanPreferenceUpdateChangeListener(node, "showBattery"));
 
@@ -140,18 +154,23 @@ public class Configuration {
 		h.setValue(node.getInt("h", 0));
 		h.addListener(new IntegerPreferenceUpdateChangeListener(node, "h"));
 
-		transparency.setValue(calcTrans());
-		transparency.addListener((e) -> {
-			Color c = color.getValue();
-			c = new Color(c.getRed(), c.getGreen(), c.getBlue(),
-					((100.0 - transparency.getValue().doubleValue()) / 100.0));
-			color.setValue(c);
-		});
+		transparency.setValue(node.getInt("transparency", 0));
+		transparency.addListener(new IntegerPreferenceUpdateChangeListener(node, "transparency"));
+		String themeName = node.get("theme", "");
+		Collection<Theme> themes = Theme.getThemes();
+		if (themes.isEmpty())
+			throw new IllegalStateException("No themes. Please add a theme module to the classpath or modulepath.");
+		Theme firstTheme = themes.iterator().next();
+		if (themeName.equals("")) {
+			themeName = firstTheme.getId();
+		}
+		Theme selTheme = Theme.getTheme(themeName);
+		if (selTheme == null && !themeName.equals(firstTheme.getId()))
+			selTheme = firstTheme;
+		theme.setValue(selTheme);
+		theme.addListener(new ThemePreferenceUpdateChangeListener(node, "theme"));
 	}
 
-	private int calcTrans() {
-		return 100 - (int) (color.getValue().getOpacity() * 100.0);
-	}
 
 	public static Configuration getDefault() {
 		return DEFAULT_INSTANCE;
@@ -189,10 +208,6 @@ public class Configuration {
 		return trayIcon;
 	}
 
-	public Property<Color> colorProperty() {
-		return color;
-	}
-
 	public Property<Boolean> showBatteryProperty() {
 		return showBattery;
 	}
@@ -203,6 +218,10 @@ public class Configuration {
 
 	public Property<Boolean> decoratedProperty() {
 		return decorated;
+	}
+
+	public Property<Theme> themeProperty() {
+		return theme;
 	}
 
 	static void putColor(String key, Preferences p, Color color) {

@@ -1,0 +1,20 @@
+@font-face {
+    src: url('FROSTBITE-Narrow.ttf');
+    font-family: FROSTBITE-Narrow;
+}
+
+@font-face {
+    src: url('Roboto-Light.ttf');
+    font-family: Roboto-Light;
+}
+
+html, body {
+	background-color: black;
+	color: white;
+    font-family: 'Roboto-Light';
+}
+
+h1, h2, h3 {
+   /*  font-family: 'FROSTBITE-Narrow'; */
+	color: pink;
+}

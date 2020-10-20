@@ -49,18 +49,30 @@
       </StackPane>
    </center>
    <bottom>
-      <HBox alignment="CENTER" styleClass="iconBar" BorderPane.alignment="CENTER">
-         <children>
-            <Hyperlink fx:id="macros" onAction="#evtMacros" text="%macros">
-               <graphic>
-                  <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@icons/macros32.png" />
-                     </image>
-                  </ImageView>
-               </graphic>
-            </Hyperlink>
-         </children>
-      </HBox>
+      <BorderPane BorderPane.alignment="CENTER">
+         <center>
+            <HBox alignment="CENTER" styleClass="iconBar">
+               <children>
+                  <Hyperlink fx:id="macros" onAction="#evtMacros" text="%macros">
+                     <graphic>
+                        <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@icons/macros32.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </Hyperlink>
+               </children>
+            </HBox>
+         </center>
+         <right>
+            <HBox fx:id="decoratedTools" alignment="CENTER_RIGHT" styleClass="iconBar" BorderPane.alignment="CENTER">
+               <children>
+                  <Hyperlink onAction="#evtAbout" styleClass="smallIconButton" text="%about" />
+                  <Hyperlink onAction="#evtOptions" styleClass="smallIconButton" text="%options" />
+               </children>
+            </HBox>
+         </right>
+      </BorderPane>
    </bottom>
 </BorderPane>

@@ -25,7 +25,8 @@ public abstract class AbstractDeviceController extends AbstractController {
 		try {
 			onSetDevice();
 		} catch (Exception e) {
-			throw new IllegalStateException(String.format("Failed to configure UI for device %s.", device.getName()), e);
+			throw new IllegalStateException(String.format("Failed to configure UI for device %s.", device.getName()),
+					e);
 		}
 	}
 
@@ -34,7 +35,9 @@ public abstract class AbstractDeviceController extends AbstractController {
 
 	protected Background createHeaderBackground() {
 		return new Background(
-				new BackgroundImage(new Image(getClass().getResource("fibre.jpg").toExternalForm(), true),
+				new BackgroundImage(
+						new Image(Configuration.getDefault().themeProperty().getValue().getResource("fibre.jpg")
+								.toExternalForm(), true),
 						BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
 						new BackgroundSize(100d, 100d, true, true, false, true)));
 	}

@@ -11,7 +11,7 @@
 		<module>snake-lib</module>
 		<module>snake-backend-openrazer</module>
 		<module>snake-ui-linux</module>
-		<module>snake-theme-agreenfuture</module>
+		<module>snake-themes</module>
 		<module>snake-app-linux</module>
 		<module>snake-updater</module>
 		<module>snake-dist</module>

@@ -16,18 +16,17 @@ import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.text.Font;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import uk.co.bithatch.snake.ui.SlideyStack.Direction;
 
 public class Window extends AbstractController {
 
-	public static Font font;
-
-	static {
-		font = Font.loadFont(AwesomeIcons.class.getResource("FROSTBITE-Narrow.ttf").toExternalForm(), 12);
-	}
+//	public static Font fxont;
+//
+//	static {
+//		foxnt = Font.loadFont(AwesomeIcons.class.getResource("FROSTBITE-Narrow.ttf").toExternalForm(), 12);
+//	}
 
 	@FXML
 	private Hyperlink min;
@@ -50,12 +49,13 @@ public class Window extends AbstractController {
 
 	@Override
 	protected void onConfigure() throws Exception {
-		titleBar.setBackground(new Background(
-				new BackgroundImage(new Image(getClass().getResource("titleBar.png").toExternalForm(), true),
-						BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
-						new BackgroundSize(100d, 100d, true, true, false, true))));
+		titleBar.setBackground(new Background(new BackgroundImage(
+				new Image(Configuration.getDefault().themeProperty().getValue().getResource("titleBar.png")
+						.toExternalForm(), true),
+				BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
+				new BackgroundSize(100d, 100d, true, true, false, true))));
 
-		title.setFont(font);
+//		title.setFont(font);
 	}
 
 	public Hyperlink getOptions() {

@@ -2,7 +2,6 @@
 
 <?import java.lang.String?>
 <?import javafx.scene.control.CheckBox?>
-<?import javafx.scene.control.ColorPicker?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
@@ -41,9 +40,7 @@
       					<children>
       						<Label styleClass="title" text="%appearance" />
                         <Label styleClass="emphasis" text="%theme" />
-                        <ComboBox fx:id="theme" onAction="#evtTheme" prefWidth="150.0" />
-      						<Label styleClass="emphasis" text="%color" />
-      						<ColorPicker fx:id="color" />
+                        <ComboBox fx:id="theme" onAction="#evtTheme" prefWidth="250.0" />
       						<CheckBox fx:id="decorated" mnemonicParsing="false" text="%decorated" />
       						<Label fx:id="transparencyLabel" styleClass="gapLeft" text="%transparency" />
       						<Slider fx:id="transparency" prefWidth="200.0" styleClass="gapLeft" />

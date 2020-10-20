@@ -1,0 +1,31 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>snake-theme-apinkburst</artifactId>
+	<parent>
+		<groupId>uk.co.bithatch</groupId>
+		<version>1.0-SNAPSHOT</version>
+		<artifactId>snake-themes</artifactId>
+	</parent>
+	<properties>
+		<themeName>apinkburst</themeName>
+	</properties>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>argelbargel.maven</groupId>
+				<artifactId>svg-rasterizer-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<version>${project.version}</version>
+			<artifactId>snake-theme-awhitelight</artifactId>
+		</dependency>
+	</dependencies>
+	<name>Snake - Themes - A Pink Burst</name>
+	<description>The default theme in pink.</description>
+</project>

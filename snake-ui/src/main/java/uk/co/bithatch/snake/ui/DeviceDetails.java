@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.Property;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Hyperlink;
@@ -17,6 +18,7 @@ import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import uk.co.bithatch.snake.lib.BrandingImage;
 import uk.co.bithatch.snake.lib.Capability;
@@ -36,6 +38,8 @@ public class DeviceDetails extends AbstractDetailsController {
 	private Hyperlink macros;
 	@FXML
 	private Region background;
+	@FXML
+	private HBox decoratedTools;
 
 	private List<Controller> controllers = new ArrayList<>();
 
@@ -47,6 +51,11 @@ public class DeviceDetails extends AbstractDetailsController {
 
 	@Override
 	protected void onSetDeviceDetails() throws Exception {
+		Property<Boolean> decProp = Configuration.getDefault().decoratedProperty();
+		decoratedTools.visibleProperty().set(decProp.getValue());
+		Configuration.getDefault().decoratedProperty()
+				.addListener((e) -> decoratedTools.visibleProperty().set(decProp.getValue()));
+
 		String imageUrl = getDevice().getImageUrl(BrandingImage.PERSPECTIVE);
 		Background bg = new Background(
 				new BackgroundImage(new Image(imageUrl, true), BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT,
@@ -111,6 +120,16 @@ public class DeviceDetails extends AbstractDetailsController {
 		for (Controller c : controllers)
 			c.cleanUp();
 		controllers.clear();
+	}
+
+	@FXML
+	void evtAbout(ActionEvent evt) {
+		context.push(About.class, Direction.FADE_IN);
+	}
+
+	@FXML
+	void evtOptions(ActionEvent evt) {
+		context.push(Options.class, Direction.FROM_BOTTOM);
 	}
 
 	@FXML

@@ -1,11 +1,8 @@
 package uk.co.bithatch.snake.ui;
 
-import javafx.scene.Parent;
 import javafx.scene.text.Font;
 
 public class AwesomeIcons {
-
-	private static final String STYLE_SHEET = "icons_green.css";
 
 	public static Font font;
 
@@ -15,10 +12,6 @@ public class AwesomeIcons {
 						.toExternalForm(), 12);
 	}
 	
-	public static void install(Parent root) {
-        root.getStylesheets().add(AwesomeIcons.class.getResource(STYLE_SHEET).toExternalForm());
-	}
-
 	private AwesomeIcons() {
 		/* not needed */
 	}

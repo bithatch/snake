@@ -29,9 +29,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Background;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import uk.co.bithatch.snake.lib.Backend;
@@ -51,14 +49,6 @@ public class App extends Application {
 	private ScheduledExecutorService scheduler;
 	private List<Backend> backends = new ArrayList<>();
 
-	public static void applyStyles(Parent root) {
-		ObservableList<String> ss = root.getStylesheets();
-		File tmpFile = getCustomCSSFile();
-		String url = toUri(tmpFile).toExternalForm();
-		ss.remove(url);
-		ss.add(url);
-	}
-
 	public static void boot(Stage stage) throws Exception {
 		App app = new App();
 		app.start(stage);
@@ -75,7 +65,7 @@ public class App extends Application {
 
 		// Get the base colour. All other colours are derived from this
 		Configuration cfg = Configuration.getDefault();
-		Color backgroundColour = cfg.colorProperty().getValue();
+		Color backgroundColour = new Color(0, 0, 0, 1.0 - ((double) cfg.transparencyProperty().get() / 100.0));
 
 		if (backgroundColour.getOpacity() == 0) {
 			// Prevent total opacity, as mouse events won't be received
@@ -88,139 +78,7 @@ public class App extends Application {
 		bui.append("-fx-background: ");
 		bui.append(UIHelpers.toHex(backgroundColour, true));
 		bui.append(";\n");
-
-		// Others
-		Color baseColour;
-		Color highlightColour;
-		Color foregroundColour1;
-		Color foregroundColour2;
-		Color foregroundColour3;
-
-		// Base foreground colours around the brightness of the background
-		// colour
-		if (backgroundColour.getBrightness() < 0.5f) {
-			// Darker background
-			baseColour = backgroundColour.deriveColor(1, 1, 1.25, 1);
-
-			// Foregrounds
-			foregroundColour1 = Color.LIGHTGRAY;
-			foregroundColour2 = Color.WHITE;
-			foregroundColour3 = Color.DARKGRAY;
-
-		} else {
-			// Light background
-			baseColour = backgroundColour.deriveColor(1, 1, 0.75, 1);
-
-			// Foregrounds
-			foregroundColour1 = Color.DARKGRAY;
-			foregroundColour2 = Color.BLACK;
-			foregroundColour3 = Color.LIGHTGRAY;
-		}
-
-		// Highlight (TODO derive from hue)
-		if (backgroundColour.getSaturation() == 0) {
-			// Greyscale, so just use green
-			highlightColour = Color.web("05ff05");
-		} else {
-			// A colour, so choose the next adjacent colour in the HSB colour
-			// wheel (45 degrees)
-			// highlightColour = backgroundColour.deriveColor(1f - ( ( 1f / 360f
-			// ) * 45f), 1f, 1f, 1f);
-			highlightColour = backgroundColour.deriveColor(45f, 1f, 1f, 1f);
-		}
-
-		// Accent
-		bui.append("-fx-accent: ");
-		bui.append(UIHelpers.toHex(highlightColour, false));
-		bui.append(";\n");
-
-		// Base
-		bui.append("-fx-base: ");
-		bui.append(UIHelpers.toHex(baseColour, false));
-		bui.append(";\n");
-
-		// Inner background
-		bui.append("-fx-inner-background: ");
-		bui.append(UIHelpers.toHex(baseColour, false));
-		bui.append(";\n");
-
-		// Inner background
-		bui.append("-fx-default-background: ");
-		bui.append(UIHelpers.toHex(backgroundColour, false));
-		bui.append(";\n");
-
-		// Accent
-		bui.append("-fx-focus-color: ");
-		bui.append(UIHelpers.toHex(highlightColour, false));
-		bui.append(";\n");
-
-		// FG1
-		bui.append("-fx-dark-text-color: ");
-		bui.append(UIHelpers.toHex(foregroundColour1, false));
-		bui.append(";\n");
-
-		// FG2
-		bui.append("-fx-mid-text-color: ");
-		bui.append(UIHelpers.toHex(foregroundColour2, false));
-		bui.append(";\n");
-
-		// FG3
-		bui.append("-fx-light-text-color: ");
-		bui.append(UIHelpers.toHex(foregroundColour3, false));
-		bui.append(";\n");
-
-		// End
 		bui.append("}\n");
-
-		// Tooltips
-		bui.append(".tooltip {\n");
-		bui.append("-fx-text-fill: ");
-		bui.append(UIHelpers.toHex(foregroundColour2, false));
-		bui.append(";\n");
-		bui.append("-fx-background-color: ");
-		bui.append(UIHelpers.toHex(backgroundColour, false));
-		bui.append(";\n");
-//		bui.append("-fx-effect: dropshadow( three-pass-box , ");
-//
-//		bui.append(UIHelpers.toHex(foregroundColour1, false));
-//
-//		bui.append(" , 10, 0.0 , 0 , 3 );");
-
-		bui.append("-fx-effect: dropshadow(gaussian, rgba(0,0,0,.2), 10.0, 0.5, 2.0, 2.0);\n");
-
-		bui.append(";\n");
-
-		bui.append("}\n");
-
-		// Root pane
-		bui.append(".shadowed {\n");
-		int insets = DROP_SHADOW_SIZE;
-		bui.append("-fx-background-insets: 0 0 0 " + insets + ";\n");
-		bui.append("-fx-padding: 0 0 0 " + insets + ";\n");
-//		bui.append("-fx-effect: dropshadow( gaussian, ");
-
-//		bui.append(UIHelpers.toHex(foregroundColour1, backgroundColour.getOpacity() / 2f));
-
-		bui.append("-fx-effect: dropshadow(gaussian, "
-				+ UIHelpers.toHex(foregroundColour1, backgroundColour.getOpacity() / 2f) + ", " + DROP_SHADOW_SIZE
-				+ ", 0.5, 2.0, 2.0);\n");
-//		bui.append(" , 22, 0.0 , 0 , " + insets + " );");
-
-		bui.append(";\n");
-		bui.append("}\n");
-
-		// Popovers
-		bui.append(".popover > .border {\n");
-		bui.append("-fx-fill: ");
-		bui.append(UIHelpers.toHex(backgroundColour, false));
-		bui.append(";\n");
-		bui.append("}\n");
-		bui.append(".popover > .content {\n");
-		bui.append("-fx-background-color: ");
-		bui.append(UIHelpers.toHex(backgroundColour, false));
-		bui.append(";\n");
-		bui.append("}\n");
-
 		return bui.toString();
 
 	}
@@ -230,9 +88,10 @@ public class App extends Application {
 		launch(args);
 	}
 
-	public static void setColors(Scene scene) {
+	public static void setColors(Class<? extends Controller> controller, Scene scene) {
 		scene.setFill(new Color(0, 0, 0, 0));
-		applyStyles(scene.getRoot());
+		addStylesheets(controller, Configuration.getDefault().themeProperty().getValue(), scene.getRoot());
+
 	}
 
 	public static void writeCSS() {
@@ -286,9 +145,7 @@ public class App extends Application {
 			Platform.runLater(() -> close(shutdown));
 		else {
 			if (shutdown) {
-				for (Controller c : controllers)
-					c.cleanUp();
-				controllers.clear();
+				clearControllers();
 				if (LOG.isLoggable(Level.DEBUG))
 					LOG.log(Level.DEBUG, "Shutting down app.");
 				scheduler.shutdown();
@@ -348,22 +205,38 @@ public class App extends Application {
 				.getResource(controller.getSimpleName() + (fxmlSuffix == null ? "" : fxmlSuffix) + ".fxml");
 		FXMLLoader loader = new FXMLLoader();
 		loader.setResources(ResourceBundle.getBundle(controller.getName()));
-		loader.setLocation(resource);
+		Theme theme = Configuration.getDefault().themeProperty().getValue();
+		// loader.setLocation(resource);
+		loader.setLocation(theme.getResource("App.css"));
 		Parent root = loader.load(resource.openStream());
 		Controller controllerInst = (Controller) loader.getController();
 		if (controllerInst == null) {
 			throw new IOException("Controller not found. Check controller in FXML");
 		}
-		root.getStylesheets().add(controller.getResource(App.class.getSimpleName() + ".css").toExternalForm());
-		URL controllerCssUrl = controller.getResource(controller.getSimpleName() + ".css");
-		if (controllerCssUrl != null)
-			root.getStylesheets().add(controllerCssUrl.toExternalForm());
+		addStylesheets(controller, theme, root);
 
-		AwesomeIcons.install(root);
 		Scene scene = new Scene(root);
 		controllerInst.configure(scene, this);
 		scene.getRoot().getStyleClass().add("rootPane");
 		return (C) controllerInst;
+	}
+
+	public static <C extends Controller> void addStylesheets(Class<C> controller, Theme theme, Parent root) {
+		ObservableList<String> ss = root.getStylesheets();
+		if (theme.getParent() != null && theme.getParent().length() > 0) {
+			Theme parentTheme = Theme.getTheme(theme.getParent());
+			if (parentTheme == null)
+				throw new IllegalStateException(String.format("Parent theme %s does not exist for theme %s.", theme.getParent(), theme.getId()));
+			ss.add(parentTheme.getResource(App.class.getSimpleName() + ".css").toExternalForm());
+		}
+		ss.add(theme.getResource(App.class.getSimpleName() + ".css").toExternalForm());
+		URL controllerCssUrl = controller.getResource(controller.getSimpleName() + ".css");
+		if (controllerCssUrl != null)
+			ss.add(controllerCssUrl.toExternalForm());
+		File tmpFile = getCustomCSSFile();
+		String url = toUri(tmpFile).toExternalForm();
+		ss.remove(url);
+		ss.add(url);
 	}
 
 	public void pop() {
@@ -385,7 +258,7 @@ public class App extends Application {
 				}
 				if (primaryScene instanceof BorderlessScene) {
 					/* TODO: Not totally sure why ... */
-					setColors(primaryScene);
+					setColors(c.getClass(), primaryScene);
 				}
 				return (C) c;
 			}
@@ -402,7 +275,7 @@ public class App extends Application {
 			controllers.push(fc);
 			if (primaryScene instanceof BorderlessScene) {
 				/* TODO: Not totally sure why ... */
-				setColors(primaryScene);
+				setColors(controller, primaryScene);
 			}
 			return fc;
 		} catch (Exception e) {
@@ -435,12 +308,12 @@ public class App extends Application {
 
 		scheduler = Executors.newScheduledThreadPool(1);
 
-		Font.loadFont(App.class.getResource("RazerSymbols.ttf").toExternalForm(), 12);
 		setUserAgentStylesheet(STYLESHEET_MODENA);
 		writeCSS();
 
 		Configuration cfg = Configuration.getDefault();
 		Platform.setImplicitExit(cfg.trayIconProperty().getValue() == TrayIcon.OFF);
+		cfg.themeProperty().addListener((e) -> recreateScene());
 		cfg.trayIconProperty()
 				.addListener((e) -> Platform.setImplicitExit(cfg.trayIconProperty().getValue() == TrayIcon.OFF));
 
@@ -465,9 +338,9 @@ public class App extends Application {
 		configureStage(primaryStage);
 
 		/* Listen for configuration changes and update UI accordingly */
-		cfg.colorProperty().addListener((o, oldVal, newVal) -> {
+		cfg.transparencyProperty().addListener((o, oldVal, newVal) -> {
 			writeCSS();
-			setColors(primaryScene);
+			setColors(peek().getClass(), primaryScene);
 		});
 		cfg.decoratedProperty().addListener((o, oldVal, newVal) -> {
 			recreateScene();
@@ -485,6 +358,12 @@ public class App extends Application {
 			PlatformService.get().setStartOnLogin(true);
 			PREFS.putBoolean("installed", true);
 		}
+	}
+
+	private void clearControllers() {
+		for (Controller c : controllers)
+			c.cleanUp();
+		controllers.clear();
 	}
 
 	private void configureStage(Stage primaryStage) {
@@ -563,7 +442,7 @@ public class App extends Application {
 			} else
 				primaryStage.initStyle(StageStyle.DECORATED);
 			primaryScene = new Scene(anchorPane);
-			setColors(primaryScene);
+			setColors(peek().getClass(), primaryScene);
 			primaryStage.setScene(primaryScene);
 			window = null;
 		} else {
@@ -586,13 +465,14 @@ public class App extends Application {
 			((BorderlessScene) primaryScene).setMoveControl(window.getBar());
 			((BorderlessScene) primaryScene).setSnapEnabled(false);
 			((BorderlessScene) primaryScene).removeDefaultCSS();
-			setColors(primaryScene);
+			setColors(peek().getClass(), primaryScene);
 			primaryStage.setScene(primaryScene);
 		}
 	}
 
 	private void recreateScene() {
 		try {
+			clearControllers();
 			primaryStage.close();
 			primaryStage = null;
 			createMainScene();

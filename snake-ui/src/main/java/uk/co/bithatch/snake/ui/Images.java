@@ -9,16 +9,18 @@ import uk.co.bithatch.snake.lib.effects.Effect;
 public class Images {
 
 	public static URL getEffectImage(int size, Class<? extends Effect> effect) {
-		return checkResource(effect.getName(),
-				App.class.getResource("effects/" + effect.getSimpleName().toLowerCase() + size + ".png"));
+		return checkResource(effect.getName(), Configuration.getDefault().themeProperty().getValue()
+				.getResource("effects/" + effect.getSimpleName().toLowerCase() + size + ".png"));
 	}
 
 	public static URL getDeviceImage(int size, DeviceType type) {
-		return checkResource(type, App.class.getResource("devices/" + type.name().toLowerCase() + size + ".png"));
+		return checkResource(type, Configuration.getDefault().themeProperty().getValue()
+				.getResource("devices/" + type.name().toLowerCase() + size + ".png"));
 	}
 
 	public static URL getRegionImage(int size, Name region) {
-		return checkResource(region, App.class.getResource("regions/" + region.name().toLowerCase() + size + ".png"));
+		return checkResource(region, Configuration.getDefault().themeProperty().getValue()
+				.getResource("regions/" + region.name().toLowerCase() + size + ".png"));
 	}
 
 	static URL checkResource(Object ctx, URL url) {

@@ -46,12 +46,7 @@
 				<dependency>
 					<groupId>${project.groupId}</groupId>
 					<version>${project.version}</version>
-					<artifactId>snake-ui-linux</artifactId>
-				</dependency>
-				<dependency>
-					<groupId>${project.groupId}</groupId>
-					<version>${project.version}</version>
-					<artifactId>snake-backend-openrazer</artifactId>
+					<artifactId>snake-app-linux</artifactId>
 				</dependency>
 			</dependencies>
 			<build>
@@ -71,7 +66,7 @@
 									<repositoryDirectory>${project.build.directory}/repository</repositoryDirectory>
 									<launcherScriptName>snake</launcherScriptName>
 									<remoteBase>${snakeRemote}</remoteBase>
-									<mainClass>uk.co.bithatch.snake.ui/uk.co.bithatch.snake.ui.App</mainClass>
+									<mainClass>uk.co.bithatch.snake.app.linux/uk.co.bithatch.snake.app.linux.App</mainClass>
 									<remotesFromOriginalSource>false</remotesFromOriginalSource>
 									<image>true</image>
 									<vmArgs>
@@ -84,6 +79,8 @@
 										<forkerArg>restart-on 90</forkerArg>
 										<forkerArg>single-instance</forkerArg>
 										<forkerArg>install-location ${installer.home}/snake-razer</forkerArg>
+										<forkerArg>jvmarg --add-modules</forkerArg>
+										<forkerArg>jvmarg themes.awhitelight,themes.agreenfuture,themes.aredsky,themes.abluelife,themes.ayellowdwarf,themes.anorangetwist,themes.apinkburst,themes.apurplehaze</forkerArg>
 									</forkerArgs>
 									<bootstrapFiles>
 										<bootstrapFile>
@@ -140,7 +137,6 @@
 										<classpathJar>asm</classpathJar>
 									</classpathJars>
 									<automaticModules>
-										<automaticModule>FX-BorderlessScene</automaticModule>
 										<automaticModule>dbus-java</automaticModule>
 										<automaticModule>java-utils</automaticModule>
 										<automaticModule>jnr-ffi</automaticModule>
@@ -165,7 +161,7 @@
 									<repositoryDirectory>${project.build.directory}/repository-noruntime</repositoryDirectory>
 									<launcherScriptName>snake</launcherScriptName>
 									<remoteBase>${snakeRemoteNoRuntime}</remoteBase>
-									<mainClass>uk.co.bithatch.snake.ui/uk.co.bithatch.snake.ui.App</mainClass>
+									<mainClass>uk.co.bithatch.snake.app.linux/uk.co.bithatch.snake.app.linux.App</mainClass>
 									<remotesFromOriginalSource>false</remotesFromOriginalSource>
 									<imageDirectory>${project.build.directory}/image-noruntime</imageDirectory>
 									<image>true</image>
@@ -180,6 +176,8 @@
 										<forkerArg>restart-on 90</forkerArg>
 										<forkerArg>single-instance</forkerArg>
 										<forkerArg>install-location ${installer.home}/snake-razer</forkerArg>
+										<forkerArg>jvmarg --add-modules</forkerArg>
+										<forkerArg>jvmarg themes.awhitelight,themes.agreenfuture,themes.aredsky,themes.abluelife,themes.ayellowdwarf,themes.anorangetwist,themes.apinkburst,themes.apurplehaze</forkerArg>
 									</forkerArgs>
 									<bootstrapFiles>
 										<bootstrapFile>
@@ -236,7 +234,6 @@
 										<classpathJar>asm</classpathJar>
 									</classpathJars>
 									<automaticModules>
-										<automaticModule>FX-BorderlessScene</automaticModule>
 										<automaticModule>dbus-java</automaticModule>
 										<automaticModule>java-utils</automaticModule>
 										<automaticModule>jnr-ffi</automaticModule>

@@ -58,6 +58,7 @@ public class Tray implements AutoCloseable, BackendListener, Listener {
 		font = Font.createFont(Font.TRUETYPE_FONT, Tray.class.getResourceAsStream("fontawesome-webfont.ttf"));
 
 		cfg = Configuration.getDefault();
+		cfg.themeProperty().addListener((e) -> SwingUtilities.invokeLater(() -> adjustTray()));
 		cfg.trayIconProperty().addListener((e) -> SwingUtilities.invokeLater(() -> adjustTray()));
 		cfg.showBatteryProperty().addListener((e) -> SwingUtilities.invokeLater(() -> adjustTray()));
 		cfg.whenLowProperty().addListener((e) -> SwingUtilities.invokeLater(() -> adjustTray()));
@@ -78,7 +79,7 @@ public class Tray implements AutoCloseable, BackendListener, Listener {
 		}
 	}
 
-	void addDevice(Device device) throws IOException {
+	Menu addDevice(Device device, Menu toMenu) throws IOException {
 		var img = device.getImage();
 		if (img.startsWith("http:") || img.startsWith("https:")) {
 			var url = new URL(img);
@@ -98,7 +99,7 @@ public class Tray implements AutoCloseable, BackendListener, Listener {
 		} else if (img.startsWith("file:")) {
 			img = img.substring(5);
 		}
-		var menu = new Menu(device.getName(), img);
+		var menu = toMenu == null ? new Menu(device.getName(), img) : toMenu;
 		var openDev = new MenuItem(bundle.getString("open"), (e) -> Platform.runLater(() -> {
 			context.open();
 			context.push(DeviceDetails.class, Direction.FROM_RIGHT).setDevice(device);
@@ -130,7 +131,7 @@ public class Tray implements AutoCloseable, BackendListener, Listener {
 		}
 		menu.add(new JSeparator());
 		if (!device.getSupportedEffects().isEmpty()) {
-			addEffectsMenu(device, menu, device);
+			addEffectsMenu(device, menu, device, toMenu != null);
 			menu.add(new JSeparator());
 		}
 		boolean sep;
@@ -138,6 +139,8 @@ public class Tray implements AutoCloseable, BackendListener, Listener {
 			var mi = new Menu(bundle.getString("region." + r.getName().name()));
 			mi.setImage(Images.getRegionImage(24, r.getName()));
 			menu.add(mi);
+			if (toMenu != null)
+				menuEntries.add(mi);
 			sep = false;
 			if (r.getCapabilities().contains(Capability.BRIGHTNESS_PER_REGION)) {
 				brightnessMenu(mi, r);
@@ -147,14 +150,13 @@ public class Tray implements AutoCloseable, BackendListener, Listener {
 				if (sep) {
 					mi.add(new JSeparator());
 				}
-				addEffectsMenu(r, mi, device);
+				addEffectsMenu(r, mi, device, toMenu != null);
 			}
 		}
-		systemTray.getMenu().add(menu);
-		menuEntries.add(menu);
+		return menu;
 	}
 
-	void addEffectsMenu(Lit lit, Menu menu, Device device) {
+	void addEffectsMenu(Lit lit, Menu menu, Device device, boolean addToRoot) {
 		Class<? extends Effect> configurable = null;
 		for (Class<? extends Effect> fx : lit.getSupportedEffects()) {
 			var mi = new MenuItem(fx.getSimpleName(), (e) -> {
@@ -162,9 +164,12 @@ public class Tray implements AutoCloseable, BackendListener, Listener {
 			});
 			mi.setImage(Images.getEffectImage(24, fx));
 			menu.add(mi);
-			if (lit.getEffect() != null && fx.equals(lit.getEffect().getClass()) && AbstractEffectController.hasController(fx)) {
+			if (lit.getEffect() != null && fx.equals(lit.getEffect().getClass())
+					&& AbstractEffectController.hasController(fx)) {
 				configurable = fx;
 			}
+			if (addToRoot)
+				menuEntries.add(mi);
 		}
 		Class<? extends Effect> fConfigurable = configurable;
 		if (configurable != null) {
@@ -178,6 +183,8 @@ public class Tray implements AutoCloseable, BackendListener, Listener {
 						});
 					});
 			menu.add(mi);
+			if (addToRoot)
+				menuEntries.add(mi);
 		}
 	}
 
@@ -260,28 +267,36 @@ public class Tray implements AutoCloseable, BackendListener, Listener {
 		var menu = systemTray.getMenu();
 		try {
 
-			var mi = new MenuItem(bundle.getString("open"), (e) -> context.open());
-			menuEntries.add(mi);
-			menu.add(mi);
-			addSeparator(menu);
-
+			boolean devices = false;
+			List<Device> devs = context.getBackend().getDevices();
 			var backend = context.getBackend();
 			var globals = false;
-			if (backend.getCapabilities().contains(Capability.BRIGHTNESS)) {
-				brightnessMenu(menu, backend);
-				globals = true;
-			}
-			if (backend.getCapabilities().contains(Capability.GAME_MODE)) {
-				gameMode(menu, backend);
-				globals = true;
-			}
-			if (globals)
+
+			if (devs.size() == 1) {
+				addDevice(devs.get(0), menu);
+				devices = true;
+			} else {
+				var mi = new MenuItem(bundle.getString("open"), (e) -> context.open());
+				menuEntries.add(mi);
+				menu.add(mi);
 				addSeparator(menu);
 
-			boolean devices = false;
-			for (Device dev : context.getBackend().getDevices()) {
-				addDevice(dev);
-				devices = true;
+				if (backend.getCapabilities().contains(Capability.BRIGHTNESS)) {
+					brightnessMenu(menu, backend);
+					globals = true;
+				}
+				if (backend.getCapabilities().contains(Capability.GAME_MODE)) {
+					gameMode(menu, backend);
+					globals = true;
+				}
+				if (globals)
+					addSeparator(menu);
+				for (Device dev : devs) {
+					var devmenu = addDevice(dev, null);
+					systemTray.getMenu().add(devmenu);
+					menuEntries.add(devmenu);
+					devices = true;
+				}
 			}
 			if (devices)
 				addSeparator(menu);
@@ -364,7 +379,7 @@ public class Tray implements AutoCloseable, BackendListener, Listener {
 				device.setPollRate(pollRate);
 			}));
 		}
-		menuEntries.add(menu);
+		menuEntries.add(pollRateMenu);
 	}
 
 	private void setImage() {

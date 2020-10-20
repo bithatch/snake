@@ -55,4 +55,9 @@ public class UIHelpers {
 		return String.format("#%02x%02x%02x", rgb[0], rgb[1], rgb[2]);
 	}
 
+	public static String toCssRGBA(Color color) {
+		return String.format("rgba(%f,%f,%f,%f)", color.getRed(), color.getGreen(), color.getBlue(),
+				color.getOpacity());
+	}
+
 }
