@@ -15,10 +15,10 @@ Snake is application to control and configure your Razer devices on Linux. Makin
  * Set and configure Razer effects such as Breath, Wave, Static and more.
  * Control over individual LEDs using the Matrix feature.  *(incomplete)*
  * Battery status.
- * Integrated System Tray icon (or indicator).  *(incomplete)*
+ * Integrated System Tray icon (or indicator)
  * Global brightness controls the brightness of all devices at once.
- * Macro support. *(incomplete)*
- * Themes *(coming soon)*
+ * Macro support. *(incomplete, awaiting Driver changes)*
+ * Themes
  
 ## Install
 
@@ -35,14 +35,14 @@ The self extracting installer is the easiest to use. You will be asked for a loc
 #### From The Command Line
 
 ```
-wget -O snake-amd64-installer.sh \
- http://www.bithatch.co.uk/downloads/snake/snapshot/snake-amd64-installer.sh && \
- sh snake-amd64-installer.sh
+wget -O snake-installer-amd64.sh \
+ http://www.bithatch.co.uk/downloads/snake/snapshot/snake-installer-amd64.sh && \
+ sh snake-installer-amd64.sh
 ```
 
 #### From Your Desktop
 
- *  Download [snake-amd64-installer.sh](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-amd64-installer.sh).
+ *  Download [snake-amd64-installer.sh](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-installer-amd64.sh).
  *  Add Execute permission to the downloaded *snake-installer.sh* in your file manager.
  *  Use the Open action in your file manager to start the installer.
 
@@ -139,7 +139,7 @@ mvn javafx:run
 Or you can install what you have built.
 
 ```
-snake-dist/target/snake-amd64-installer.sh
+snake-dist/target/snake-installer-amd64.sh
 ```
 
 ## Options
@@ -154,7 +154,9 @@ To access options, click the cog icon, ** Options**.
 
 Various options for configuration how Snake looks.
 
-**Colour** - Allows the background colour to be set. Note, this option will be removed in the future and replaced with themes.
+**Theme** - Allows the look of Snake to be changed. A selection of themes that are colour variations of the default are provided, with more to come. Creating your own will be documented soon, but the adventurous can try by copying any existing theme module and adjusting the contents accordingly.
+
+![Themes](images/themes.png  "Themes")
 
 **Use Window Manager Decorations** - By default, Snake uses "Client Side Decorations", and draws it's own window title bar and window management buttons (close, min, max). Turn this option off to use window manager decorations instead. In this mode, Options and About are both insteads accessed from icons at the bottom right of the overview screen.
 
@@ -241,7 +243,7 @@ A value of 1000 to 2000 is probably comfortable for daily usage.
  
 ### Effects
  
- Many devices are capable of multiple effects. Some of those effects have their own configuration, and often it is possible to configure different effects for each region.
+Many devices are capable of multiple effects. Some of those effects have their own configuration, and often it is possible to configure different effects for each region.
  
 #### None
  
@@ -278,6 +280,22 @@ The region or device will gently pulsate different colours.
 Configuration allows changing of the colours and a special random mode.
 
  ![Breath](images/breath.png  "Breath")
+
+#### Ripple
+
+The region or device will light a ripple effect moving outwards from the centre of the device, with either a random colour or a fixed single colour.
+
+ ![Ripple](images/ripple.png  "Ripple")
+
+#### Pulsate
+
+The region or device will gently pulsate a single fixed colour.
+
+#### Starlight
+
+The region or device will twinkle lights on and off using  either a random colour or a fixed single colour to mimick a night sky.
+
+ ![Starlight](images/starlight.png  "Starlight")
  
 #### Matrix
 

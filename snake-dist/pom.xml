@@ -263,7 +263,7 @@
 								<configuration>
 									<label>${project.name}</label>
 									<archiveDir>image</archiveDir>
-									<fileName>snake-amd64-installer.sh</fileName>
+									<fileName>snake-installer-amd64.sh</fileName>
 									<startupScript>bin/snake</startupScript>
 								</configuration>
 							</execution>
