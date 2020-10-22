@@ -4,6 +4,9 @@
 @font-face {
     src: url('Roboto-Light.ttf');
 }
+@font-face {
+    src: url('/uk/co/bithatch/snake/ui/fontawesome-webfont.ttf');
+}
 
 * {
 	-fx-background: #000000ad;
