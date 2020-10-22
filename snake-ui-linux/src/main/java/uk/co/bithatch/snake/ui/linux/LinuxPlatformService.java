@@ -132,7 +132,12 @@ public class LinuxPlatformService implements PlatformService {
 	public boolean isBetas() {
 		try {
 			Path path = checkDir(getAppCfg()).resolve("updates");
-			return Files.exists(path) && contains(path, "remote-manifest " + BETA_CHANNEL);
+			if(Files.exists(path))
+				return contains(path, "remote-manifest " + BETA_CHANNEL);
+			else {
+				path = checkDir(getAppCfg().getParent()).resolve("app.cfg");
+				return contains(path, "default-remote-manifest " + BETA_CHANNEL);
+			}
 		} catch (IOException ioe) {
 			return false;
 		}
