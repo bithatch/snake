@@ -31,6 +31,7 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import uk.co.bithatch.snake.lib.Backend;
@@ -38,6 +39,13 @@ import uk.co.bithatch.snake.ui.Configuration.TrayIcon;
 import uk.co.bithatch.snake.ui.SlideyStack.Direction;
 
 public class App extends Application {
+	
+	static {
+		/* Need to load once so themes can see. TODO move this to theme system */
+		Font.loadFont(
+				AwesomeIcons.class.getResource("fontawesome-webfont.ttf")
+						.toExternalForm(), 12);
+	}
 	public static int DROP_SHADOW_SIZE = 11;
 
 	public final static Preferences PREFS = Preferences.userNodeForPackage(App.class);

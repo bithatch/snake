@@ -100,6 +100,7 @@ public class Bootstrap extends Application {
 			AnchorPane.setRightAnchor(stack, 0d);
 			BorderlessScene primaryScene = new BorderlessScene(primaryStage, StageStyle.TRANSPARENT, anchor, 460, 200);
 			((BorderlessScene) primaryScene).setMoveControl(node);
+			((BorderlessScene) primaryScene).setSnapEnabled(false);
 			primaryStage.setScene(primaryScene);
 			primaryStage.setResizable(false);
 			primaryStage.getIcons().addAll(images);
