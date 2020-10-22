@@ -1,8 +1,4 @@
-# WARNING 
-
-**No packages are available for download, not will the update system work until the new domain bithatch.co.uk is fully live.**
-
-#Snake
+# Snake
 
 ![Snake Overview](images/overview.png  "Overview")
 
@@ -36,13 +32,13 @@ The self extracting installer is the easiest to use. You will be asked for a loc
 
 ```
 wget -O snake-installer-amd64.sh \
- http://www.bithatch.co.uk/downloads/snake/snapshot/snake-installer-amd64.sh && \
+ https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT/snake-installer-amd64.sh && \
  sh snake-installer-amd64.sh
 ```
 
 #### From Your Desktop
 
- *  Download [snake-amd64-installer.sh](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-installer-amd64.sh).
+ *  Download [snake-amd64-installer.sh](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT/snake-installer-amd64.sh).
  *  Add Execute permission to the downloaded *snake-installer.sh* in your file manager.
  *  Use the Open action in your file manager to start the installer.
 
@@ -54,7 +50,7 @@ Another option is to download the archived version of the app, extract it to whe
 
 ```
 wget -O snake-amd64.tar.gz \
- http://www.bithatch.co.uk/downloads/snake/snapshot/snake-amd64-tar.gz
+ https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT/snake-amd64.tar.gz
 tar xzf snake-amd64-tar.gz
 cd snake
 bin/snake &
@@ -62,15 +58,15 @@ bin/snake &
 
 #### From Your Desktop
 
- *  Download [snake-amd64.tar.gz](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-amd64-tar.gz) and extract it to an empty folder on your computer.
+ *  Download [snake-amd64.tar.gz](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT/snake-amd64.tar.gz)
  *  Use the Open action in your file manager to locate and start `bin/snake` in the extracted folder.
  
 ### No-Runtime Packages
 
 The above packages all include a stripped down amd64 Java runtime so you do not need to install your own. If you  have another architecture such as X86 or Arm, or just want a smaller download, you can use your own runtime. It just needs to be at least [Java 15](https://adoptopenjdk.net/). 
 
- * [Installer](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-noruntime-installer.sh)
- * [Tar Archive](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-noruntime.tar.gz)
+ * [Installer](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT/snake-installer-noruntime.sh)
+ * [Tar Archive](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT/snake-noruntime.tar.gz)
  
 All these packages include the `bin/snake` launcher script. You may need to edit this if you want to use a runtime other than the system default.
  
@@ -78,10 +74,10 @@ All these packages include the `bin/snake` launcher script. You may need to edit
 
 There are many packaging formats for Linux, so I will only be providing a few common ones. 
 
- * [amd64 DEB package](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-amd64.deb)
- * [amd64 RPM package](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-amd64.rpm)
- * [Generic No Runtime DEB package](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-noruntime.deb)
- * [Generic No Runtime RPM package](http://www.bithatch.co.uk/downloads/snake/snapshot/snake-noruntime.noarch.rpm)
+ * [amd64 DEB package](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT/snake-amd64.deb)
+ * [amd64 RPM package](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT/snake-amd64.rpm)
+ * [Generic No Runtime DEB package](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT/snake-noruntime.deb)
+ * [Generic No Runtime RPM package](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT/snake-noruntime.noarch.rpm)
  
 Install according to your distributions instructions. Usually it should just be a case of clicking on the downloaded file. 
 
@@ -118,7 +114,7 @@ Further dependencies may be needed for building deployable packages.
 ### Build
 
 ```
-git clone https://github.com/brett-smith/snake.git
+git clone https://github.com/bithatch/snake.git
 cd snake
 mvn clean install
 ```

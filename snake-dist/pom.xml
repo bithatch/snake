@@ -737,7 +737,8 @@
 								</goals>
 								<configuration>
 									<target>
-										<mkdir dir="${snakeInstallers}" />
+										
+										<!-- <mkdir dir="${snakeInstallers}" />
 										<copy todir="${snakeInstallers}">
 											<fileset dir="${project.build.directory}">
 												<include name="*.sh" />
@@ -760,6 +761,47 @@
 											<globmapper from="snake-*.noarch.rpm"
 												to="snake-noruntime.noarch.rpm" />
 										</copy>
+										<tar destfile="${snakeInstallers}/snake-amd64.tar.gz"
+											compression="gzip">
+											<tarfileset dir="${project.build.directory}/image"
+												prefix="snake" />
+										</tar>
+										<tar destfile="${snakeInstallers}/snake-noruntime.tar.gz"
+											compression="gzip">
+											<tarfileset
+												dir="${project.build.directory}/image-noruntime"
+												prefix="snake" />
+										</tar>
+										 -->
+										 
+										<copy todir="${project.build.directory}">
+											<fileset
+												dir="${project.build.directory}/rpm/snake/RPMS/amd64">
+												<include name="*.rpm" />
+											</fileset>
+											<globmapper from="snake-*.amd64.rpm"
+												to="snake-amd64.rpm" />
+										</copy>
+										<copy todir="${project.build.directory}">
+											<fileset
+												dir="${project.build.directory}/rpm/snake-noruntime/RPMS/noarch">
+												<include name="*.rpm" />
+											</fileset>
+											<globmapper from="snake-*.noarch.rpm"
+												to="snake-noruntime.noarch.rpm" />
+										</copy>
+										<tar destfile="${project.build.directory}/snake-amd64.tar.gz"
+											compression="gzip">
+											<tarfileset dir="${project.build.directory}/image"
+												prefix="snake" />
+										</tar>
+										<tar destfile="${project.build.directory}/snake-noruntime.tar.gz"
+											compression="gzip">
+											<tarfileset
+												dir="${project.build.directory}/image-noruntime"
+												prefix="snake" />
+										</tar>
+										
 										<mkdir dir="${snakeLocal}" />
 										<copy todir="${snakeLocal}">
 											<fileset dir="${project.build.directory}/repository">
@@ -773,17 +815,7 @@
 												<include name="**/*" />
 											</fileset>
 										</copy>
-										<tar destfile="${snakeInstallers}/snake-amd64.tar.gz"
-											compression="gzip">
-											<tarfileset dir="${project.build.directory}/image"
-												prefix="snake" />
-										</tar>
-										<tar destfile="${snakeInstallers}/snake-noruntime.tar.gz"
-											compression="gzip">
-											<tarfileset
-												dir="${project.build.directory}/image-noruntime"
-												prefix="snake" />
-										</tar>
+										
 									</target>
 								</configuration>
 							</execution>
