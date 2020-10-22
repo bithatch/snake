@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.Confirm">
+   <center>
+      <VBox alignment="CENTER" fillWidth="false" BorderPane.alignment="CENTER">
+         <children>
+            <Label fx:id="title" styleClass="title" text="Title" />
+            <Label fx:id="description" text="Description" />
+            <VBox alignment="CENTER">
+               <children>
+                  <HBox>
+                     <children>
+                        <Hyperlink fx:id="yes" onAction="#evtYes" text="Yes" />
+                        <Hyperlink fx:id="no" onAction="#evtNo" text="No" />
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+   </center>
+</BorderPane>

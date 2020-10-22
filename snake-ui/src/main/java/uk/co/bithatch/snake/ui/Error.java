@@ -28,9 +28,9 @@ public class Error extends AbstractDeviceController {
 
 	@Override
 	protected void onConfigure() throws Exception {
-		Property<Boolean> decProp = Configuration.getDefault().decoratedProperty();
+		Property<Boolean> decProp = context.getConfiguration().decoratedProperty();
 		decoratedTools.visibleProperty().set(decProp.getValue());
-		Configuration.getDefault().decoratedProperty()
+		context.getConfiguration().decoratedProperty()
 				.addListener((e) -> decoratedTools.visibleProperty().set(decProp.getValue()));
 	}
 

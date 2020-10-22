@@ -10,6 +10,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.ServiceLoader;
 import java.util.Stack;
@@ -46,8 +47,6 @@ public class App extends Application {
 	final static System.Logger LOG = System.getLogger(App.class.getName());
 
 	private static List<String> argsList;
-	private ScheduledExecutorService scheduler;
-	private List<Backend> backends = new ArrayList<>();
 
 	public static void boot(Stage stage) throws Exception {
 		App app = new App();
@@ -60,12 +59,11 @@ public class App extends Application {
 		return tmpFile;
 	}
 
-	public static String getCustomCSSResource() {
+	public static String getCustomCSSResource(Configuration configuration) {
 		StringBuilder bui = new StringBuilder();
 
 		// Get the base colour. All other colours are derived from this
-		Configuration cfg = Configuration.getDefault();
-		Color backgroundColour = new Color(0, 0, 0, 1.0 - ((double) cfg.transparencyProperty().get() / 100.0));
+		Color backgroundColour = new Color(0, 0, 0, 1.0 - ((double) configuration.transparencyProperty().get() / 100.0));
 
 		if (backgroundColour.getOpacity() == 0) {
 			// Prevent total opacity, as mouse events won't be received
@@ -88,13 +86,12 @@ public class App extends Application {
 		launch(args);
 	}
 
-	public static void setColors(Class<? extends Controller> controller, Scene scene) {
+	void setColors(Class<? extends Controller> controller, Scene scene) {
 		scene.setFill(new Color(0, 0, 0, 0));
-		addStylesheets(controller, Configuration.getDefault().themeProperty().getValue(), scene.getRoot());
-
+		addStylesheets(controller, configuration.themeProperty().getValue(), scene.getRoot());
 	}
 
-	public static void writeCSS() {
+	static void writeCSS(Configuration configuration) {
 		try {
 			File tmpFile = getCustomCSSFile();
 			String url = toUri(tmpFile).toExternalForm();
@@ -102,7 +99,7 @@ public class App extends Application {
 				LOG.log(Level.DEBUG, String.format("Writing user style sheet to %s", url));
 			PrintWriter pw = new PrintWriter(new FileOutputStream(tmpFile));
 			try {
-				pw.println(getCustomCSSResource());
+				pw.println(getCustomCSSResource(configuration));
 			} finally {
 				pw.close();
 			}
@@ -128,6 +125,10 @@ public class App extends Application {
 	private Tray tray;
 	private boolean waitingForExitChoice;
 	private Window window;
+	private ScheduledExecutorService scheduler;
+	private List<Backend> backends = new ArrayList<>();
+	private AddOnManager addOnManager = new AddOnManager();
+	private Configuration configuration = new Configuration(PREFS, this);
 
 	private boolean backendInited;
 
@@ -135,9 +136,13 @@ public class App extends Application {
 		loadQueue.shutdownNow();
 		loadQueue = Executors.newSingleThreadExecutor();
 	}
+	
+	public Configuration getConfiguration() {
+		return configuration;
+	}
 
 	public void close() {
-		close(Configuration.getDefault().trayIconProperty().getValue() == TrayIcon.OFF);
+		close(configuration.trayIconProperty().getValue() == TrayIcon.OFF);
 	}
 
 	public void close(boolean shutdown) {
@@ -195,6 +200,10 @@ public class App extends Application {
 		}
 	}
 
+	public AddOnManager getAddOnManager() {
+		return addOnManager;
+	}
+
 	public <C extends Controller> C openScene(Class<C> controller) throws IOException {
 		return openScene(controller, null);
 	}
@@ -204,8 +213,13 @@ public class App extends Application {
 		URL resource = controller
 				.getResource(controller.getSimpleName() + (fxmlSuffix == null ? "" : fxmlSuffix) + ".fxml");
 		FXMLLoader loader = new FXMLLoader();
-		loader.setResources(ResourceBundle.getBundle(controller.getName()));
-		Theme theme = Configuration.getDefault().themeProperty().getValue();
+		try {
+			loader.setResources(ResourceBundle.getBundle(controller.getName()));
+		} catch (MissingResourceException mre) {
+			// Don't care
+		}
+
+		Theme theme = configuration.themeProperty().getValue();
 		// loader.setLocation(resource);
 		loader.setLocation(theme.getResource("App.css"));
 		Parent root = loader.load(resource.openStream());
@@ -221,12 +235,13 @@ public class App extends Application {
 		return (C) controllerInst;
 	}
 
-	public static <C extends Controller> void addStylesheets(Class<C> controller, Theme theme, Parent root) {
+	<C extends Controller> void addStylesheets(Class<C> controller, Theme theme, Parent root) {
 		ObservableList<String> ss = root.getStylesheets();
 		if (theme.getParent() != null && theme.getParent().length() > 0) {
-			Theme parentTheme = Theme.getTheme(theme.getParent());
+			Theme parentTheme = addOnManager.getTheme(theme.getParent());
 			if (parentTheme == null)
-				throw new IllegalStateException(String.format("Parent theme %s does not exist for theme %s.", theme.getParent(), theme.getId()));
+				throw new IllegalStateException(String.format("Parent theme %s does not exist for theme %s.",
+						theme.getParent(), theme.getId()));
 			ss.add(parentTheme.getResource(App.class.getSimpleName() + ".css").toExternalForm());
 		}
 		ss.add(theme.getResource(App.class.getSimpleName() + ".css").toExternalForm());
@@ -251,6 +266,11 @@ public class App extends Application {
 	public <C extends Controller> C push(Class<C> controller, Controller from, Direction direction) {
 		if (controllers.size() > 0) {
 			Controller c = controllers.peek();
+
+			if (c instanceof Modal) {
+				throw new IllegalStateException("Already modal.");
+			}
+
 			if (c.getClass().equals(controller)) {
 				/* Already on same type, on same device? */
 				if (c instanceof AbstractDeviceController && from instanceof AbstractDeviceController) {
@@ -309,13 +329,12 @@ public class App extends Application {
 		scheduler = Executors.newScheduledThreadPool(1);
 
 		setUserAgentStylesheet(STYLESHEET_MODENA);
-		writeCSS();
+		writeCSS(configuration);
 
-		Configuration cfg = Configuration.getDefault();
-		Platform.setImplicitExit(cfg.trayIconProperty().getValue() == TrayIcon.OFF);
-		cfg.themeProperty().addListener((e) -> recreateScene());
-		cfg.trayIconProperty()
-				.addListener((e) -> Platform.setImplicitExit(cfg.trayIconProperty().getValue() == TrayIcon.OFF));
+		Platform.setImplicitExit(configuration.trayIconProperty().getValue() == TrayIcon.OFF);
+		configuration.themeProperty().addListener((e) -> recreateScene());
+		configuration.trayIconProperty()
+				.addListener((e) -> Platform.setImplicitExit(configuration.trayIconProperty().getValue() == TrayIcon.OFF));
 
 		String activeBackend = PREFS.get("backend", "");
 		for (Backend possibleBackend : ServiceLoader.load(Backend.class)) {
@@ -338,11 +357,11 @@ public class App extends Application {
 		configureStage(primaryStage);
 
 		/* Listen for configuration changes and update UI accordingly */
-		cfg.transparencyProperty().addListener((o, oldVal, newVal) -> {
-			writeCSS();
+		configuration.transparencyProperty().addListener((o, oldVal, newVal) -> {
+			writeCSS(configuration);
 			setColors(peek().getClass(), primaryScene);
 		});
-		cfg.decoratedProperty().addListener((o, oldVal, newVal) -> {
+		configuration.decoratedProperty().addListener((o, oldVal, newVal) -> {
 			recreateScene();
 		});
 
@@ -367,17 +386,16 @@ public class App extends Application {
 	}
 
 	private void configureStage(Stage primaryStage) {
-		Configuration cfg = Configuration.getDefault();
-		if (cfg.hasBounds()) {
-			primaryStage.setX(cfg.xProperty().get());
-			primaryStage.setY(cfg.yProperty().get());
-			primaryStage.setWidth(cfg.wProperty().get());
-			primaryStage.setHeight(cfg.hProperty().get());
+		if (configuration.hasBounds()) {
+			primaryStage.setX(configuration.xProperty().get());
+			primaryStage.setY(configuration.yProperty().get());
+			primaryStage.setWidth(configuration.wProperty().get());
+			primaryStage.setHeight(configuration.hProperty().get());
 		}
-		primaryStage.xProperty().addListener((e) -> cfg.xProperty().set((int) primaryStage.getX()));
-		primaryStage.yProperty().addListener((e) -> cfg.yProperty().set((int) primaryStage.getY()));
-		primaryStage.widthProperty().addListener((e) -> cfg.wProperty().set((int) primaryStage.getWidth()));
-		primaryStage.heightProperty().addListener((e) -> cfg.hProperty().set((int) primaryStage.getHeight()));
+		primaryStage.xProperty().addListener((e) -> configuration.xProperty().set((int) primaryStage.getX()));
+		primaryStage.yProperty().addListener((e) -> configuration.yProperty().set((int) primaryStage.getY()));
+		primaryStage.widthProperty().addListener((e) -> configuration.wProperty().set((int) primaryStage.getWidth()));
+		primaryStage.heightProperty().addListener((e) -> configuration.hProperty().set((int) primaryStage.getHeight()));
 		primaryStage.setTitle(BUNDLE.getString("title"));
 		primaryStage.getIcons().add(new Image(App.class.getResourceAsStream("appicon/razer-color-512.png")));
 		primaryStage.getIcons().add(new Image(App.class.getResourceAsStream("appicon/razer-color-256.png")));
@@ -435,7 +453,7 @@ public class App extends Application {
 			controllers.push(fc);
 		}
 
-		if (Configuration.getDefault().decoratedProperty().getValue()) {
+		if (configuration.decoratedProperty().getValue()) {
 			if (primaryStage == null) {
 				primaryStage = new Stage(StageStyle.DECORATED);
 				configureStage(primaryStage);

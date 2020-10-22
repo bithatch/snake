@@ -1,10 +1,34 @@
 package uk.co.bithatch.snake.ui;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import javafx.scene.control.ButtonBase;
+import javafx.scene.control.ListView;
 import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
 
 public class UIHelpers {
+
+	public static void selectFilesDir(FileChooser fileChooser, String path) {
+		Path dir = Paths.get(path);
+		Path file = dir;
+		while (dir != null) {
+			if (Files.isDirectory(dir)) {
+				break;
+			}
+			dir = dir.getParent();
+		}
+		if (dir == null)
+			fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+		else {
+			fileChooser.setInitialDirectory(dir.toFile());
+		}
+		fileChooser.setInitialFileName(file.getFileName().toString());
+	}
 
 	public static void sizeToImage(ButtonBase button, double width, double height) {
 		int sz = (int) width;
@@ -58,6 +82,13 @@ public class UIHelpers {
 	public static String toCssRGBA(Color color) {
 		return String.format("rgba(%f,%f,%f,%f)", color.getRed(), color.getGreen(), color.getBlue(),
 				color.getOpacity());
+	}
+
+	public static <T> void zoomTo(ListView<T> root, T item) {
+		root.getSelectionModel().select(item);
+		root.getFocusModel().focus(root.getSelectionModel().getSelectedIndex());
+		root.scrollTo(item);
+
 	}
 
 }

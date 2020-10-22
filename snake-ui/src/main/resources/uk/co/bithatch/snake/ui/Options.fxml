@@ -120,6 +120,13 @@
                         </VBox>
                      </children>
                   </HBox>
+                  <VBox prefWidth="300.0" styleClass="tools">
+                     <children>
+                        <Label styleClass="title" text="%addOns" />
+                        <Label text="%addOnsText" wrapText="true" />
+                        <Hyperlink onAction="#evtOpenAddOns" text="%openAddOns" />
+                     </children>
+                  </VBox>
       			</children>
       		</FlowPane>
          </content>

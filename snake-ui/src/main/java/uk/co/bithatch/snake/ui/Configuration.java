@@ -33,10 +33,6 @@ public class Configuration {
 	private Property<TrayIcon> trayIcon = new SimpleObjectProperty<>();
 	private Preferences node;
 
-	//
-	private final static Configuration DEFAULT_INSTANCE = new Configuration(
-			Preferences.userNodeForPackage(Configuration.class));
-
 	class ColorPreferenceUpdateChangeListener implements ChangeListener<Color> {
 
 		private Preferences node;
@@ -122,7 +118,7 @@ public class Configuration {
 
 	}
 
-	public Configuration(Preferences node) {
+	Configuration(Preferences node, App context) {
 		this.node = node;
 
 		showBattery.setValue(node.getBoolean("showBattery", true));
@@ -157,23 +153,18 @@ public class Configuration {
 		transparency.setValue(node.getInt("transparency", 0));
 		transparency.addListener(new IntegerPreferenceUpdateChangeListener(node, "transparency"));
 		String themeName = node.get("theme", "");
-		Collection<Theme> themes = Theme.getThemes();
+		Collection<Theme> themes = context.getAddOnManager().getThemes();
 		if (themes.isEmpty())
 			throw new IllegalStateException("No themes. Please add a theme module to the classpath or modulepath.");
 		Theme firstTheme = themes.iterator().next();
 		if (themeName.equals("")) {
 			themeName = firstTheme.getId();
 		}
-		Theme selTheme = Theme.getTheme(themeName);
+		Theme selTheme = context.getAddOnManager().getTheme(themeName);
 		if (selTheme == null && !themeName.equals(firstTheme.getId()))
 			selTheme = firstTheme;
 		theme.setValue(selTheme);
 		theme.addListener(new ThemePreferenceUpdateChangeListener(node, "theme"));
-	}
-
-
-	public static Configuration getDefault() {
-		return DEFAULT_INSTANCE;
 	}
 
 	public boolean hasBounds() {

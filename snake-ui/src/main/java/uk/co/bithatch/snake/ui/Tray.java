@@ -57,7 +57,7 @@ public class Tray implements AutoCloseable, BackendListener, Listener {
 
 		font = Font.createFont(Font.TRUETYPE_FONT, Tray.class.getResourceAsStream("fontawesome-webfont.ttf"));
 
-		cfg = Configuration.getDefault();
+		cfg = context.getConfiguration();
 		cfg.themeProperty().addListener((e) -> SwingUtilities.invokeLater(() -> adjustTray()));
 		cfg.trayIconProperty().addListener((e) -> SwingUtilities.invokeLater(() -> adjustTray()));
 		cfg.showBatteryProperty().addListener((e) -> SwingUtilities.invokeLater(() -> adjustTray()));
@@ -137,7 +137,7 @@ public class Tray implements AutoCloseable, BackendListener, Listener {
 		boolean sep;
 		for (var r : device.getRegions()) {
 			var mi = new Menu(bundle.getString("region." + r.getName().name()));
-			mi.setImage(Images.getRegionImage(24, r.getName()));
+			mi.setImage(context.getConfiguration().themeProperty().getValue().getRegionImage(24, r.getName()));
 			menu.add(mi);
 			if (toMenu != null)
 				menuEntries.add(mi);
@@ -162,7 +162,7 @@ public class Tray implements AutoCloseable, BackendListener, Listener {
 			var mi = new MenuItem(fx.getSimpleName(), (e) -> {
 				context.getScheduler().execute(() -> lit.setEffect(lit.createEffect(fx)));
 			});
-			mi.setImage(Images.getEffectImage(24, fx));
+			mi.setImage(context.getConfiguration().themeProperty().getValue().getEffectImage(24, fx));
 			menu.add(mi);
 			if (lit.getEffect() != null && fx.equals(lit.getEffect().getClass())
 					&& AbstractEffectController.hasController(fx)) {

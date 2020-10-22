@@ -6,6 +6,7 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
 import javafx.animation.FadeTransition;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -22,9 +23,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import uk.co.bithatch.snake.lib.Capability;
+import uk.co.bithatch.snake.ui.AddOnManager.Listener;
 import uk.co.bithatch.snake.ui.Configuration.TrayIcon;
+import uk.co.bithatch.snake.ui.SlideyStack.Direction;
 
-public class Options extends AbstractDeviceController {
+public class Options extends AbstractDeviceController implements Listener {
 
 	final static System.Logger LOG = System.getLogger(Options.class.getName());
 	final static ResourceBundle bundle = ResourceBundle.getBundle(Options.class.getName());
@@ -93,13 +96,12 @@ public class Options extends AbstractDeviceController {
 		darkTrayIconLabel.setLabelFor(darkTrayIcon);
 		lightTrayIconLabel.setLabelFor(lightTrayIcon);
 		colorTrayIconLabel.setLabelFor(colorTrayIcon);
-		Configuration cfg = Configuration.getDefault();
+		Configuration cfg = context.getConfiguration();
 		startOnLogin.selectedProperty().addListener((e) -> setStartOnLogin(cfg));
 		startOnLogin.visibleProperty().set(PlatformService.isPlatformSupported());
 		whenLow.visibleProperty().bind(showBattery.visibleProperty());
 		whenLow.managedProperty().bind(whenLow.visibleProperty());
 		showBattery.managedProperty().bind(showBattery.visibleProperty());
-		theme.itemsProperty().get().addAll(Theme.getThemes());
 		showBattery.visibleProperty().set(context.getBackend().getCapabilities().contains(Capability.BATTERY));
 		if (PlatformService.isPlatformSupported()) {
 			PlatformService ps = PlatformService.get();
@@ -116,9 +118,6 @@ public class Options extends AbstractDeviceController {
 			betas.selectedProperty().set(ps.isBetas());
 			betas.selectedProperty().addListener((e) -> {
 				ps.setBetas(betas.selectedProperty().get());
-//				updateAutomatically.disableProperty().set(true);
-//				checkForUpdates.disableProperty().set(true);
-//				betas.disableProperty().set(true);
 				startUpdate.disableProperty().set(true);
 				new Thread() {
 					public void run() {
@@ -166,7 +165,11 @@ public class Options extends AbstractDeviceController {
 		});
 		optionsHeader.setBackground(createHeaderBackground());
 		decorated.selectedProperty().bindBidirectional(cfg.decoratedProperty());
-		theme.getSelectionModel().select(cfg.themeProperty().getValue());
+		theme.itemsProperty().get().addAll(context.getAddOnManager().getThemes());
+		theme.getSelectionModel().select(context.getConfiguration().themeProperty().getValue());
+		context.getConfiguration().themeProperty().addListener((e) -> {
+			theme.getSelectionModel().select(context.getConfiguration().themeProperty().getValue());
+		});
 		transparencyLabel.setLabelFor(transparency);
 		transparency.disableProperty().bind(decorated.selectedProperty());
 		transparency.valueProperty().bindBidirectional(cfg.transparencyProperty());
@@ -207,6 +210,7 @@ public class Options extends AbstractDeviceController {
 			colorTrayIcon.selectedProperty().set(true);
 			break;
 		}
+		context.getAddOnManager().addListener(this);
 		setAvailable(cfg);
 	}
 
@@ -231,7 +235,12 @@ public class Options extends AbstractDeviceController {
 
 	@FXML
 	void evtTheme(ActionEvent evt) {
-		Configuration.getDefault().themeProperty().setValue(theme.getSelectionModel().getSelectedItem());
+		context.getConfiguration().themeProperty().setValue(theme.getSelectionModel().getSelectedItem());
+	}
+
+	@FXML
+	void evtOpenAddOns(ActionEvent evt) {
+		context.push(AddOns.class, Direction.FROM_BOTTOM);
 	}
 
 	@FXML
@@ -241,4 +250,17 @@ public class Options extends AbstractDeviceController {
 		}
 		context.pop();
 	}
+
+	@Override
+	public void addOnAdded(AddOn addOn) {
+		if (addOn instanceof Theme)
+			Platform.runLater(() -> theme.itemsProperty().get().add((Theme) addOn));
+	}
+
+	@Override
+	public void addOnRemoved(AddOn addOn) {
+		if (addOn instanceof Theme)
+			Platform.runLater(() -> theme.itemsProperty().get().remove((Theme) addOn));
+	}
+
 }

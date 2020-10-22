@@ -79,9 +79,9 @@ public class Overview extends AbstractDeviceController implements Listener {
 	protected void onConfigure() throws Exception {
 		super.onConfigure();
 
-		Property<Boolean> decProp = Configuration.getDefault().decoratedProperty();
+		Property<Boolean> decProp = context.getConfiguration().decoratedProperty();
 		decoratedTools.visibleProperty().set(decProp.getValue());
-		Configuration.getDefault().decoratedProperty()
+		context.getConfiguration().decoratedProperty()
 				.addListener((e) -> decoratedTools.visibleProperty().set(decProp.getValue()));
 
 		filterOptions.setBackground(createHeaderBackground());
@@ -201,9 +201,10 @@ public class Overview extends AbstractDeviceController implements Listener {
 		filteredTypes.clear();
 		for (DeviceType type : DeviceType.values()) {
 			if (type != DeviceType.UNRECOGNISED && deviceTypeMap.containsKey(type)) {
-				URL typeImage = Images.getDeviceImage(32, type);
+				URL typeImage = context.getConfiguration().themeProperty().getValue().getDeviceImage(32, type);
 				if (typeImage == null) {
-					typeImage = Images.getDeviceImage(32, DeviceType.UNRECOGNISED);
+					typeImage = context.getConfiguration().themeProperty().getValue().getDeviceImage(32,
+							DeviceType.UNRECOGNISED);
 				}
 				Image img = new Image(typeImage.toExternalForm(), 32, 32, true, true, true);
 				ImageButton button = new ImageButton(img, 32, 32);

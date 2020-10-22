@@ -76,6 +76,7 @@
 									<forkerArgs>
 										<forkerArg>jvmarg -Dforker.releaseChannel=${snakeRemoteStable}</forkerArg>
 										<forkerArg>jvmarg -Dforker.betaChannel=${snakeRemoteSnapshot}</forkerArg>
+										<forkerArg>jvmarg -Djava.system.class.loader=uk.co.bithatch.snake.ui.DynamicClassLoader</forkerArg>
 										<forkerArg>restart-on 90</forkerArg>
 										<forkerArg>single-instance</forkerArg>
 										<forkerArg>install-location ${installer.home}/snake-razer</forkerArg>
@@ -173,6 +174,7 @@
 									<forkerArgs>
 										<forkerArg>jvmarg -Dforker.releaseChannel=${snakeRemoteNoRuntimeStable}</forkerArg>
 										<forkerArg>jvmarg -Dforker.betaChannel=${snakeRemoteNoRuntimeSnapshot}</forkerArg>
+										<forkerArg>jvmarg -Djava.system.class.loader=uk.co.bithatch.snake.ui.DynamicClassLoader</forkerArg>
 										<forkerArg>restart-on 90</forkerArg>
 										<forkerArg>single-instance</forkerArg>
 										<forkerArg>install-location ${installer.home}/snake-razer</forkerArg>

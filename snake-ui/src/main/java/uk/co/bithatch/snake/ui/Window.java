@@ -50,12 +50,10 @@ public class Window extends AbstractController {
 	@Override
 	protected void onConfigure() throws Exception {
 		titleBar.setBackground(new Background(new BackgroundImage(
-				new Image(Configuration.getDefault().themeProperty().getValue().getResource("titleBar.png")
+				new Image(context.getConfiguration().themeProperty().getValue().getResource("titleBar.png")
 						.toExternalForm(), true),
 				BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
 				new BackgroundSize(100d, 100d, true, true, false, true))));
-
-//		title.setFont(font);
 	}
 
 	public Hyperlink getOptions() {

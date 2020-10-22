@@ -99,7 +99,8 @@ public class EffectsControl extends ControlController implements Listener {
 							setGraphic(null);
 							setText(bundle.getString("emptyChoice"));
 						} else {
-							ImageView iv = new ImageView(Images.getEffectImage(24, item).toExternalForm());
+							ImageView iv = new ImageView(context.getConfiguration().themeProperty().getValue()
+									.getEffectImage(24, item).toExternalForm());
 							iv.setFitHeight(22);
 							iv.setFitWidth(22);
 							iv.setSmooth(true);
@@ -125,7 +126,8 @@ public class EffectsControl extends ControlController implements Listener {
 						&& !(r.getSupportedEffects().size() == 1 && r.getSupportedEffects().contains(Matrix.class))) {
 					HBox hbox = new HBox();
 
-					ImageView iv = new ImageView(Images.getRegionImage(24, r.getName()).toExternalForm());
+					ImageView iv = new ImageView(context.getConfiguration().themeProperty().getValue()
+							.getRegionImage(24, r.getName()).toExternalForm());
 					iv.setFitHeight(22);
 					iv.setFitWidth(22);
 					iv.setSmooth(true);

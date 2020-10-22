@@ -145,7 +145,13 @@ public class Bootstrap extends Application {
 			Platform.runLater(() -> close());
 			return;
 		}
-		primaryStage.close();
+		try {
+			primaryStage.close();
+		}
+		catch(Exception e) {
+			// TODO investigate further. Some strange NPE exception coming from JavaFX when
+			// the installer exits (no run-on-install).
+		}
 	}
 
 	public Stage getStage() {

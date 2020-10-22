@@ -492,7 +492,7 @@ public class Macros extends AbstractDetailsController {
 		var path = PREFS.get("lastExportLocation", System.getProperty("user.dir") + File.separator + "macros.json");
 		fileChooser.getExtensionFilters().add(new ExtensionFilter(bundle.getString("macroFileExtension"), "*.json"));
 		fileChooser.getExtensionFilters().add(new ExtensionFilter(bundle.getString("allFiles"), "*.*"));
-		selectFilesDir(fileChooser, path);
+		UIHelpers.selectFilesDir(fileChooser, path);
 		File file = fileChooser.showSaveDialog((Stage) getScene().getWindow());
 		if (file != null) {
 			PREFS.put("lastExportLocation", file.getAbsolutePath());
@@ -512,7 +512,7 @@ public class Macros extends AbstractDetailsController {
 		var path = PREFS.get("lastExportLocation", System.getProperty("user.dir") + File.separator + "macros.json");
 		fileChooser.getExtensionFilters().add(new ExtensionFilter(bundle.getString("macroFileExtension"), "*.json"));
 		fileChooser.getExtensionFilters().add(new ExtensionFilter(bundle.getString("allFiles"), "*.*"));
-		selectFilesDir(fileChooser, path);
+		UIHelpers.selectFilesDir(fileChooser, path);
 		File file = fileChooser.showOpenDialog((Stage) getScene().getWindow());
 		if (file != null) {
 			PREFS.put("lastExportLocation", file.getAbsolutePath());
@@ -533,7 +533,7 @@ public class Macros extends AbstractDetailsController {
 		var path = scriptLocation.textProperty().get();
 		if (path == null || path.equals(""))
 			path = System.getProperty("user.dir");
-		selectFilesDir(fileChooser, path);
+		UIHelpers.selectFilesDir(fileChooser, path);
 		File file = fileChooser.showOpenDialog((Stage) getScene().getWindow());
 		if (file != null) {
 			scriptLocation.textProperty().set(file.getPath());
@@ -579,23 +579,6 @@ public class Macros extends AbstractDetailsController {
 			}
 			error(ve.getMessage());
 		}
-	}
-
-	private void selectFilesDir(FileChooser fileChooser, String path) {
-		Path dir = Paths.get(path);
-		Path file = dir;
-		while (dir != null) {
-			if (Files.isDirectory(dir)) {
-				break;
-			}
-			dir = dir.getParent();
-		}
-		if (dir == null)
-			fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
-		else {
-			fileChooser.setInitialDirectory(dir.toFile());
-		}
-		fileChooser.setInitialFileName(file.getFileName().toString());
 	}
 
 	private void setAvailableEditors() {

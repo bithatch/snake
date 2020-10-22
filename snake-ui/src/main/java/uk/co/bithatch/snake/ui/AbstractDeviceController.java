@@ -36,7 +36,7 @@ public abstract class AbstractDeviceController extends AbstractController {
 	protected Background createHeaderBackground() {
 		return new Background(
 				new BackgroundImage(
-						new Image(Configuration.getDefault().themeProperty().getValue().getResource("fibre.jpg")
+						new Image(context.getConfiguration().themeProperty().getValue().getResource("fibre.jpg")
 								.toExternalForm(), true),
 						BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
 						new BackgroundSize(100d, 100d, true, true, false, true)));

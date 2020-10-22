@@ -51,9 +51,11 @@ public class DeviceDetails extends AbstractDetailsController {
 
 	@Override
 	protected void onSetDeviceDetails() throws Exception {
-		Property<Boolean> decProp = Configuration.getDefault().decoratedProperty();
+		Property<Boolean> decProp = context.getConfiguration().decoratedProperty();
+		macros.managedProperty().bind(macros.visibleProperty());
+		decoratedTools.managedProperty().bind(decoratedTools.visibleProperty());
 		decoratedTools.visibleProperty().set(decProp.getValue());
-		Configuration.getDefault().decoratedProperty()
+		context.getConfiguration().decoratedProperty()
 				.addListener((e) -> decoratedTools.visibleProperty().set(decProp.getValue()));
 
 		String imageUrl = getDevice().getImageUrl(BrandingImage.PERSPECTIVE);
@@ -65,7 +67,7 @@ public class DeviceDetails extends AbstractDetailsController {
 		ColorAdjust adjust = new ColorAdjust();
 		adjust.setSaturation(-1);
 		background.setEffect(adjust);
-		
+
 		macros.visibleProperty().set(getDevice().getCapabilities().contains(Capability.MACROS));
 
 		controls.getChildren().clear();

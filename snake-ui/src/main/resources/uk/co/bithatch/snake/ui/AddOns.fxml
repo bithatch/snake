@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.AddOns">
+   <children>
+      <BorderPane fx:id="header" styleClass="nav">
+         <center>
+            <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
+               <children>
+                  <Label styleClass="titleIcon" text="%icon" />
+                  <Label styleClass="title" text="%addOns" />
+               </children>
+            </HBox>
+         </center>
+         <right>
+            <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
+               <children>
+                  <Hyperlink fx:id="back" onAction="#evtBack" styleClass="iconButton" text="%back" />
+               </children>
+            </HBox>
+         </right>
+      </BorderPane>
+      <StackPane VBox.vgrow="ALWAYS">
+         <children>
+            <Region fx:id="background" prefHeight="200.0" prefWidth="200.0" />
+            <BorderPane>
+               <left>
+                  <BorderPane BorderPane.alignment="CENTER">
+                     <center>
+                        <BorderPane BorderPane.alignment="CENTER">
+                           <center>
+                              <ListView fx:id="installed" prefWidth="350.0" BorderPane.alignment="CENTER">
+                                 <styleClass>
+                                    <String fx:value="focusless" />
+                                    <String fx:value="transparentBackground" />
+                                 </styleClass></ListView>
+                           </center>
+                        </BorderPane>
+                     </center>
+                     <top>
+                        <VBox styleClass="tools" BorderPane.alignment="CENTER">
+                           <children>
+                              <Label styleClass="subtitle" text="%installed" />
+                              <HBox alignment="CENTER_LEFT" styleClass="row">
+                                 <children>
+                                    <Hyperlink fx:id="add" onAction="#evtAdd" text="%add" />
+                                    <Label fx:id="error" styleClass="text-danger" text="Error" visible="false" wrapText="true" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </top>
+                     <right>
+                        <VBox fx:id="addOnDetailsContainer" styleClass="column" BorderPane.alignment="CENTER">
+                           <children>
+                              <VBox>
+                                 <children>
+                                    <Label fx:id="addOnName" styleClass="title" text="AddOnName" />
+                                    <Label fx:id="addOnType" styleClass="small" text="AddOnType" />
+                                 </children>
+                              </VBox>
+                              <VBox>
+                                 <children>
+                                    <Label fx:id="by" text="By" />
+                                    <Hyperlink fx:id="url" onAction="#evtUrl" text="URL" />
+                                    <Label fx:id="license" text="License" />
+                                 </children>
+                              </VBox>
+                              <Label fx:id="description" styleClass="small" text="Description" wrapText="true" VBox.vgrow="SOMETIMES" />
+                              <Label fx:id="systemAddOn" styleClass="text-warn" text="%systemAddOn" />
+                              <Hyperlink fx:id="deleteAddOn" onAction="#evtDeleteAddOn" text="%deleteAddOn" />
+                           </children>
+                        </VBox>
+                     </right>
+                  </BorderPane>
+               </left>
+            </BorderPane>
+         </children>
+      </StackPane>
+   </children>
+</VBox>

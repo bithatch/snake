@@ -57,7 +57,7 @@ public class BrightnessControl extends ControlController {
 					if (r.getCapabilities().contains(Capability.BRIGHTNESS_PER_REGION)) {
 						HBox hbox = new HBox();
 
-						ImageView iv = new ImageView(Images.getRegionImage(24, r.getName()).toExternalForm());
+						ImageView iv = new ImageView(context.getConfiguration().themeProperty().getValue().getRegionImage(24, r.getName()).toExternalForm());
 						iv.setFitHeight(22);
 						iv.setFitWidth(22);
 						iv.setSmooth(true);
