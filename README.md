@@ -72,7 +72,9 @@ All these packages include the `bin/snake` launcher script. You may need to edit
  
 ### OS Packages
 
-There are many packaging formats for Linux, so I will only be providing a few common ones. 
+** NOTE: These experimental packages are not recommended currently, there are known issues **
+
+There are many packaging formats for Linux, so I will only be providing a few common ones.
 
  * [amd64 DEB package](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT/snake-amd64.deb)
  * [amd64 RPM package](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT/snake-amd64.rpm)
@@ -81,7 +83,7 @@ There are many packaging formats for Linux, so I will only be providing a few co
  
 Install according to your distributions instructions. Usually it should just be a case of clicking on the downloaded file. 
 
-** I do not currently provide repositories for these OS specific packages, but they will mostly auto update in the same way as other packages.**
+** I do not currently provide repositories for these OS specific packages, but they will mostly auto update in the same way as other packages.**~
 
 ## Updating
 
