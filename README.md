@@ -72,7 +72,7 @@ All these packages include the `bin/snake` launcher script. You may need to edit
  
 ### OS Packages
 
-** NOTE: These experimental packages are not recommended currently, there are known issues **
+**NOTE: These experimental packages are not recommended currently, there are known issues**
 
 There are many packaging formats for Linux, so I will only be providing a few common ones.
 
