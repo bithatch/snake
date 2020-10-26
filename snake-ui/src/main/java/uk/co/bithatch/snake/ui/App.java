@@ -135,8 +135,8 @@ public class App extends Application {
 	private Window window;
 	private ScheduledExecutorService scheduler;
 	private List<Backend> backends = new ArrayList<>();
-	private AddOnManager addOnManager = new AddOnManager();
-	private Configuration configuration = new Configuration(PREFS, this);
+	private AddOnManager addOnManager;
+	private Configuration configuration;
 
 	private boolean backendInited;
 
@@ -264,6 +264,7 @@ public class App extends Application {
 
 	public void pop() {
 		if (!controllers.isEmpty()) {
+			addOnManager.pop(controllers.peek());
 			stackPane.pop();
 			Controller c = controllers.pop();
 			c.cleanUp();
@@ -305,6 +306,7 @@ public class App extends Application {
 				/* TODO: Not totally sure why ... */
 				setColors(controller, primaryScene);
 			}
+			addOnManager.push(fc);
 			return fc;
 		} catch (Exception e) {
 			throw new IllegalStateException("Failed to push controller.", e);
@@ -333,6 +335,9 @@ public class App extends Application {
 				return 0;
 			});
 		}
+
+		addOnManager = new AddOnManager(this);
+		configuration = new Configuration(PREFS, this);
 
 		scheduler = Executors.newScheduledThreadPool(1);
 
@@ -385,6 +390,8 @@ public class App extends Application {
 			PlatformService.get().setStartOnLogin(true);
 			PREFS.putBoolean("installed", true);
 		}
+		
+		addOnManager.start();
 	}
 
 	private void clearControllers() {
@@ -454,6 +461,7 @@ public class App extends Application {
 				controllers.push(fc);
 			}
 		} catch (Exception e) {
+			LOG.log(Level.ERROR, "Failed to initialize.", e);
 			Error fc = openScene(Error.class, null);
 			fc.setError(e);
 			stackPane.getChildren().add(fc.getScene().getRoot());

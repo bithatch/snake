@@ -3,7 +3,7 @@ package uk.co.bithatch.snake.ui;
 import java.net.URL;
 import java.nio.file.Path;
 
-public interface AddOn {
+public interface AddOn extends AutoCloseable {
 
 	URL getLocation();
 

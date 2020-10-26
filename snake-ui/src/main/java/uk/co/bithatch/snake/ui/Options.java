@@ -19,6 +19,7 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.Slider;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
@@ -88,6 +89,12 @@ public class Options extends AbstractDeviceController implements Listener {
 	private Label availableVersion;
 	@FXML
 	private Label installedVersion;
+	@FXML
+	private FlowPane controls;
+
+	public FlowPane getControls() {
+		return controls;
+	}
 
 	@Override
 	protected void onConfigure() throws Exception {

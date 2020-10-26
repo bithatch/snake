@@ -12,83 +12,15 @@ public interface Device extends AutoCloseable, Grouping, Lit {
 		void changed(Device device, Region region);
 	}
 
-	Set<Capability> getCapabilities();
-
 	void addListener(Listener listener);
-
-	void removeListener(Listener listener);
-
-	String getImage();
-
-	DeviceType getType();
-
-	String getKeyboardLayout();
-
-	String getMode();
-
-	String exportMacros();
-
-	void importMacros(String macros);
-
-	String getName();
-
-	String getDriverVersion();
-
-	String getFirmware();
-
-	int getPollRate();
-
-	String getSerial();
-
-	void setPollRate(int pollRate);
-
-	void setSuspended(boolean suspended);
-
-	boolean isSuspended();
-
-	int[] getMatrixSize();
-
-	String getImageUrl(BrandingImage image);
-
-	List<Region> getRegions();
-
-	int[] getDPI();
-
-	int getBattery();
-
-	boolean isCharging();
-
-	void setIdleTime(int idleTime);
-
-	int getIdleTime();
-
-	void setLowBatteryThreshold(byte threshold);
-
-	byte getLowBatteryThreshold();
-
-	int getMaxDPI();
-
-	void setDPI(short x, short y);
-
-	void setBrightness(short brightness);
-
-	boolean isGameMode();
-
-	void setGameMode(boolean gameMode);
-
-	Map<Key, MacroSequence> getMacros();
 
 	void addMacro(MacroSequence macro);
 
 	void deleteMacro(Key key);
 
-	boolean isModeModifier();
+	String exportMacros();
 
-	void setModeModifier(boolean modify);
-
-	void setEffect(Effect effect);
-
-	Effect getEffect();
+	int getBattery();
 
 	default short getBrightness() {
 		double tot = 0;
@@ -101,4 +33,72 @@ public interface Device extends AutoCloseable, Grouping, Lit {
 		}
 		return (short) (tot / (double) of);
 	}
+
+	Set<Capability> getCapabilities();
+
+	int[] getDPI();
+
+	String getDriverVersion();
+
+	Effect getEffect();
+
+	String getFirmware();
+
+	int getIdleTime();
+
+	String getImage();
+
+	String getImageUrl(BrandingImage image);
+
+	String getKeyboardLayout();
+
+	byte getLowBatteryThreshold();
+
+	Map<Key, MacroSequence> getMacros();
+
+	int[] getMatrixSize();
+
+	int getMaxDPI();
+
+	String getMode();
+
+	String getName();
+
+	int getPollRate();
+
+	List<Region> getRegions();
+
+	String getSerial();
+
+	DeviceType getType();
+
+	void importMacros(String macros);
+
+	boolean isCharging();
+
+	boolean isGameMode();
+
+	boolean isModeModifier();
+
+	boolean isSuspended();
+
+	void removeListener(Listener listener);
+
+	void setBrightness(short brightness);
+
+	void setDPI(short x, short y);
+
+	void setEffect(Effect effect);
+
+	void setGameMode(boolean gameMode);
+
+	void setIdleTime(int idleTime);
+
+	void setLowBatteryThreshold(byte threshold);
+
+	void setModeModifier(boolean modify);
+
+	void setPollRate(int pollRate);
+
+	void setSuspended(boolean suspended);
 }

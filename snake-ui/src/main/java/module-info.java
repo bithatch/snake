@@ -14,6 +14,7 @@ module uk.co.bithatch.snake.ui {
 	requires transitive org.commonmark;
 	requires transitive com.sshtools.icongenerator.common;
 	requires javafx.base;
+	requires transitive org.codehaus.groovy;
     uses uk.co.bithatch.snake.lib.Backend; 
     uses uk.co.bithatch.snake.ui.PlatformService; 
     uses uk.co.bithatch.snake.ui.EffectOptions;

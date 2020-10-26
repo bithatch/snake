@@ -13,22 +13,6 @@ public class Static extends Effect {
 
 	}
 
-	public int[] getColor() {
-		return color;
-	}
-
-	public void setColor(int[] color) {
-		this.color = color;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + Arrays.hashCode(color);
-		return result;
-	}
-
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -43,6 +27,22 @@ public class Static extends Effect {
 		return true;
 	}
 
+	public int[] getColor() {
+		return color;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(color);
+		return result;
+	}
+
+	public void setColor(int[] color) {
+		this.color = color;
+	}
+
 	@Override
 	public String toString() {
 		return "Static [color=" + Arrays.toString(color) + "]";
@@ -50,12 +50,12 @@ public class Static extends Effect {
 
 
 	@Override
-	protected void onSave(Preferences prefs) {
-		prefs.put("color", Colors.toHex(color));
+	protected void onLoad(Preferences prefs) {
+		color = Colors.fromHex(prefs.get("color", "#00ff00"));
 	}
 
 	@Override
-	protected void onLoad(Preferences prefs) {
-		color = Colors.fromHex(prefs.get("color", "#00ff00"));
+	protected void onSave(Preferences prefs) {
+		prefs.put("color", Colors.toHex(color));
 	}
 }

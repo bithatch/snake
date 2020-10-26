@@ -16,24 +16,24 @@ public interface RazerRegionChroma extends DBusInterface {
 
 	void setBrightness(double brightness);
 
+	void setCustom();
+
+	void setKeyRow(byte[] payload);
+
 	void setNone();
 
 	void setReactive(byte red1, byte green1, byte blue1, byte speed);
 
 	void setSpectrum();
 
-	void setStatic(byte red1, byte green1, byte blue1);
-
-	void setWave(int direction);
-
-	void setCustom();
-
-	void setKeyRow(byte[] payload);
+	void setStarlightDual(byte red1, byte green1, byte blue1, byte red2, byte green2, byte blue2, byte speed);
 
 	void setStarlightRandom(byte speed);
 
 	void setStarlightSingle(byte red, byte green, byte blue, byte speed);
 
-	void setStarlightDual(byte red1, byte green1, byte blue1, byte red2, byte green2, byte blue2, byte speed);
+	void setStatic(byte red1, byte green1, byte blue1);
+
+	void setWave(int direction);
 
 }

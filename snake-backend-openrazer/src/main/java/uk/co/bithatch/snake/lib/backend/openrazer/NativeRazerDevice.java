@@ -80,21 +80,17 @@ import uk.co.bithatch.snake.lib.effects.Wave;
 
 public class NativeRazerDevice implements Device {
 
-	final static System.Logger LOG = System.getLogger(NativeRazerDevice.class.getName());
-
-	final static long MAX_CACHE_AGE = TimeUnit.DAYS.toMillis(7);
-
 	abstract class AbstractRazerRegion<I extends DBusInterface> implements Region {
-		I underlying;
-		Effect effect = new Off();
-		Class<I> clazz;
 		short brightness = -1;
-		Name name;
 		Set<Capability> caps = new HashSet<>();
+		Class<I> clazz;
 		DBusConnection conn;
+		Effect effect = new Off();
 		String effectPrefix;
-		Set<Class<? extends Effect>> supportedEffects = new LinkedHashSet<>();
 		Map<String, List<Class<?>>> methods = new HashMap<>();
+		Name name;
+		Set<Class<? extends Effect>> supportedEffects = new LinkedHashSet<>();
+		I underlying;
 		private Document document;
 
 		AbstractRazerRegion(Class<I> clazz, Name name, DBusConnection conn, String effectPrefix) {
@@ -102,11 +98,6 @@ public class NativeRazerDevice implements Device {
 			this.clazz = clazz;
 			this.name = name;
 			this.conn = conn;
-		}
-
-		protected boolean hasMethod(String name, Class<?>... classes) {
-			List<Class<?>> sig = methods.get(name);
-			return sig != null && sig.equals(Arrays.asList(classes));
 		}
 
 		@Override
@@ -122,11 +113,13 @@ public class NativeRazerDevice implements Device {
 			}
 		}
 
-		void assertCap(Capability cap) {
-			if (!caps.contains(cap))
-				throw new UnsupportedOperationException(
-						String.format("The capability %s is not supported by region %s on device %s.", cap, name.name(),
-								getDevice().getName()));
+		@Override
+		public final short getBrightness() {
+			assertCap(Capability.BRIGHTNESS_PER_REGION);
+			if (brightness == -1) {
+				brightness = doGetBrightness();
+			}
+			return brightness;
 		}
 
 		@Override
@@ -136,6 +129,21 @@ public class NativeRazerDevice implements Device {
 
 		public Device getDevice() {
 			return NativeRazerDevice.this;
+		}
+
+		@Override
+		public final Effect getEffect() {
+			return effect;
+		}
+
+		@Override
+		public final Name getName() {
+			return name;
+		}
+
+		@Override
+		public Set<Class<? extends Effect>> getSupportedEffects() {
+			return supportedEffects;
 		}
 
 		@SuppressWarnings("unchecked")
@@ -187,6 +195,168 @@ public class NativeRazerDevice implements Device {
 					LOG.log(Level.ERROR, String.format("Failed to set configured effect %s.", effect), e);
 				}
 			}
+		}
+
+		@Override
+		public final void setBrightness(short brightness) {
+			assertCap(Capability.BRIGHTNESS_PER_REGION);
+			if (brightness != this.brightness) {
+				this.brightness = brightness;
+				doSetBrightness(brightness);
+				fireChange(this);
+				fireChange(null);
+			}
+		}
+
+		@Override
+		public void setEffect(Effect effect) {
+			if (!Objects.equals(effect, this.effect)) {
+
+				doSetEffect(effect);
+				fireChange(null);
+			}
+		}
+
+		protected short doGetBrightness() {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetBreathDual(Breath breath) {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetBreathRandom() {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetBreathSingle(Breath breath) {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetBrightness(int brightness) {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetEffect(Effect effect) {
+
+			this.effect = effect;
+			brightness = -1;
+			if (effect instanceof Breath) {
+				Breath breath = (Breath) effect;
+				switch (breath.getMode()) {
+				case DUAL:
+					doSetBreathDual(breath);
+					break;
+				case SINGLE:
+					doSetBreathSingle(breath);
+					break;
+				default:
+					doSetBreathRandom();
+					break;
+				}
+			} else if (effect instanceof Off) {
+				doSetOff();
+			} else if (effect instanceof Spectrum) {
+				doSetSpectrum();
+			} else if (effect instanceof Reactive) {
+				doSetReactive((Reactive) effect);
+			} else if (effect instanceof Static) {
+				doSetStatic((Static) effect);
+			} else if (effect instanceof On) {
+				doSetOn((On) effect);
+			} else if (effect instanceof Wave) {
+				doSetWave((Wave) effect);
+			} else if (effect instanceof Matrix) {
+				doSetMatrix((Matrix) effect);
+			} else if (effect instanceof Pulsate) {
+				doSetPulsate((Pulsate) effect);
+			} else if (effect instanceof Starlight) {
+				Starlight starlight = (Starlight) effect;
+				switch (starlight.getMode()) {
+				case DUAL:
+					doSetStarlightDual(starlight);
+					break;
+				case SINGLE:
+					doSetStarlightSingle(starlight);
+					break;
+				default:
+					doSetStarlightRandom(starlight);
+					break;
+				}
+			} else if (effect instanceof Ripple) {
+				Ripple ripple = (Ripple) effect;
+				switch (ripple.getMode()) {
+				case SINGLE:
+					doSetRipple(ripple);
+					break;
+				default:
+					doSetRippleRandomColour(ripple);
+					break;
+				}
+			} else
+				throw new UnsupportedOperationException(
+						String.format("Effect %s not supported by region %s", effect.getClass(), name));
+			Preferences regionPrefs = regionPrefs();
+			regionPrefs.put("effect", effect.getClass().getName());
+			effect.save(regionPrefs);
+			fireChange(this);
+		}
+
+		protected void doSetMatrix(Matrix matrix) {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetOff() {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetOn(On monoStaticEffect) {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetPulsate(Pulsate pulsate) {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetReactive(Reactive reactive) {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetRipple(Ripple ripple) {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetRippleRandomColour(Ripple ripple) {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetSpectrum() {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetStarlightDual(Starlight starlight) {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetStarlightRandom(Starlight starlight) {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetStarlightSingle(Starlight starlight) {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetStatic(Static staticEffect) {
+			throw new UnsupportedOperationException();
+		}
+
+		protected void doSetWave(Wave wave) {
+			throw new UnsupportedOperationException();
+		}
+
+		protected boolean hasMethod(String name, Class<?>... classes) {
+			List<Class<?>> sig = methods.get(name);
+			return sig != null && sig.equals(Arrays.asList(classes));
 		}
 
 		protected void loadInterfaces(String path) throws DBusException {
@@ -268,190 +438,224 @@ public class NativeRazerDevice implements Device {
 		protected void onCaps(Set<Capability> caps) {
 		}
 
-		@Override
-		public final Name getName() {
-			return name;
-		}
-
-		@Override
-		public final short getBrightness() {
-			assertCap(Capability.BRIGHTNESS_PER_REGION);
-			if (brightness == -1) {
-				brightness = doGetBrightness();
-			}
-			return brightness;
-		}
-
-		@Override
-		public final void setBrightness(short brightness) {
-			assertCap(Capability.BRIGHTNESS_PER_REGION);
-			if (brightness != this.brightness) {
-				this.brightness = brightness;
-				doSetBrightness(brightness);
-				fireChange(this);
-				fireChange(null);
-			}
-		}
-
-		@Override
-		public void setEffect(Effect effect) {
-			if (!Objects.equals(effect, this.effect)) {
-
-				doSetEffect(effect);
-				fireChange(null);
-			}
-		}
-
-		protected void doSetEffect(Effect effect) {
-
-			this.effect = effect;
-			brightness = -1;
-			if (effect instanceof Breath) {
-				Breath breath = (Breath) effect;
-				switch (breath.getMode()) {
-				case DUAL:
-					doSetBreathDual(breath);
-					break;
-				case SINGLE:
-					doSetBreathSingle(breath);
-					break;
-				default:
-					doSetBreathRandom();
-					break;
-				}
-			} else if (effect instanceof Off) {
-				doSetOff();
-			} else if (effect instanceof Spectrum) {
-				doSetSpectrum();
-			} else if (effect instanceof Reactive) {
-				doSetReactive((Reactive) effect);
-			} else if (effect instanceof Static) {
-				doSetStatic((Static) effect);
-			} else if (effect instanceof On) {
-				doSetOn((On) effect);
-			} else if (effect instanceof Wave) {
-				doSetWave((Wave) effect);
-			} else if (effect instanceof Matrix) {
-				doSetMatrix((Matrix) effect);
-			} else if (effect instanceof Pulsate) {
-				doSetPulsate((Pulsate) effect);
-			} else if (effect instanceof Starlight) {
-				Starlight starlight = (Starlight) effect;
-				switch (starlight.getMode()) {
-				case DUAL:
-					doSetStarlightDual(starlight);
-					break;
-				case SINGLE:
-					doSetStarlightSingle(starlight);
-					break;
-				default:
-					doSetStarlightRandom(starlight);
-					break;
-				}
-			} else if (effect instanceof Ripple) {
-				Ripple ripple = (Ripple) effect;
-				switch (ripple.getMode()) {
-				case SINGLE:
-					doSetRipple(ripple);
-					break;
-				default:
-					doSetRippleRandomColour(ripple);
-					break;
-				}
-			} else
+		void assertCap(Capability cap) {
+			if (!caps.contains(cap))
 				throw new UnsupportedOperationException(
-						String.format("Effect %s not supported by region %s", effect.getClass(), name));
-			Preferences regionPrefs = regionPrefs();
-			regionPrefs.put("effect", effect.getClass().getName());
-			effect.save(regionPrefs);
-			fireChange(this);
+						String.format("The capability %s is not supported by region %s on device %s.", cap, name.name(),
+								getDevice().getName()));
 		}
 
 		private Preferences regionPrefs() {
 			Preferences regionPrefs = prefs.node(this.name.name());
 			return regionPrefs;
 		}
+	}
 
-		@Override
-		public Set<Class<? extends Effect>> getSupportedEffects() {
-			return supportedEffects;
+	class NativeRazerRegionBacklight extends AbstractRazerRegion<RazerRegionBacklight> {
+
+		public NativeRazerRegionBacklight(DBusConnection connection) {
+			super(RazerRegionBacklight.class, Name.BACKLIGHT, connection, "Backlight");
 		}
 
 		@Override
-		public final Effect getEffect() {
-			return effect;
-		}
-
-		protected void doSetBreathDual(Breath breath) {
-			throw new UnsupportedOperationException();
-		}
-
-		protected void doSetBreathRandom() {
-			throw new UnsupportedOperationException();
-		}
-
-		protected void doSetBreathSingle(Breath breath) {
-			throw new UnsupportedOperationException();
-		}
-
-		protected void doSetBrightness(int brightness) {
-			throw new UnsupportedOperationException();
-		}
-
 		protected void doSetOff() {
-			throw new UnsupportedOperationException();
+			underlying.setBacklightActive(false);
 		}
 
-		protected void doSetReactive(Reactive reactive) {
-			throw new UnsupportedOperationException();
+		@Override
+		protected void doSetOn(On on) {
+			underlying.setBacklightActive(true);
 		}
 
-		protected void doSetSpectrum() {
-			throw new UnsupportedOperationException();
+		@Override
+		protected void onCaps(Set<Capability> caps) {
+			if (hasMethod("setBacklightActive", boolean.class)) {
+				supportedEffects.add(On.class);
+				supportedEffects.add(Off.class);
+			}
+		}
+	}
+
+	class NativeRazerRegionChroma extends AbstractRazerRegion<RazerRegionChroma> {
+		RazerBW2013 underlyingBw2013;
+		RazerCustom underlyingCustom;
+
+		public NativeRazerRegionChroma(DBusConnection connection) {
+			super(RazerRegionChroma.class, Name.CHROMA, connection, "");
 		}
 
-		protected void doSetStatic(Static staticEffect) {
-			throw new UnsupportedOperationException();
-		}
-
-		protected void doSetOn(On monoStaticEffect) {
-			throw new UnsupportedOperationException();
-		}
-
-		protected void doSetWave(Wave wave) {
-			throw new UnsupportedOperationException();
-		}
-
-		protected void doSetPulsate(Pulsate pulsate) {
-			throw new UnsupportedOperationException();
-		}
-
-		protected void doSetMatrix(Matrix matrix) {
-			throw new UnsupportedOperationException();
-		}
-
+		@Override
 		protected short doGetBrightness() {
-			throw new UnsupportedOperationException();
+			return (short) underlying.getBrightness();
 		}
 
+		@Override
+		protected void doSetBreathDual(Breath breath) {
+			underlying.setBreathDual((byte) breath.getColor1()[0], (byte) breath.getColor1()[1],
+					(byte) breath.getColor1()[2], (byte) breath.getColor2()[0], (byte) breath.getColor2()[1],
+					(byte) breath.getColor2()[2]);
+		}
+
+		@Override
+		protected void doSetBreathRandom() {
+			underlying.setBreathRandom();
+		}
+
+		@Override
+		protected void doSetBreathSingle(Breath breath) {
+			underlying.setBreathSingle((byte) breath.getColor()[0], (byte) breath.getColor()[1],
+					(byte) breath.getColor()[2]);
+		}
+
+		@Override
+		protected void doSetBrightness(int brightness) {
+			underlying.setBrightness(brightness);
+		}
+
+		@Override
+		protected void doSetMatrix(Matrix matrix) {
+			// https://github.com/openrazer/openrazer/wiki/Using-the-keyboard-driver
+			int[][][] cells = matrix.getCells();
+			int[] dim = getDevice().getMatrixSize();
+			int y = dim[0];
+			int x = dim[1];
+			byte[] b = new byte[(y * 3) + (y * x * 3)];
+			int q = 0;
+			if (cells != null) {
+				for (int yy = 0; yy < y; yy++) {
+					b[q++] = (byte) yy;
+					b[q++] = (byte) 0;
+					b[q++] = (byte) (x - 1);
+					if (cells[yy] != null)
+						for (int xx = 0; xx < x; xx++) {
+							if (cells[yy][xx] != null) {
+								b[q++] = (byte) (cells[yy][xx][0] & 0xff);
+								b[q++] = (byte) (cells[yy][xx][1] & 0xff);
+								b[q++] = (byte) (cells[yy][xx][2] & 0xff);
+							}
+						}
+				}
+			}
+			/* TODO only need to do this once when the matrix is initially selected */
+			underlying.setCustom();
+
+			underlying.setKeyRow(b);
+		}
+
+		@Override
+		protected void doSetOff() {
+			underlying.setNone();
+		}
+
+		@Override
+		protected void doSetOn(On monoStaticEffect) {
+			underlyingBw2013.setStatic();
+		}
+
+		@Override
+		protected void doSetPulsate(Pulsate pulsate) {
+			underlyingBw2013.setPulsate();
+		}
+
+		@Override
+		protected void doSetReactive(Reactive reactive) {
+			underlying.setReactive((byte) reactive.getColor()[0], (byte) reactive.getColor()[1],
+					(byte) reactive.getColor()[2], (byte) reactive.getSpeed());
+		}
+
+		@Override
 		protected void doSetRipple(Ripple ripple) {
-			throw new UnsupportedOperationException();
+			underlyingCustom.setRipple((byte) ripple.getColor()[0], (byte) ripple.getColor()[1],
+					(byte) ripple.getColor()[2], (double) ripple.getRefreshRate());
 		}
 
+		@Override
 		protected void doSetRippleRandomColour(Ripple ripple) {
-			throw new UnsupportedOperationException();
+			underlyingCustom.setRippleRandomColour((double) ripple.getRefreshRate());
 		}
 
+		@Override
+		protected void doSetSpectrum() {
+			underlying.setSpectrum();
+		}
+
+		@Override
 		protected void doSetStarlightDual(Starlight starlight) {
-			throw new UnsupportedOperationException();
+			underlying.setStarlightDual((byte) starlight.getColor1()[0], (byte) starlight.getColor1()[1],
+					(byte) starlight.getColor1()[2], (byte) starlight.getColor2()[0], (byte) starlight.getColor2()[1],
+					(byte) starlight.getColor2()[2], (byte) starlight.getSpeed());
 		}
 
+		@Override
 		protected void doSetStarlightRandom(Starlight starlight) {
-			throw new UnsupportedOperationException();
+			underlying.setStarlightRandom((byte) starlight.getSpeed());
 		}
 
+		@Override
 		protected void doSetStarlightSingle(Starlight starlight) {
-			throw new UnsupportedOperationException();
+			underlying.setStarlightSingle((byte) starlight.getColor()[0], (byte) starlight.getColor()[1],
+					(byte) starlight.getColor()[2], (byte) starlight.getSpeed());
+		}
+
+		@Override
+		protected void doSetStatic(Static staticEffect) {
+			underlying.setStatic((byte) staticEffect.getColor()[0], (byte) staticEffect.getColor()[1],
+					(byte) staticEffect.getColor()[2]);
+		}
+
+		@Override
+		protected void doSetWave(Wave wave) {
+			underlying.setWave(wave.getDirection().ordinal() + 1);
+		}
+
+		@Override
+		protected void loadInterfaces(String path) throws DBusException {
+			super.loadInterfaces(path);
+			try {
+				underlyingBw2013 = conn.getRemoteObject("org.razer", String.format("/org/razer/device/%s", path),
+						RazerBW2013.class, true);
+				loadMethods(RazerBW2013.class);
+			} catch (Exception e) {
+			}
+			try {
+				underlyingCustom = conn.getRemoteObject("org.razer", String.format("/org/razer/device/%s", path),
+						RazerCustom.class, true);
+				loadMethods(RazerCustom.class);
+			} catch (Exception e) {
+			}
+		}
+
+		@SuppressWarnings("resource")
+		@Override
+		protected void onCaps(Set<Capability> caps) {
+			if (((NativeRazerDevice) getDevice()).device.hasMatrix()) {
+				supportedEffects.add(Matrix.class);
+			}
+			if (hasMethod("setStarlightDual", byte.class, byte.class, byte.class, byte.class, byte.class, byte.class,
+					byte.class)) {
+				caps.add(Capability.STARLIGHT_DUAL);
+				supportedEffects.add(Starlight.class);
+			}
+			if (hasMethod("setStarlightRandom", byte.class)) {
+				caps.add(Capability.STARLIGHT_RANDOM);
+				supportedEffects.add(Starlight.class);
+			}
+			if (hasMethod("setStarlightSingle", byte.class, byte.class, byte.class, byte.class)) {
+				caps.add(Capability.STARLIGHT_SINGLE);
+				supportedEffects.add(Starlight.class);
+			}
+			if (hasMethod("setPulsate"))
+				supportedEffects.add(Pulsate.class);
+			if (hasMethod("setStatic"))
+				supportedEffects.add(On.class);
+			if (hasMethod("setRipple", byte.class, byte.class, byte.class, double.class)) {
+				caps.add(Capability.RIPPLE_SINGLE);
+				supportedEffects.add(Ripple.class);
+			}
+			if (hasMethod("setRippleRandomColour", double.class)) {
+				caps.add(Capability.RIPPLE_RANDOM);
+				supportedEffects.add(Ripple.class);
+			}
 		}
 	}
 
@@ -517,186 +721,81 @@ public class NativeRazerDevice implements Device {
 		}
 	}
 
-	class NativeRazerRegionChroma extends AbstractRazerRegion<RazerRegionChroma> {
-		RazerBW2013 underlyingBw2013;
-		RazerCustom underlyingCustom;
+	class NativeRazerRegionLogo extends AbstractRazerRegion<RazerRegionLogo> {
 
-		public NativeRazerRegionChroma(DBusConnection connection) {
-			super(RazerRegionChroma.class, Name.CHROMA, connection, "");
-		}
-
-		@Override
-		protected void loadInterfaces(String path) throws DBusException {
-			super.loadInterfaces(path);
-			try {
-				underlyingBw2013 = conn.getRemoteObject("org.razer", String.format("/org/razer/device/%s", path),
-						RazerBW2013.class, true);
-				loadMethods(RazerBW2013.class);
-			} catch (Exception e) {
-			}
-			try {
-				underlyingCustom = conn.getRemoteObject("org.razer", String.format("/org/razer/device/%s", path),
-						RazerCustom.class, true);
-				loadMethods(RazerCustom.class);
-			} catch (Exception e) {
-			}
-		}
-
-		@Override
-		protected void doSetMatrix(Matrix matrix) {
-			// https://github.com/openrazer/openrazer/wiki/Using-the-keyboard-driver
-			int[][][] cells = matrix.getCells();
-			int[] dim = getDevice().getMatrixSize();
-			int y = dim[0];
-			int x = dim[1];
-			byte[] b = new byte[(y * 3) + (y * x * 3)];
-			int q = 0;
-			if (cells != null) {
-				for (int yy = 0; yy < y; yy++) {
-					b[q++] = (byte) yy;
-					b[q++] = (byte) 0;
-					b[q++] = (byte) (x - 1);
-					if (cells[yy] != null)
-						for (int xx = 0; xx < x; xx++) {
-							if (cells[yy][xx] != null) {
-								b[q++] = (byte) (cells[yy][xx][0] & 0xff);
-								b[q++] = (byte) (cells[yy][xx][1] & 0xff);
-								b[q++] = (byte) (cells[yy][xx][2] & 0xff);
-							}
-						}
-				}
-			}
-			/* TODO only need to do this once when the matrix is initially selected */
-			underlying.setCustom();
-
-			underlying.setKeyRow(b);
-		}
-
-		@SuppressWarnings("resource")
-		@Override
-		protected void onCaps(Set<Capability> caps) {
-			if (((NativeRazerDevice) getDevice()).device.hasMatrix()) {
-				supportedEffects.add(Matrix.class);
-			}
-			if (hasMethod("setStarlightDual", byte.class, byte.class, byte.class, byte.class, byte.class, byte.class,
-					byte.class)) {
-				caps.add(Capability.STARLIGHT_DUAL);
-				supportedEffects.add(Starlight.class);
-			}
-			if (hasMethod("setStarlightRandom", byte.class)) {
-				caps.add(Capability.STARLIGHT_RANDOM);
-				supportedEffects.add(Starlight.class);
-			}
-			if (hasMethod("setStarlightSingle", byte.class, byte.class, byte.class, byte.class)) {
-				caps.add(Capability.STARLIGHT_SINGLE);
-				supportedEffects.add(Starlight.class);
-			}
-			if (hasMethod("setPulsate"))
-				supportedEffects.add(Pulsate.class);
-			if (hasMethod("setStatic"))
-				supportedEffects.add(On.class);
-			if (hasMethod("setRipple", byte.class, byte.class, byte.class, double.class)) {
-				caps.add(Capability.RIPPLE_SINGLE);
-				supportedEffects.add(Ripple.class);
-			}
-			if (hasMethod("setRippleRandomColour", double.class)) {
-				caps.add(Capability.RIPPLE_RANDOM);
-				supportedEffects.add(Ripple.class);
-			}
+		public NativeRazerRegionLogo(DBusConnection connection) {
+			super(RazerRegionLogo.class, Name.LOGO, connection, "Logo");
 		}
 
 		@Override
 		protected short doGetBrightness() {
-			return (short) underlying.getBrightness();
+			return (short) underlying.getLogoBrightness();
 		}
 
 		@Override
 		protected void doSetBreathDual(Breath breath) {
-			underlying.setBreathDual((byte) breath.getColor1()[0], (byte) breath.getColor1()[1],
+			underlying.setLogoBreathDual((byte) breath.getColor1()[0], (byte) breath.getColor1()[1],
 					(byte) breath.getColor1()[2], (byte) breath.getColor2()[0], (byte) breath.getColor2()[1],
-					(byte) breath.getColor2()[2]);
-		}
-
-		@Override
-		protected void doSetStarlightRandom(Starlight starlight) {
-			underlying.setStarlightRandom((byte) starlight.getSpeed());
-		}
-
-		@Override
-		protected void doSetStarlightDual(Starlight starlight) {
-			underlying.setStarlightDual((byte) starlight.getColor1()[0], (byte) starlight.getColor1()[1],
-					(byte) starlight.getColor1()[2], (byte) starlight.getColor2()[0], (byte) starlight.getColor2()[1],
-					(byte) starlight.getColor2()[2], (byte) starlight.getSpeed());
-		}
-
-		@Override
-		protected void doSetStarlightSingle(Starlight starlight) {
-			underlying.setStarlightSingle((byte) starlight.getColor()[0], (byte) starlight.getColor()[1],
-					(byte) starlight.getColor()[2], (byte) starlight.getSpeed());
+					(byte) breath.getColor1()[2]);
 		}
 
 		@Override
 		protected void doSetBreathRandom() {
-			underlying.setBreathRandom();
+			underlying.setLogoBreathRandom();
 		}
 
 		@Override
 		protected void doSetBreathSingle(Breath breath) {
-			underlying.setBreathSingle((byte) breath.getColor()[0], (byte) breath.getColor()[1],
+			underlying.setLogoBreathSingle((byte) breath.getColor()[0], (byte) breath.getColor()[1],
 					(byte) breath.getColor()[2]);
 		}
 
 		@Override
 		protected void doSetBrightness(int brightness) {
-			underlying.setBrightness(brightness);
+			underlying.setLogoBrightness(brightness);
 		}
 
 		@Override
 		protected void doSetOff() {
-			underlying.setNone();
+			if (hasMethod("setLogoActive", boolean.class)) {
+				underlying.setLogoActive(false);
+			} else
+				underlying.setLogoNone();
+		}
+
+		@Override
+		protected void doSetOn(On on) {
+			underlying.setLogoActive(true);
 		}
 
 		@Override
 		protected void doSetReactive(Reactive reactive) {
-			underlying.setReactive((byte) reactive.getColor()[0], (byte) reactive.getColor()[1],
+			underlying.setLogoReactive((byte) reactive.getColor()[0], (byte) reactive.getColor()[1],
 					(byte) reactive.getColor()[2], (byte) reactive.getSpeed());
 		}
 
 		@Override
 		protected void doSetSpectrum() {
-			underlying.setSpectrum();
+			underlying.setLogoSpectrum();
 		}
 
 		@Override
 		protected void doSetStatic(Static staticEffect) {
-			underlying.setStatic((byte) staticEffect.getColor()[0], (byte) staticEffect.getColor()[1],
+			underlying.setLogoStatic((byte) staticEffect.getColor()[0], (byte) staticEffect.getColor()[1],
 					(byte) staticEffect.getColor()[2]);
 		}
 
 		@Override
 		protected void doSetWave(Wave wave) {
-			underlying.setWave(wave.getDirection().ordinal() + 1);
+			underlying.setLogoWave(wave.getDirection().ordinal() + 1);
 		}
 
 		@Override
-		protected void doSetRipple(Ripple ripple) {
-			underlyingCustom.setRipple((byte) ripple.getColor()[0], (byte) ripple.getColor()[1],
-					(byte) ripple.getColor()[2], (double) ripple.getRefreshRate());
-		}
-
-		@Override
-		protected void doSetRippleRandomColour(Ripple ripple) {
-			underlyingCustom.setRippleRandomColour((double) ripple.getRefreshRate());
-		}
-
-		@Override
-		protected void doSetPulsate(Pulsate pulsate) {
-			underlyingBw2013.setPulsate();
-		}
-
-		@Override
-		protected void doSetOn(On monoStaticEffect) {
-			underlyingBw2013.setStatic();
+		protected void onCaps(Set<Capability> caps) {
+			if (hasMethod("setLogoActive", boolean.class)) {
+				supportedEffects.add(On.class);
+				supportedEffects.add(Off.class);
+			}
 		}
 	}
 
@@ -759,109 +858,6 @@ public class NativeRazerDevice implements Device {
 		@Override
 		protected void doSetWave(Wave wave) {
 			underlying.setRightWave(wave.getDirection().ordinal() + 1);
-		}
-	}
-
-	class NativeRazerRegionBacklight extends AbstractRazerRegion<RazerRegionBacklight> {
-
-		public NativeRazerRegionBacklight(DBusConnection connection) {
-			super(RazerRegionBacklight.class, Name.BACKLIGHT, connection, "Backlight");
-		}
-
-		@Override
-		protected void doSetOff() {
-			underlying.setBacklightActive(false);
-		}
-
-		@Override
-		protected void doSetOn(On on) {
-			underlying.setBacklightActive(true);
-		}
-
-		@Override
-		protected void onCaps(Set<Capability> caps) {
-			if (hasMethod("setBacklightActive", boolean.class)) {
-				supportedEffects.add(On.class);
-				supportedEffects.add(Off.class);
-			}
-		}
-	}
-
-	class NativeRazerRegionLogo extends AbstractRazerRegion<RazerRegionLogo> {
-
-		public NativeRazerRegionLogo(DBusConnection connection) {
-			super(RazerRegionLogo.class, Name.LOGO, connection, "Logo");
-		}
-
-		@Override
-		protected short doGetBrightness() {
-			return (short) underlying.getLogoBrightness();
-		}
-
-		@Override
-		protected void doSetBreathDual(Breath breath) {
-			underlying.setLogoBreathDual((byte) breath.getColor1()[0], (byte) breath.getColor1()[1],
-					(byte) breath.getColor1()[2], (byte) breath.getColor2()[0], (byte) breath.getColor2()[1],
-					(byte) breath.getColor1()[2]);
-		}
-
-		@Override
-		protected void doSetBreathRandom() {
-			underlying.setLogoBreathRandom();
-		}
-
-		@Override
-		protected void doSetBreathSingle(Breath breath) {
-			underlying.setLogoBreathSingle((byte) breath.getColor()[0], (byte) breath.getColor()[1],
-					(byte) breath.getColor()[2]);
-		}
-
-		@Override
-		protected void doSetBrightness(int brightness) {
-			underlying.setLogoBrightness(brightness);
-		}
-
-		@Override
-		protected void doSetOff() {
-			if (hasMethod("setLogoActive", boolean.class)) {
-				underlying.setLogoActive(false);
-			} else
-				underlying.setLogoNone();
-		}
-
-		@Override
-		protected void doSetReactive(Reactive reactive) {
-			underlying.setLogoReactive((byte) reactive.getColor()[0], (byte) reactive.getColor()[1],
-					(byte) reactive.getColor()[2], (byte) reactive.getSpeed());
-		}
-
-		@Override
-		protected void doSetSpectrum() {
-			underlying.setLogoSpectrum();
-		}
-
-		@Override
-		protected void doSetStatic(Static staticEffect) {
-			underlying.setLogoStatic((byte) staticEffect.getColor()[0], (byte) staticEffect.getColor()[1],
-					(byte) staticEffect.getColor()[2]);
-		}
-
-		@Override
-		protected void doSetWave(Wave wave) {
-			underlying.setLogoWave(wave.getDirection().ordinal() + 1);
-		}
-
-		@Override
-		protected void doSetOn(On on) {
-			underlying.setLogoActive(true);
-		}
-
-		@Override
-		protected void onCaps(Set<Capability> caps) {
-			if (hasMethod("setLogoActive", boolean.class)) {
-				supportedEffects.add(On.class);
-				supportedEffects.add(Off.class);
-			}
 		}
 	}
 
@@ -943,31 +939,45 @@ public class NativeRazerDevice implements Device {
 		}
 	}
 
-	private RazerDevice device;
-	private String path;
-	private RazerDPI dpi;
-	private List<Listener> listeners = new ArrayList<>();
-	private List<Region> regionList;
-	private Preferences prefs;
-	private RazerBrightness brightness;
+	final static System.Logger LOG = System.getLogger(NativeRazerDevice.class.getName());
+
+	final static long MAX_CACHE_AGE = TimeUnit.DAYS.toMillis(7);
+
+	public static String genericHash(String input) {
+		try {
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+			byte[] hash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
+			return Base64.getEncoder().encodeToString(hash).replace("/", "").replace("=", "");
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 	private RazerBattery battery;
-	private RazerMacro macros;
-	private short lastBrightness = -1;
+	private int batteryLevel;
+	private ScheduledFuture<?> batteryTask;
+	private Map<BrandingImage, String> brandingImages = new HashMap<>();
+	private RazerBrightness brightness;
 	private Set<Capability> caps = new HashSet<>();
 	private DBusConnection conn;
-	private RazerGameMode gameMode;
-	private Set<Class<? extends Effect>> supportedEffects = new LinkedHashSet<>();
-	private Map<BrandingImage, String> brandingImages = new HashMap<>();
-
-	private int batteryLevel;
-	private boolean wasCharging;
-	private ScheduledFuture<?> batteryTask;
-	private Effect effect;
-	private int maxDpi = -1;
+	private RazerDevice device;
 	private String deviceName;
+	private RazerDPI dpi;
 	private String driverVersion;
-	private int pollRate;
+	private Effect effect;
 	private String firmware;
+	private RazerGameMode gameMode;
+
+	private short lastBrightness = -1;
+	private List<Listener> listeners = new ArrayList<>();
+	private RazerMacro macros;
+	private int maxDpi = -1;
+	private String path;
+	private int pollRate = -1;
+	private Preferences prefs;
+	private List<Region> regionList;
+	private Set<Class<? extends Effect>> supportedEffects = new LinkedHashSet<>();
+
+	private boolean wasCharging;
 
 	NativeRazerDevice(String path, DBusConnection conn, OpenRazerBackend backend) throws Exception {
 		this.path = path;
@@ -1127,453 +1137,26 @@ public class NativeRazerDevice implements Device {
 			batteryTask = backend.getBatteryPoll().scheduleAtFixedRate(() -> pollBattery(), 30, 30, TimeUnit.SECONDS);
 		}
 
-		JsonObject jsonObject = JsonParser.parseString(device.getRazerUrls()).getAsJsonObject();
-		for (String key : jsonObject.keySet()) {
-			try {
+		try {
+			JsonObject jsonObject = JsonParser.parseString(device.getRazerUrls()).getAsJsonObject();
+			for (String key : jsonObject.keySet()) {
 				String img = jsonObject.get(key).getAsString();
-				BrandingImage bimg = BrandingImage.valueOf(key.substring(0, key.length() - 4).toUpperCase());
-				brandingImages.put(bimg, img);
-			} catch (Exception e) {
-			}
-		}
-	}
-
-	@Override
-	public String getImage() {
-		String image = device.getDeviceImage();
-		if (!image.startsWith("http:") && !image.startsWith("https:"))
-			return image;
-		return getCachedImage(image);
-	}
-
-	private String getCachedImage(String image) {
-		if (image == null)
-			return null;
-		String hash = genericHash(image);
-		File cacheDir = new File(System.getProperty("user.home") + File.separator + ".cache" + File.separator + "snake"
-				+ File.separator + "device-image-cache");
-		if (!cacheDir.exists() && !cacheDir.mkdirs()) {
-			throw new IllegalStateException(
-					String.format("Failed to create device image cache directory %s.", cacheDir));
-		}
-		try {
-			File cacheFile = new File(cacheDir, hash);
-			if (!cacheFile.exists()) {
-				URL url = new URL(image);
-				try (InputStream in = url.openStream()) {
-					try (OutputStream out = new FileOutputStream(cacheFile)) {
-						in.transferTo(out);
-					}
-				}
-			}
-			return cacheFile.toURI().toURL().toExternalForm();
-		} catch (MalformedURLException murle) {
-			throw new IllegalStateException(String.format("Failed to construct image URL for %s.", image), murle);
-		} catch (IOException ioe) {
-			throw new IllegalStateException(String.format("Failed to cache device image %s.", image), ioe);
-		}
-	}
-
-	@Override
-	public DeviceType getType() {
-		try {
-			return DeviceType.valueOf(device.getDeviceType().toUpperCase());
-		} catch (Exception e) {
-			return DeviceType.UNRECOGNISED;
-		}
-	}
-
-	@Override
-	public String getMode() {
-		return device.getDeviceMode();
-	}
-
-	@Override
-	public String getName() {
-		if (deviceName == null)
-			deviceName = device.getDeviceName();
-		return deviceName;
-	}
-
-	@Override
-	public String getDriverVersion() {
-		if (driverVersion == null)
-			driverVersion = device.getDriverVersion();
-		return driverVersion;
-	}
-
-	@Override
-	public String getFirmware() {
-		if (firmware == null)
-			firmware = device.getFirmware();
-		return firmware;
-	}
-
-	@Override
-	public int getPollRate() {
-		if (pollRate == -1)
-			pollRate = device.getPollRate();
-		return pollRate;
-	}
-
-	@Override
-	public String getSerial() {
-		return device.getSerial();
-	}
-
-	@Override
-	public void setPollRate(int pollRate) {
-		this.pollRate = pollRate;
-		device.setPollRate((short) pollRate);
-		fireChange(null);
-	}
-
-	@Override
-	public void setSuspended(boolean suspended) {
-		if (suspended)
-			device.suspendDevice();
-		else
-			device.resumeDevice();
-		fireChange(null);
-
-	}
-
-	@Override
-	public Set<Capability> getCapabilities() {
-		return caps;
-	}
-
-	@Override
-	public short getBrightness() {
-		assertCap(Capability.BRIGHTNESS);
-		if (brightness == null)
-			return Device.super.getBrightness();
-		else {
-			if (lastBrightness == -1) {
-				lastBrightness = (short) brightness.getBrightness();
-			}
-			return lastBrightness;
-		}
-	}
-
-	@Override
-	public boolean isSuspended() {
-		// TODO err
-		return false;
-	}
-
-	@Override
-	public String toString() {
-		return "NativeRazerDevice [getImage()=" + getImage() + ", getType()=" + getType() + ", getMode()=" + getMode()
-				+ ", getName()=" + getName() + ", getDriverVersion()=" + getDriverVersion() + ", getFirmware()="
-				+ getFirmware() + ", getPollRate()=" + getPollRate() + ", getSerial()=" + getSerial()
-				+ ", isSuspended()=" + isSuspended() + ", getCapabilties()=" + getCapabilities() + "]";
-	}
-
-	@Override
-	public List<Region> getRegions() {
-		if (regionList == null) {
-			regionList = new ArrayList<Region>();
-			for (Region r : Arrays.asList(new NativeRazerRegionChroma(conn), new NativeRazerRegionLeft(conn),
-					new NativeRazerRegionRight(conn), new NativeRazerRegionLogo(conn),
-					new NativeRazerRegionScroll(conn), new NativeRazerRegionBacklight(conn))) {
 				try {
-					r.load(path);
-					regionList.add(r);
+					BrandingImage bimg = BrandingImage.valueOf(key.substring(0, key.length() - 4).toUpperCase());
+					brandingImages.put(bimg, img);
 				} catch (Exception e) {
-					LOG.log(Level.DEBUG, "Failed to load region.", e);
+					LOG.log(Level.WARNING, String.format(
+							"Unknow Razer URL image type. The image %s for %s will be ignored. Please report  this to Snake developers.",
+							key, img), e);
 				}
 			}
+		} catch (Exception e) {
 		}
-		return regionList;
-	}
-
-	@Override
-	public int[] getDPI() {
-		assertCap(Capability.DPI);
-		return dpi.getDPI();
-	}
-
-	@Override
-	public int getMaxDPI() {
-		assertCap(Capability.DPI);
-		if (maxDpi == -1)
-			maxDpi = dpi.maxDPI();
-		return maxDpi;
-	}
-
-	@Override
-	public void setDPI(short x, short y) {
-		assertCap(Capability.DPI);
-		dpi.setDPI(x, y);
-		fireChange(null);
 	}
 
 	@Override
 	public void addListener(Listener listener) {
 		listeners.add(listener);
-	}
-
-	@Override
-	public void removeListener(Listener listener) {
-		listeners.remove(listener);
-	}
-
-	@Override
-	public Set<Class<? extends Effect>> getSupportedEffects() {
-		return supportedEffects;
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public Effect getEffect() {
-		if (effect == null) {
-			String efClazzName = prefs.get("effect", "");
-			Class<? extends Effect> efClazz = null;
-			if (efClazzName.equals(""))
-				efClazz = getSupportedEffects().isEmpty() ? null : getSupportedEffects().iterator().next();
-			else {
-				try {
-					efClazz = (Class<? extends Effect>) getClass().getClassLoader().loadClass(efClazzName);
-				} catch (Exception e) {
-					LOG.log(Level.DEBUG,
-							String.format("Could not load configured effect from preferences, %s.", efClazzName), e);
-				}
-			}
-			if (efClazz != null) {
-				effect = createEffect(efClazz);
-			}
-		}
-		return effect;
-	}
-
-	@SuppressWarnings("rawtypes")
-	@Override
-	public void setEffect(Effect effect) {
-		this.effect = effect;
-		lastBrightness = -1;
-		prefs.put("effect", effect.getClass().getName());
-		effect.save(prefs);
-		for (Region r : getRegions()) {
-			if (r.isSupported(effect))
-				((AbstractRazerRegion) r).doSetEffect(effect);
-		}
-		fireChange(null);
-	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Override
-	public void setBrightness(short brightness) {
-		assertCap(Capability.BRIGHTNESS);
-		if (this.brightness == null) {
-			/* Calculated overall brightness */
-			if (brightness != getBrightness()) {
-				if (caps.contains(Capability.BRIGHTNESS_PER_REGION)) {
-					for (Region r : getRegions()) {
-						if (r.getCapabilities().contains(Capability.BRIGHTNESS_PER_REGION)) {
-							/*
-							 * NOTE: These are set directly so we don't fire too many events, just the
-							 * device change
-							 */
-							((AbstractRazerRegion) r).brightness = brightness;
-							((AbstractRazerRegion) r).doSetBrightness(brightness);
-						}
-					}
-					fireChange(null);
-				}
-			}
-		} else {
-			/* Driver supplied overall brightness */
-			if (brightness != lastBrightness) {
-				lastBrightness = brightness;
-				prefs.putInt("brightness", brightness);
-				this.brightness.setBrightness(brightness);
-				fireChange(null);
-			}
-		}
-	}
-
-	@Override
-	public boolean isGameMode() {
-		assertCap(Capability.GAME_MODE);
-		return this.gameMode.getGameMode();
-	}
-
-	@Override
-	public void setGameMode(boolean gameMode) {
-		assertCap(Capability.GAME_MODE);
-		this.gameMode.setGameMode(gameMode);
-		fireChange(null);
-	}
-
-	protected void fireChange(Region region) {
-		for (int i = listeners.size() - 1; i >= 0; i--)
-			listeners.get(i).changed(this, region);
-	}
-
-	void assertCap(Capability cap) {
-		if (!caps.contains(cap))
-			throw new UnsupportedOperationException(
-					String.format("The capability %s is not supported on device %s.", cap, getName()));
-	}
-
-	@Override
-	public int getBattery() {
-		assertCap(Capability.BATTERY);
-		return (int) battery.getBattery();
-	}
-
-	@Override
-	public boolean isCharging() {
-		assertCap(Capability.BATTERY);
-		return battery.isCharging();
-	}
-
-	@Override
-	public void setIdleTime(int idleTime) {
-		assertCap(Capability.BATTERY);
-		int old = prefs.getInt("idleTime", -1);
-		if (old != idleTime) {
-			prefs.putInt("idleTime", idleTime);
-			battery.setIdleTime(idleTime);
-			fireChange(null);
-		}
-	}
-
-	@Override
-	public void setLowBatteryThreshold(byte threshold) {
-		assertCap(Capability.BATTERY);
-		int old = prefs.getInt("lowBatteryThreshold", -1);
-		if (old != threshold) {
-			prefs.putInt("lowBatteryThreshold", Byte.toUnsignedInt(threshold));
-			battery.setLowBatteryThreshold(threshold);
-			fireChange(null);
-		}
-	}
-
-	public static String genericHash(String input) {
-		try {
-			MessageDigest digest = MessageDigest.getInstance("SHA-256");
-			byte[] hash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
-			return Base64.getEncoder().encodeToString(hash).replace("/", "").replace("=", "");
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	@Override
-	public int getIdleTime() {
-		return prefs.getInt("idleTime", (int) TimeUnit.MINUTES.toSeconds(5));
-	}
-
-	@Override
-	public byte getLowBatteryThreshold() {
-		return (byte) prefs.getInt("lowBatteryThreshold", 5);
-	}
-
-	private void pollBattery() {
-		boolean charging = battery.isCharging();
-		int level = (int) battery.getBattery();
-		if (charging != wasCharging || batteryLevel != level) {
-			wasCharging = charging;
-			batteryLevel = level;
-			fireChange(null);
-		}
-	}
-
-	@Override
-	public void close() throws Exception {
-		if (batteryTask != null)
-			batteryTask.cancel(false);
-	}
-
-	@Override
-	public int[] getMatrixSize() {
-		assertCap(Capability.MATRIX);
-		return device.getMatrixDimensions();
-	}
-
-	@Override
-	public String getImageUrl(BrandingImage image) {
-		return getCachedImage(brandingImages.get(image));
-	}
-
-	@Override
-	public String getKeyboardLayout() {
-		return device.getKeyboardLayout();
-	}
-
-	@Override
-	public Effect createEffect(Class<? extends Effect> clazz) {
-		Effect effectInstance;
-		try {
-			effectInstance = clazz.getConstructor().newInstance();
-			effectInstance.load(prefs);
-			return effectInstance;
-		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-				| NoSuchMethodException | SecurityException e) {
-			throw new IllegalStateException(String.format("Cannot create effect %s.", clazz));
-		}
-	}
-
-	@Override
-	public Map<Key, MacroSequence> getMacros() {
-		assertCap(Capability.MACROS);
-		String macroString = macros.getMacros();
-		JsonObject jsonObject = JsonParser.parseString(macroString).getAsJsonObject();
-		Map<Key, MacroSequence> macroSequences = new LinkedHashMap<>();
-		for (String key : jsonObject.keySet()) {
-			MacroSequence seq = new MacroSequence(Key.valueOf(key));
-			JsonArray arr = jsonObject.get(key).getAsJsonArray();
-			for (JsonElement el : arr) {
-				JsonObject obj = el.getAsJsonObject();
-				String type = obj.get("type").getAsString();
-				Macro macro;
-				if (type.equals("MacroKey")) {
-					MacroKey macroKey = new MacroKey();
-					macroKey.setKey(Key.valueOf(obj.get("key_id").getAsString()));
-					macroKey.setPrePause(obj.get("pre_pause").getAsLong());
-					macroKey.setState(State.valueOf(obj.get("state").getAsString()));
-					macro = macroKey;
-				} else if (type.equals("MacroURL")) {
-					MacroURL macroURL = new MacroURL();
-					macroURL.setUrl(obj.get("url").getAsString());
-					macro = macroURL;
-				} else if (type.equals("MacroScript")) {
-					MacroScript macroScript = new MacroScript();
-					macroScript.setScript(obj.get("script").getAsString());
-					if (obj.has("args")) {
-						List<String> args = new ArrayList<>();
-						for (JsonElement argEl : obj.get("args").getAsJsonArray()) {
-							args.add(argEl.getAsString());
-						}
-						macroScript.setArgs(args);
-					}
-					macro = macroScript;
-				} else
-					throw new UnsupportedOperationException();
-				seq.add(macro);
-			}
-			macroSequences.put(seq.getMacroKey(), seq);
-		}
-		return macroSequences;
-	}
-
-	@Override
-	public String exportMacros() {
-		assertCap(Capability.MACROS);
-		return macros.getMacros();
-	}
-
-	@Override
-	public void importMacros(String macros) {
-		for (MacroSequence s : getMacros().values())
-			deleteMacro(s.getMacroKey());
-
-		JsonObject jsonObject = JsonParser.parseString(macros).getAsJsonObject();
-		for (String key : jsonObject.keySet()) {
-			this.macros.addMacro(key, jsonObject.get(key).toString());
-		}
 	}
 
 	@Override
@@ -1621,9 +1204,269 @@ public class NativeRazerDevice implements Device {
 	}
 
 	@Override
+	public void close() throws Exception {
+		if (batteryTask != null)
+			batteryTask.cancel(false);
+	}
+
+	@Override
+	public Effect createEffect(Class<? extends Effect> clazz) {
+		Effect effectInstance;
+		try {
+			effectInstance = clazz.getConstructor().newInstance();
+			effectInstance.load(prefs);
+			return effectInstance;
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+				| NoSuchMethodException | SecurityException e) {
+			throw new IllegalStateException(String.format("Cannot create effect %s.", clazz));
+		}
+	}
+
+	@Override
 	public void deleteMacro(Key key) {
 		assertCap(Capability.MACROS);
 		macros.deleteMacro(key.name());
+	}
+
+	@Override
+	public String exportMacros() {
+		assertCap(Capability.MACROS);
+		return macros.getMacros();
+	}
+
+	@Override
+	public int getBattery() {
+		assertCap(Capability.BATTERY);
+		return (int) battery.getBattery();
+	}
+
+	@Override
+	public short getBrightness() {
+		assertCap(Capability.BRIGHTNESS);
+		if (brightness == null)
+			return Device.super.getBrightness();
+		else {
+			if (lastBrightness == -1) {
+				lastBrightness = (short) brightness.getBrightness();
+			}
+			return lastBrightness;
+		}
+	}
+
+	@Override
+	public Set<Capability> getCapabilities() {
+		return caps;
+	}
+
+	@Override
+	public int[] getDPI() {
+		assertCap(Capability.DPI);
+		return dpi.getDPI();
+	}
+
+	@Override
+	public String getDriverVersion() {
+		if (driverVersion == null)
+			driverVersion = device.getDriverVersion();
+		return driverVersion;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Effect getEffect() {
+		if (effect == null) {
+			String efClazzName = prefs.get("effect", "");
+			Class<? extends Effect> efClazz = null;
+			if (efClazzName.equals(""))
+				efClazz = getSupportedEffects().isEmpty() ? null : getSupportedEffects().iterator().next();
+			else {
+				try {
+					efClazz = (Class<? extends Effect>) getClass().getClassLoader().loadClass(efClazzName);
+				} catch (Exception e) {
+					LOG.log(Level.DEBUG,
+							String.format("Could not load configured effect from preferences, %s.", efClazzName), e);
+				}
+			}
+			if (efClazz != null) {
+				effect = createEffect(efClazz);
+			}
+		}
+		return effect;
+	}
+
+	@Override
+	public String getFirmware() {
+		if (firmware == null)
+			firmware = device.getFirmware();
+		return firmware;
+	}
+
+	@Override
+	public int getIdleTime() {
+		return prefs.getInt("idleTime", (int) TimeUnit.MINUTES.toSeconds(5));
+	}
+
+	@Override
+	public String getImage() {
+		if (brandingImages.isEmpty()) {
+			String image = device.getDeviceImage();
+			if (!image.startsWith("http:") && !image.startsWith("https:"))
+				return image;
+			return getCachedImage(image);
+		} else {
+			return getCachedImage(brandingImages.values().iterator().next());
+		}
+	}
+
+	@Override
+	public String getImageUrl(BrandingImage image) {
+		return getCachedImage(brandingImages.get(image));
+	}
+
+	@Override
+	public String getKeyboardLayout() {
+		return device.getKeyboardLayout();
+	}
+
+	@Override
+	public byte getLowBatteryThreshold() {
+		return (byte) prefs.getInt("lowBatteryThreshold", 5);
+	}
+
+	@Override
+	public Map<Key, MacroSequence> getMacros() {
+		assertCap(Capability.MACROS);
+		String macroString = macros.getMacros();
+		JsonObject jsonObject = JsonParser.parseString(macroString).getAsJsonObject();
+		Map<Key, MacroSequence> macroSequences = new LinkedHashMap<>();
+		for (String key : jsonObject.keySet()) {
+			MacroSequence seq = new MacroSequence(Key.valueOf(key));
+			JsonArray arr = jsonObject.get(key).getAsJsonArray();
+			for (JsonElement el : arr) {
+				JsonObject obj = el.getAsJsonObject();
+				String type = obj.get("type").getAsString();
+				Macro macro;
+				if (type.equals("MacroKey")) {
+					MacroKey macroKey = new MacroKey();
+					macroKey.setKey(Key.valueOf(obj.get("key_id").getAsString()));
+					macroKey.setPrePause(obj.get("pre_pause").getAsLong());
+					macroKey.setState(State.valueOf(obj.get("state").getAsString()));
+					macro = macroKey;
+				} else if (type.equals("MacroURL")) {
+					MacroURL macroURL = new MacroURL();
+					macroURL.setUrl(obj.get("url").getAsString());
+					macro = macroURL;
+				} else if (type.equals("MacroScript")) {
+					MacroScript macroScript = new MacroScript();
+					macroScript.setScript(obj.get("script").getAsString());
+					if (obj.has("args")) {
+						List<String> args = new ArrayList<>();
+						for (JsonElement argEl : obj.get("args").getAsJsonArray()) {
+							args.add(argEl.getAsString());
+						}
+						macroScript.setArgs(args);
+					}
+					macro = macroScript;
+				} else
+					throw new UnsupportedOperationException();
+				seq.add(macro);
+			}
+			macroSequences.put(seq.getMacroKey(), seq);
+		}
+		return macroSequences;
+	}
+
+	@Override
+	public int[] getMatrixSize() {
+		assertCap(Capability.MATRIX);
+		return device.getMatrixDimensions();
+	}
+
+	@Override
+	public int getMaxDPI() {
+		assertCap(Capability.DPI);
+		if (maxDpi == -1)
+			maxDpi = dpi.maxDPI();
+		return maxDpi;
+	}
+
+	@Override
+	public String getMode() {
+		return device.getDeviceMode();
+	}
+
+	@Override
+	public String getName() {
+		if (deviceName == null)
+			deviceName = device.getDeviceName();
+		return deviceName;
+	}
+
+	@Override
+	public int getPollRate() {
+		if (pollRate == -1)
+			pollRate = device.getPollRate();
+		return pollRate;
+	}
+
+	@Override
+	public List<Region> getRegions() {
+		if (regionList == null) {
+			regionList = new ArrayList<Region>();
+			for (Region r : Arrays.asList(new NativeRazerRegionChroma(conn), new NativeRazerRegionLeft(conn),
+					new NativeRazerRegionRight(conn), new NativeRazerRegionLogo(conn),
+					new NativeRazerRegionScroll(conn), new NativeRazerRegionBacklight(conn))) {
+				try {
+					r.load(path);
+					regionList.add(r);
+				} catch (Exception e) {
+					LOG.log(Level.DEBUG, "Failed to load region.", e);
+				}
+			}
+		}
+		return regionList;
+	}
+
+	@Override
+	public String getSerial() {
+		return device.getSerial();
+	}
+
+	@Override
+	public Set<Class<? extends Effect>> getSupportedEffects() {
+		return supportedEffects;
+	}
+
+	@Override
+	public DeviceType getType() {
+		try {
+			return DeviceType.valueOf(device.getDeviceType().toUpperCase());
+		} catch (Exception e) {
+			return DeviceType.UNRECOGNISED;
+		}
+	}
+
+	@Override
+	public void importMacros(String macros) {
+		for (MacroSequence s : getMacros().values())
+			deleteMacro(s.getMacroKey());
+
+		JsonObject jsonObject = JsonParser.parseString(macros).getAsJsonObject();
+		for (String key : jsonObject.keySet()) {
+			this.macros.addMacro(key, jsonObject.get(key).toString());
+		}
+	}
+
+	@Override
+	public boolean isCharging() {
+		assertCap(Capability.BATTERY);
+		return battery.isCharging();
+	}
+
+	@Override
+	public boolean isGameMode() {
+		assertCap(Capability.GAME_MODE);
+		return this.gameMode.getGameMode();
 	}
 
 	@Override
@@ -1633,9 +1476,132 @@ public class NativeRazerDevice implements Device {
 	}
 
 	@Override
+	public boolean isSuspended() {
+		// TODO err
+		return false;
+	}
+
+	@Override
+	public void removeListener(Listener listener) {
+		listeners.remove(listener);
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Override
+	public void setBrightness(short brightness) {
+		assertCap(Capability.BRIGHTNESS);
+		if (this.brightness == null) {
+			/* Calculated overall brightness */
+			if (brightness != getBrightness()) {
+				if (caps.contains(Capability.BRIGHTNESS_PER_REGION)) {
+					for (Region r : getRegions()) {
+						if (r.getCapabilities().contains(Capability.BRIGHTNESS_PER_REGION)) {
+							/*
+							 * NOTE: These are set directly so we don't fire too many events, just the
+							 * device change
+							 */
+							((AbstractRazerRegion) r).brightness = brightness;
+							((AbstractRazerRegion) r).doSetBrightness(brightness);
+						}
+					}
+					fireChange(null);
+				}
+			}
+		} else {
+			/* Driver supplied overall brightness */
+			if (brightness != lastBrightness) {
+				lastBrightness = brightness;
+				prefs.putInt("brightness", brightness);
+				this.brightness.setBrightness(brightness);
+				fireChange(null);
+			}
+		}
+	}
+
+	@Override
+	public void setDPI(short x, short y) {
+		assertCap(Capability.DPI);
+		dpi.setDPI(x, y);
+		fireChange(null);
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public void setEffect(Effect effect) {
+		this.effect = effect;
+		lastBrightness = -1;
+		prefs.put("effect", effect.getClass().getName());
+		effect.save(prefs);
+		for (Region r : getRegions()) {
+			if (r.isSupported(effect))
+				((AbstractRazerRegion) r).doSetEffect(effect);
+		}
+		fireChange(null);
+	}
+
+	@Override
+	public void setGameMode(boolean gameMode) {
+		assertCap(Capability.GAME_MODE);
+		this.gameMode.setGameMode(gameMode);
+		fireChange(null);
+	}
+
+	@Override
+	public void setIdleTime(int idleTime) {
+		assertCap(Capability.BATTERY);
+		int old = prefs.getInt("idleTime", -1);
+		if (old != idleTime) {
+			prefs.putInt("idleTime", idleTime);
+			battery.setIdleTime(idleTime);
+			fireChange(null);
+		}
+	}
+
+	@Override
+	public void setLowBatteryThreshold(byte threshold) {
+		assertCap(Capability.BATTERY);
+		int old = prefs.getInt("lowBatteryThreshold", -1);
+		if (old != threshold) {
+			prefs.putInt("lowBatteryThreshold", Byte.toUnsignedInt(threshold));
+			battery.setLowBatteryThreshold(threshold);
+			fireChange(null);
+		}
+	}
+
+	@Override
 	public void setModeModifier(boolean modify) {
 		assertCap(Capability.MACROS);
 		macros.setModeModifier(modify);
+	}
+
+	@Override
+	public void setPollRate(int pollRate) {
+		this.pollRate = pollRate;
+		device.setPollRate((short) pollRate);
+		fireChange(null);
+	}
+
+	@Override
+	public void setSuspended(boolean suspended) {
+		if (suspended)
+			device.suspendDevice();
+		else
+			device.resumeDevice();
+		fireChange(null);
+
+	}
+
+	@Override
+	public String toString() {
+		return "NativeRazerDevice [getImage()=" + getImage() + ", getType()=" + getType() + ", getMode()=" + getMode()
+				+ ", getName()=" + getName() + ", getDriverVersion()=" + getDriverVersion() + ", getFirmware()="
+				+ getFirmware() + ", getPollRate()=" + getPollRate() + ", getSerial()=" + getSerial()
+				+ ", isSuspended()=" + isSuspended() + ", getCapabilties()=" + getCapabilities() + "]";
+	}
+
+	protected void fireChange(Region region) {
+		for (int i = listeners.size() - 1; i >= 0; i--)
+			listeners.get(i).changed(this, region);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1645,6 +1611,50 @@ public class NativeRazerDevice implements Device {
 				return (R) r;
 		}
 		return null;
+	}
+
+	void assertCap(Capability cap) {
+		if (!caps.contains(cap))
+			throw new UnsupportedOperationException(
+					String.format("The capability %s is not supported on device %s.", cap, getName()));
+	}
+
+	private String getCachedImage(String image) {
+		if (image == null)
+			return null;
+		String hash = genericHash(image);
+		File cacheDir = new File(System.getProperty("user.home") + File.separator + ".cache" + File.separator + "snake"
+				+ File.separator + "device-image-cache");
+		if (!cacheDir.exists() && !cacheDir.mkdirs()) {
+			throw new IllegalStateException(
+					String.format("Failed to create device image cache directory %s.", cacheDir));
+		}
+		try {
+			File cacheFile = new File(cacheDir, hash);
+			if (!cacheFile.exists()) {
+				URL url = new URL(image);
+				try (InputStream in = url.openStream()) {
+					try (OutputStream out = new FileOutputStream(cacheFile)) {
+						in.transferTo(out);
+					}
+				}
+			}
+			return cacheFile.toURI().toURL().toExternalForm();
+		} catch (MalformedURLException murle) {
+			throw new IllegalStateException(String.format("Failed to construct image URL for %s.", image), murle);
+		} catch (IOException ioe) {
+			throw new IllegalStateException(String.format("Failed to cache device image %s.", image), ioe);
+		}
+	}
+
+	private void pollBattery() {
+		boolean charging = battery.isCharging();
+		int level = (int) battery.getBattery();
+		if (charging != wasCharging || batteryLevel != level) {
+			wasCharging = charging;
+			batteryLevel = level;
+			fireChange(null);
+		}
 	}
 
 }

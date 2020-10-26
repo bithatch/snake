@@ -89,6 +89,10 @@ Label, CheckBox {
 
 /* Various icon, image and icon button styles */
 
+.padded {
+    -fx-padding: 4px;
+}
+
 .iconBar {
     -fx-padding: 4px;
     -fx-spacing: 4px;

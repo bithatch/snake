@@ -12,32 +12,7 @@ public interface Backend extends AutoCloseable, Grouping {
 		void deviceRemoved(Device device);
 	}
 
-	void init() throws Exception;
-
-	List<Device> getDevices() throws Exception;
-
-	boolean isSync();
-
-	void setSync(boolean sync);
-
-	String getName();
-
 	void addListener(BackendListener tray);
-
-	void removeListener(BackendListener tray);
-
-	default Set<Capability> getCapabilities() {
-		Set<Capability> l = new LinkedHashSet<>();
-		try {
-			for (Device d : getDevices()) {
-				l.addAll(d.getCapabilities());
-			}
-		} catch (Exception e) {
-		}
-		return l;
-	}
-
-	String getVersion();
 
 	default int getBattery() {
 		int l = 0;
@@ -52,22 +27,6 @@ public interface Backend extends AutoCloseable, Grouping {
 			return l == 0 ? -1 : (int) ((float) tot / (float) l);
 		} catch (Exception e) {
 			throw new IllegalStateException("Failed to get battery summary.", e);
-		}
-	}
-
-	default byte getLowBatteryThreshold() {
-		try {
-			int t = 0;
-			int l = 0;
-			for (Device d : getDevices()) {
-				if (d.getCapabilities().contains(Capability.BATTERY)) {
-					t += d.getLowBatteryThreshold();
-					l++;
-				}
-			}
-			return (byte) ((float) t / (float) l);
-		} catch (Exception e) {
-			throw new IllegalStateException("Failed to get overall brightness.", e);
 		}
 	}
 
@@ -87,6 +46,56 @@ public interface Backend extends AutoCloseable, Grouping {
 		return (short) ((float) tot / (float) l);
 	}
 
+	default Set<Capability> getCapabilities() {
+		Set<Capability> l = new LinkedHashSet<>();
+		try {
+			for (Device d : getDevices()) {
+				l.addAll(d.getCapabilities());
+			}
+		} catch (Exception e) {
+		}
+		return l;
+	}
+
+	List<Device> getDevices() throws Exception;
+
+	default byte getLowBatteryThreshold() {
+		try {
+			int t = 0;
+			int l = 0;
+			for (Device d : getDevices()) {
+				if (d.getCapabilities().contains(Capability.BATTERY)) {
+					t += d.getLowBatteryThreshold();
+					l++;
+				}
+			}
+			return (byte) ((float) t / (float) l);
+		} catch (Exception e) {
+			throw new IllegalStateException("Failed to get overall brightness.", e);
+		}
+	}
+
+	String getName();
+
+	String getVersion();
+
+	void init() throws Exception;
+
+	default boolean isCharging() {
+		try {
+			for (Device d : getDevices())
+				if (d.getCapabilities().contains(Capability.BATTERY) && d.isCharging())
+					return true;
+			return false;
+		} catch (Exception e) {
+			throw new IllegalStateException("Failed to get charging state.", e);
+		}
+	}
+
+	boolean isSync();
+
+	void removeListener(BackendListener tray);
+
 	default void setBrightness(short brightness) {
 		try {
 			for (Device d : getDevices()) {
@@ -99,14 +108,5 @@ public interface Backend extends AutoCloseable, Grouping {
 		}
 	}
 
-	default boolean isCharging() {
-		try {
-			for (Device d : getDevices())
-				if (d.getCapabilities().contains(Capability.BATTERY) && d.isCharging())
-					return true;
-			return false;
-		} catch (Exception e) {
-			throw new IllegalStateException("Failed to get charging state.", e);
-		}
-	}
+	void setSync(boolean sync);
 }

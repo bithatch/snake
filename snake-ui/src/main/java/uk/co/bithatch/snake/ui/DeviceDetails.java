@@ -49,6 +49,10 @@ public class DeviceDetails extends AbstractDetailsController {
 		controls.prefHeightProperty().bind(Bindings.add(-5, scroll.heightProperty()));
 	}
 
+	public FlowPane getControls() {
+		return controls;
+	}
+
 	@Override
 	protected void onSetDeviceDetails() throws Exception {
 		Property<Boolean> decProp = context.getConfiguration().decoratedProperty();
@@ -59,14 +63,16 @@ public class DeviceDetails extends AbstractDetailsController {
 				.addListener((e) -> decoratedTools.visibleProperty().set(decProp.getValue()));
 
 		String imageUrl = getDevice().getImageUrl(BrandingImage.PERSPECTIVE);
-		Background bg = new Background(
-				new BackgroundImage(new Image(imageUrl, true), BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT,
-						BackgroundPosition.CENTER, new BackgroundSize(100d, 100d, true, true, false, true)));
-		background.setBackground(bg);
-		background.opacityProperty().set(0.15);
-		ColorAdjust adjust = new ColorAdjust();
-		adjust.setSaturation(-1);
-		background.setEffect(adjust);
+		if(imageUrl != null) {
+			Background bg = new Background(
+					new BackgroundImage(new Image(imageUrl, true), BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT,
+							BackgroundPosition.CENTER, new BackgroundSize(100d, 100d, true, true, false, true)));
+			background.setBackground(bg);
+			background.opacityProperty().set(0.15);
+			ColorAdjust adjust = new ColorAdjust();
+			adjust.setSaturation(-1);
+			background.setEffect(adjust);
+		}
 
 		macros.visibleProperty().set(getDevice().getCapabilities().contains(Capability.MACROS));
 

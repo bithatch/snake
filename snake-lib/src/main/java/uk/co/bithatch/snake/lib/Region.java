@@ -4,13 +4,13 @@ package uk.co.bithatch.snake.lib;
 public interface Region extends Item, Lit {
 
 	public enum Name {
-		LOGO, SCROLL, LEFT, RIGHT, CHROMA, BACKLIGHT;
+		BACKLIGHT, CHROMA, LEFT, LOGO, RIGHT, SCROLL;
 	}
 
 	Device getDevice();
 
-	void load(String path) throws Exception;
-
 	Name getName();
+
+	void load(String path) throws Exception;
 
 }

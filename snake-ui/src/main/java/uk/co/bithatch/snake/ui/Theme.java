@@ -97,6 +97,10 @@ public class Theme extends AbstractAddOn {
 		return getResource("screenshot.png");
 	}
 
+	@Override
+	public void close() throws Exception {
+	}
+
 	public URL getEffectImage(int size, Class<? extends Effect> effect) {
 		return checkResource(effect, getResource("effects/" + effect.getSimpleName().toLowerCase() + size + ".png"));
 	}

@@ -75,8 +75,8 @@ public class AddOns extends AbstractController {
 
 		installed.getSelectionModel().selectedItemProperty().addListener((e) -> updateSelected());
 		installed.getItems().clear();
-		for (Theme theme : context.getAddOnManager().getThemes()) {
-			addTheme(theme);
+		for (AddOn addOn : context.getAddOnManager().getAddOns()) {
+			addAddOn(addOn);
 		}
 		if (!installed.getItems().isEmpty()) {
 			installed.getSelectionModel().select(0);
@@ -84,12 +84,12 @@ public class AddOns extends AbstractController {
 		updateSelected();
 	}
 
-	private AddOnDetails addTheme(Theme theme) throws IOException {
+	private AddOnDetails addAddOn(AddOn addOn) throws IOException {
 		AddOnDetails aod = context.openScene(AddOnDetails.class);
-		aod.setAddOn(theme);
+		aod.setAddOn(addOn);
 		Parent node = aod.getScene().getRoot();
 		installed.getItems().add(node);
-		addOnMap.put(node, theme);
+		addOnMap.put(node, addOn);
 		return aod;
 	}
 
@@ -122,7 +122,7 @@ public class AddOns extends AbstractController {
 			by.visibleProperty().set(StringUtils.isNotBlank(addOn.getAuthor()));
 			by.textProperty().set(MessageFormat.format(bundle.getString("by"), addOn.getAuthor()));
 			description.visibleProperty().set(StringUtils.isNotBlank(addOn.getDescription()));
-			description.textProperty().set(MessageFormat.format(bundle.getString("by"), addOn.getDescription()));
+			description.textProperty().set(addOn.getDescription());
 			license.visibleProperty().set(StringUtils.isNotBlank(addOn.getLicense()));
 			license.textProperty().set(addOn.getLicense());
 			url.visibleProperty().set(StringUtils.isNotBlank(addOn.getUrl()));
@@ -170,15 +170,15 @@ public class AddOns extends AbstractController {
 		fileChooser.setTitle(bundle.getString("selectAddOn"));
 		var path = PREFS.get("lastAddOnLocation", System.getProperty("user.dir") + File.separator + "add-on.jar");
 		fileChooser.getExtensionFilters()
-				.add(new ExtensionFilter(bundle.getString("addOnFileExtension"), "*.jar", "*.zip"));
+				.add(new ExtensionFilter(bundle.getString("addOnFileExtension"), "*.plugin.groovy", "*.jar", "*.zip"));
 		fileChooser.getExtensionFilters().add(new ExtensionFilter(bundle.getString("allFileExtensions"), "*.*"));
 		UIHelpers.selectFilesDir(fileChooser, path);
 		File file = fileChooser.showOpenDialog((Stage) getScene().getWindow());
 		if (file != null) {
 			PREFS.put("lastAddOnLocation", file.getAbsolutePath());
 			try {
-				Theme theme = context.getAddOnManager().install(file);
-				Controller c = addTheme(theme);
+				AddOn addOn = context.getAddOnManager().install(file);
+				Controller c = addAddOn(addOn);
 
 				Parent root = c.getScene().getRoot();
 				UIHelpers.zoomTo(installed, root);
@@ -190,7 +190,7 @@ public class AddOns extends AbstractController {
 				anim.play();
 
 				LOG.log(java.lang.System.Logger.Level.INFO, String.format("Installed %s add-on", file));
-			} catch (IOException e) {
+			} catch (Exception e) {
 				LOG.log(java.lang.System.Logger.Level.ERROR, "Failed to add add-on.", e);
 				error("failedToInstallAddOn", e.getMessage());
 			}

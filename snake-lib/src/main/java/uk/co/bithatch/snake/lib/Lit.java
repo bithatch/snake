@@ -4,13 +4,13 @@ import uk.co.bithatch.snake.lib.effects.Effect;
 
 public interface Lit extends Item {
 
-	Effect getEffect();
+	Effect createEffect(Class<? extends Effect> clazz);
 
-	void setEffect(Effect effect);
+	Effect getEffect();
 
 	default boolean isSupported(Effect effect) {
 		return getSupportedEffects().contains(effect.getClass());
 	}
 
-	Effect createEffect(Class<? extends Effect> clazz);
+	void setEffect(Effect effect);
 }

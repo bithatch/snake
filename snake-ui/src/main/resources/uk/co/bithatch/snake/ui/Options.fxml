@@ -34,7 +34,7 @@
 		</BorderPane>
       <ScrollPane fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS">
          <content>
-      		<FlowPane prefWrapLength="2000.0" rowValignment="TOP">
+      		<FlowPane fx:id="controls" prefWrapLength="2000.0" rowValignment="TOP">
       			<children>
       				<VBox id="tools" fillWidth="false" styleClass="tools">
       					<children>
@@ -95,27 +95,31 @@
                      <children>
                         <VBox fillWidth="false" maxHeight="-Infinity" maxWidth="-Infinity" styleClass="tools">
                            <children>
-                              <Label maxWidth="-Infinity" prefWidth="200.0" styleClass="title" text="%updates" />
-                              <VBox fillWidth="false" styleClass="tools">
+                              <Label maxWidth="-Infinity" styleClass="title" text="%updates" />
+                              <HBox>
                                  <children>
-                                    <CheckBox fx:id="checkForUpdates" mnemonicParsing="false" text="%checkForUpdates" />
-                                    <CheckBox fx:id="updateAutomatically" mnemonicParsing="false" prefWidth="200.0" styleClass="gapLeft" text="%updateAutomatically" />
-                                    <CheckBox fx:id="betas" mnemonicParsing="false" styleClass="gapLeft" text="%betas" />
+                                    <VBox fillWidth="false" styleClass="tools">
+                                       <children>
+                                          <CheckBox fx:id="checkForUpdates" mnemonicParsing="false" text="%checkForUpdates" />
+                                          <CheckBox fx:id="updateAutomatically" mnemonicParsing="false" prefWidth="200.0" styleClass="gapLeft" text="%updateAutomatically" />
+                                          <CheckBox fx:id="betas" mnemonicParsing="false" styleClass="gapLeft" text="%betas" />
+                                       </children>
+                                    </VBox>
+                                    <VBox fx:id="updates" alignment="CENTER" fillWidth="false" styleClass="gapTop">
+                                       <children>
+                                          <Hyperlink fx:id="startUpdate" alignment="CENTER" onAction="#evtStartUpdate" text="%download">
+                                             <styleClass>
+                                                <String fx:value="iconButton" />
+                                                <String fx:value="warning" />
+                                             </styleClass>
+                                          </Hyperlink>
+                                          <Label alignment="CENTER" styleClass="small" text="%updateAvailable" textAlignment="CENTER" wrapText="true" />
+                                          <Label fx:id="availableVersion" alignment="CENTER" styleClass="emphasis,small" text="Version Available" />
+                                          <Label fx:id="installedVersion" alignment="CENTER" styleClass="emphasis,small" text="Version Installed" />
+                                       </children>
+                                    </VBox>
                                  </children>
-                              </VBox>
-                           </children>
-                        </VBox>
-                        <VBox fx:id="updates" alignment="CENTER" fillWidth="false" styleClass="gapTop">
-                           <children>
-                              <Hyperlink fx:id="startUpdate" alignment="CENTER" onAction="#evtStartUpdate" text="%download">
-                                 <styleClass>
-                                    <String fx:value="iconButton" />
-                                    <String fx:value="warning" />
-                                 </styleClass>
-                              </Hyperlink>
-                              <Label alignment="CENTER" styleClass="small" text="%updateAvailable" textAlignment="CENTER" wrapText="true" />
-                              <Label fx:id="availableVersion" alignment="CENTER" styleClass="emphasis,small" text="Version Available" />
-                              <Label fx:id="installedVersion" alignment="CENTER" styleClass="emphasis,small" text="Version Installed" />
+                              </HBox>
                            </children>
                         </VBox>
                      </children>

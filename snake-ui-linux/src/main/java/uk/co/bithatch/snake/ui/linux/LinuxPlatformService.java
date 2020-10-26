@@ -20,10 +20,180 @@ import uk.co.bithatch.snake.ui.PlatformService;
 
 public class LinuxPlatformService implements PlatformService {
 
-	private static final String STABLE_CHANNEL = System.getProperty("forker.releaseChannel", "http://www.bithatch.co.uk/repositories/snake/stable");
-	private static final String BETA_CHANNEL = System.getProperty("forker.betaChannel", "http://www.bithatch.co.uk/repositories/snake/snapshot");
-
 	private static final String SNAKE_RAZER_DESKTOP = "snake-razer.desktop";
+	
+	private static final String BETA_CHANNEL = System.getProperty("forker.betaChannel", "http://www.bithatch.co.uk/repositories/snake/snapshot");
+	private static final String STABLE_CHANNEL = System.getProperty("forker.releaseChannel", "http://www.bithatch.co.uk/repositories/snake/stable");
+
+	@Override
+	public String getAvailableVersion() {
+		return System.getProperty("forker.availableVersion", getInstalledVersion());
+	}
+
+	@Override
+	public String getInstalledVersion() {
+		return System.getProperty("forker.installedVersion", "Unknown");
+	}
+
+	@Override
+	public boolean isBetas() {
+		try {
+			Path appCfg = getAppCfg();
+			Path path = checkDir(appCfg).resolve("updates");
+			if(Files.exists(path))
+				return contains(path, "remote-manifest " + BETA_CHANNEL);
+			else {
+				path = checkDir(appCfg.toAbsolutePath().getParent()).resolve("app.cfg");
+				return Files.exists(path) && contains(path, "default-remote-manifest " + BETA_CHANNEL);
+			}
+		} catch (IOException ioe) {
+			return false;
+		}
+	}
+
+	@Override
+	public boolean isCheckForUpdates() {
+		try {
+			Path path = checkDir(getAppCfg()).resolve("updates");
+			return !Files.exists(path) || !contains(path, "update-on-exit") || contains(path, "update-on-exit 100");
+		} catch (IOException ioe) {
+			return false;
+		}
+	}
+
+	@Override
+	public boolean isStartOnLogin() {
+		File f = getAutostartFile();
+		if (!f.exists())
+			return false;
+		try (BufferedReader r = new BufferedReader(new FileReader(f))) {
+			String line;
+			while ((line = r.readLine()) != null) {
+				line = line.trim();
+				if (line.startsWith("X-GNOME-Autostart-enabled=")) {
+					return line.substring(26).equals("true");
+				}
+			}
+		} catch (IOException ioe) {
+		}
+		return false;
+	}
+
+	@Override
+	public boolean isUpdateableApp() {
+		return Files.exists(Paths.get("manifest.xml")) || isDev();
+	}
+
+	@Override
+	public boolean isUpdateAutomatically() {
+		try {
+			Path path = checkDir(getAppCfg()).resolve("updates");
+			return !Files.exists(path) || !contains(path, "update-on-exit") || contains(path, "update-on-exit 99");
+		} catch (IOException ioe) {
+			return false;
+		}
+	}
+
+	@Override
+	public boolean isUpdateAvailable() {
+		return "true".equals(System.getProperty("forker.updateAvailable"));
+	}
+
+	@Override
+	public boolean isUpdated() {
+		return "true".equals(System.getProperty("forker.updated"));
+	}
+
+	@Override
+	public void setBetas(boolean betas) {
+		reconfig(isCheckForUpdates(), isUpdateAutomatically(), betas);
+	}
+
+	@Override
+	public void setCheckForUpdates(boolean checkForUpdates) {
+		reconfig(checkForUpdates, isUpdateAutomatically(), isBetas());
+	}
+
+	@Override
+	public void setStartOnLogin(boolean startOnLogin) throws IOException {
+		writeDesktopFile(getAutostartFile(), "Snake", "Control and configure your Razer devices", startOnLogin,
+				"-- --no-open");
+	}
+
+	@Override
+	public void setUpdateAutomatically(boolean updateAutomatically) {
+		reconfig(isCheckForUpdates(), updateAutomatically, isBetas());
+	}
+
+	protected Path checkDir(Path dir) throws IOException {
+		if (!Files.exists(dir)) {
+			Files.createDirectories(dir);
+		}
+		return dir;
+	}
+
+	protected boolean contains(Path path, String str) throws IOException {
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(Files.newInputStream(path)))) {
+			String line;
+			while ((line = reader.readLine()) != null) {
+				if (line.trim().startsWith(str)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	protected Path getAppCfg() {
+		if (isDev())
+			return Paths.get("target/image/app.cfg.d");
+		else
+			return Paths.get("app.cfg.d");
+	}
+
+	protected boolean isDev() {
+		return Files.exists(Paths.get("pom.xml"));
+	}
+
+	protected void reconfig(boolean check, boolean auto, boolean betas) {
+		try {
+			Path path = checkDir(getAppCfg()).resolve("updates");
+			try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(Files.newOutputStream(path)), true)) {
+				if (check) {
+					if (!auto)
+						pw.println("update-on-exit 100");
+				} else {
+					pw.println("update-on-exit 99");
+				}
+				if (betas)
+					pw.println("remote-manifest " + BETA_CHANNEL);
+				else
+					pw.println("remote-manifest " + STABLE_CHANNEL);
+			}
+		} catch (IOException ioe) {
+			throw new IllegalStateException("Failed to change update state.", ioe);
+		}
+	}
+
+	File getAutostartFile() {
+		return new File(System.getProperty("user.home") + File.separator + ".config" + File.separator + "autostart"
+				+ File.separator + SNAKE_RAZER_DESKTOP);
+	}
+
+	File getShare() {
+		return new File(System.getProperty("user.home") + File.separator + ".local" + File.separator + "share");
+	}
+
+	File getShortcutFile() {
+		return new File(getShare(), "applications" + File.separator + SNAKE_RAZER_DESKTOP);
+	}
+
+	private File checkFilesParent(File file) throws IOException {
+		if (!file.exists() && !file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
+			throw new IOException(String.format("Failed to create parent folder for %s.", file));
+		}
+		return file;
+	}
 
 	private void writeDesktopFile(File file, String name, String comment, Boolean autoStart, String... execArgs)
 			throws IOException, FileNotFoundException {
@@ -52,174 +222,5 @@ public class LinuxPlatformService implements PlatformService {
 				pw.println("X-GNOME-Autostart-enabled=" + autoStart);
 			}
 		}
-	}
-
-	private File checkFilesParent(File file) throws IOException {
-		if (!file.exists() && !file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
-			throw new IOException(String.format("Failed to create parent folder for %s.", file));
-		}
-		return file;
-	}
-
-	File getShare() {
-		return new File(System.getProperty("user.home") + File.separator + ".local" + File.separator + "share");
-	}
-
-	File getShortcutFile() {
-		return new File(getShare(), "applications" + File.separator + SNAKE_RAZER_DESKTOP);
-	}
-
-	File getAutostartFile() {
-		return new File(System.getProperty("user.home") + File.separator + ".config" + File.separator + "autostart"
-				+ File.separator + SNAKE_RAZER_DESKTOP);
-	}
-
-	@Override
-	public boolean isStartOnLogin() {
-		File f = getAutostartFile();
-		if (!f.exists())
-			return false;
-		try (BufferedReader r = new BufferedReader(new FileReader(f))) {
-			String line;
-			while ((line = r.readLine()) != null) {
-				line = line.trim();
-				if (line.startsWith("X-GNOME-Autostart-enabled=")) {
-					return line.substring(26).equals("true");
-				}
-			}
-		} catch (IOException ioe) {
-		}
-		return false;
-	}
-
-	@Override
-	public void setStartOnLogin(boolean startOnLogin) throws IOException {
-		writeDesktopFile(getAutostartFile(), "Snake", "Control and configure your Razer devices", startOnLogin,
-				"-- --no-open");
-	}
-
-	@Override
-	public boolean isUpdateableApp() {
-		return Files.exists(Paths.get("manifest.xml")) || isDev();
-	}
-
-	@Override
-	public boolean isUpdateAvailable() {
-		return "true".equals(System.getProperty("forker.updateAvailable"));
-	}
-
-	@Override
-	public boolean isUpdateAutomatically() {
-		try {
-			Path path = checkDir(getAppCfg()).resolve("updates");
-			return !Files.exists(path) || !contains(path, "update-on-exit") || contains(path, "update-on-exit 99");
-		} catch (IOException ioe) {
-			return false;
-		}
-	}
-
-	@Override
-	public boolean isCheckForUpdates() {
-		try {
-			Path path = checkDir(getAppCfg()).resolve("updates");
-			return !Files.exists(path) || !contains(path, "update-on-exit") || contains(path, "update-on-exit 100");
-		} catch (IOException ioe) {
-			return false;
-		}
-	}
-
-	@Override
-	public boolean isBetas() {
-		try {
-			Path path = checkDir(getAppCfg()).resolve("updates");
-			if(Files.exists(path))
-				return contains(path, "remote-manifest " + BETA_CHANNEL);
-			else {
-				path = checkDir(getAppCfg().getParent()).resolve("app.cfg");
-				return contains(path, "default-remote-manifest " + BETA_CHANNEL);
-			}
-		} catch (IOException ioe) {
-			return false;
-		}
-	}
-
-	@Override
-	public void setUpdateAutomatically(boolean updateAutomatically) {
-		reconfig(isCheckForUpdates(), updateAutomatically, isBetas());
-	}
-
-	@Override
-	public void setCheckForUpdates(boolean checkForUpdates) {
-		reconfig(checkForUpdates, isUpdateAutomatically(), isBetas());
-	}
-
-	@Override
-	public void setBetas(boolean betas) {
-		reconfig(isCheckForUpdates(), isUpdateAutomatically(), betas);
-	}
-
-	protected void reconfig(boolean check, boolean auto, boolean betas) {
-		try {
-			Path path = checkDir(getAppCfg()).resolve("updates");
-			try (PrintWriter pw = new PrintWriter(new OutputStreamWriter(Files.newOutputStream(path)), true)) {
-				if (check) {
-					if (!auto)
-						pw.println("update-on-exit 100");
-				} else {
-					pw.println("update-on-exit 99");
-				}
-				if (betas)
-					pw.println("remote-manifest " + BETA_CHANNEL);
-				else
-					pw.println("remote-manifest " + STABLE_CHANNEL);
-			}
-		} catch (IOException ioe) {
-			throw new IllegalStateException("Failed to change update state.", ioe);
-		}
-	}
-
-	protected boolean contains(Path path, String str) throws IOException {
-		try (BufferedReader reader = new BufferedReader(new InputStreamReader(Files.newInputStream(path)))) {
-			String line;
-			while ((line = reader.readLine()) != null) {
-				if (line.trim().startsWith(str)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	protected Path checkDir(Path dir) throws IOException {
-		if (!Files.exists(dir)) {
-			Files.createDirectories(dir);
-		}
-		return dir;
-	}
-
-	protected Path getAppCfg() {
-		if (isDev())
-			return Paths.get("target/image/app.cfg.d");
-		else
-			return Paths.get("app.cfg.d");
-	}
-
-	protected boolean isDev() {
-		return Files.exists(Paths.get("pom.xml"));
-	}
-
-	@Override
-	public String getAvailableVersion() {
-		return System.getProperty("forker.availableVersion", getInstalledVersion());
-	}
-
-	@Override
-	public String getInstalledVersion() {
-		return System.getProperty("forker.installedVersion", "Unknown");
-	}
-
-	@Override
-	public boolean isUpdated() {
-		return "true".equals(System.getProperty("forker.updated"));
 	}
 }

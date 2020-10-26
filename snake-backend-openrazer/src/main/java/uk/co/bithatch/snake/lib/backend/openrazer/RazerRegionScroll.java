@@ -6,7 +6,11 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
 @DBusInterfaceName("razer.device.lighting.scroll")
 public interface RazerRegionScroll extends DBusInterface {
 	
+	boolean getScrollActive();
+	
 	double getScrollBrightness();
+	
+	void setScrollActive(boolean active);
 	
 	void setScrollBreathDual(byte red1, byte green1, byte blue1, byte red2, byte green2, byte blue2);
 	
@@ -25,10 +29,6 @@ public interface RazerRegionScroll extends DBusInterface {
 	void setScrollStatic(byte red1, byte green1, byte blue1);
 	
 	void setScrollWave(int direction);
-	
-	boolean getScrollActive();
-	
-	void setScrollActive(boolean active);
 	
 	
 }

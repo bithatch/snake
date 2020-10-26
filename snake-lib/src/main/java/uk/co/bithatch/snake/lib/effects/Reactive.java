@@ -14,31 +14,6 @@ public class Reactive extends Effect {
 
 	}
 
-	public int[] getColor() {
-		return color;
-	}
-
-	public void setColor(int[] color) {
-		this.color = color;
-	}
-
-	public int getSpeed() {
-		return speed;
-	}
-
-	public void setSpeed(int speed) {
-		this.speed = speed;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + Arrays.hashCode(color);
-		result = prime * result + speed;
-		return result;
-	}
-
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -55,20 +30,45 @@ public class Reactive extends Effect {
 		return true;
 	}
 
+	public int[] getColor() {
+		return color;
+	}
+
+	public int getSpeed() {
+		return speed;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(color);
+		result = prime * result + speed;
+		return result;
+	}
+
+	public void setColor(int[] color) {
+		this.color = color;
+	}
+
+	public void setSpeed(int speed) {
+		this.speed = speed;
+	}
+
 	@Override
 	public String toString() {
 		return "Reactive [color=" + Arrays.toString(color) + ", speed=" + speed + "]";
 	}
 
 	@Override
-	protected void onSave(Preferences prefs) {
-		prefs.putInt("speed", speed);
-		prefs.put("color", Colors.toHex(color));
-	}
-
-	@Override
 	protected void onLoad(Preferences prefs) {
 		speed = prefs.getInt("speed", 100);
 		color = Colors.fromHex(prefs.get("color", "#00ff00"));
+	}
+
+	@Override
+	protected void onSave(Preferences prefs) {
+		prefs.putInt("speed", speed);
+		prefs.put("color", Colors.toHex(color));
 	}
 }

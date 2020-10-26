@@ -21,32 +21,32 @@ import uk.co.bithatch.snake.lib.effects.Effect;
 
 public class OpenRazerBackend implements Backend {
 
-	final static Preferences PREFS = Preferences.userNodeForPackage(OpenRazerBackend.class);
 	final static System.Logger LOG = System.getLogger(OpenRazerBackend.class.getName());
-
-	private DBusConnection conn;
-	private RazerDevices devices;
-	private RazerDaemon daemon;
-	private List<Device> deviceList;
-	private List<BackendListener> listeners = new ArrayList<>();
+	final static Preferences PREFS = Preferences.userNodeForPackage(OpenRazerBackend.class);
 
 	final ScheduledExecutorService batteryPoll = Executors.newScheduledThreadPool(1);
+	private DBusConnection conn;
+	private RazerDaemon daemon;
+	private List<Device> deviceList;
+	private RazerDevices devices;
+
+	private List<BackendListener> listeners = new ArrayList<>();
 
 	@Override
-	public void init() throws Exception {
-		conn = DBusConnection.getConnection(DBusConnection.DBusBusType.SESSION);
-		devices = conn.getRemoteObject("org.razer", "/org/razer", RazerDevices.class);
-		daemon = conn.getRemoteObject("org.razer", "/org/razer", RazerDaemon.class);
+	public void addListener(BackendListener listener) {
+		listeners.add(listener);
 	}
 
 	@Override
-	public String getName() {
-		return "OpenRazer";
-	}
-
-	@Override
-	public String getVersion() {
-		return daemon.version();
+	public void close() throws Exception {
+		LOG.log(Level.DEBUG, "Closing OpenRazer backend.");
+		try {
+			conn.close();
+		} catch (Exception e) {
+		} finally {
+			LOG.log(Level.DEBUG, "Stopping battery poll thread.");
+			batteryPoll.shutdown();
+		}
 	}
 
 	@Override
@@ -67,29 +67,8 @@ public class OpenRazerBackend implements Backend {
 	}
 
 	@Override
-	public boolean isSync() {
-		return devices.getSyncEffects();
-	}
-
-	@Override
-	public void setSync(boolean sync) {
-		devices.syncEffects(sync);
-	}
-
-	@Override
-	public void close() throws Exception {
-		LOG.log(Level.DEBUG, "Closing OpenRazer backend.");
-		try {
-			conn.close();
-		} catch (Exception e) {
-		} finally {
-			LOG.log(Level.DEBUG, "Stopping battery poll thread.");
-			batteryPoll.shutdown();
-		}
-	}
-
-	ScheduledExecutorService getBatteryPoll() {
-		return batteryPoll;
+	public String getName() {
+		return "OpenRazer";
 	}
 
 	@Override
@@ -105,6 +84,18 @@ public class OpenRazerBackend implements Backend {
 	}
 
 	@Override
+	public String getVersion() {
+		return daemon.version();
+	}
+
+	@Override
+	public void init() throws Exception {
+		conn = DBusConnection.getConnection(DBusConnection.DBusBusType.SESSION);
+		devices = conn.getRemoteObject("org.razer", "/org/razer", RazerDevices.class);
+		daemon = conn.getRemoteObject("org.razer", "/org/razer", RazerDaemon.class);
+	}
+
+	@Override
 	public boolean isGameMode() {
 		try {
 			for (Device d : getDevices()) {
@@ -114,6 +105,17 @@ public class OpenRazerBackend implements Backend {
 		} catch (Exception e) {
 		}
 		return false;
+	}
+
+	@Override
+	public boolean isSync() {
+		return devices.getSyncEffects();
+	}
+
+	@Override
+	public void removeListener(BackendListener listener) {
+		listeners.add(listener);
+
 	}
 
 	@Override
@@ -128,13 +130,11 @@ public class OpenRazerBackend implements Backend {
 	}
 
 	@Override
-	public void addListener(BackendListener listener) {
-		listeners.add(listener);
+	public void setSync(boolean sync) {
+		devices.syncEffects(sync);
 	}
 
-	@Override
-	public void removeListener(BackendListener listener) {
-		listeners.add(listener);
-
+	ScheduledExecutorService getBatteryPoll() {
+		return batteryPoll;
 	}
 }

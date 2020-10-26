@@ -7,18 +7,6 @@ import org.freedesktop.dbus.messages.DBusSignal;
 
 @DBusInterfaceName("razer.devices")
 public interface RazerDevices  extends DBusInterface {
-	void enableTurnOffOnScreensaver(boolean enable);
-
-	String[] getDevices();
-
-	boolean getOffOnScreensaver();
-
-	boolean getSyncEffects();
-
-	String supportedDevices();
-
-	void syncEffects(boolean enabled);
-	
 	public class device_added extends DBusSignal {
 
 		public device_added(String path) throws DBusException {
@@ -34,4 +22,16 @@ public interface RazerDevices  extends DBusInterface {
 		}
 
 	}
+
+	void enableTurnOffOnScreensaver(boolean enable);
+
+	String[] getDevices();
+
+	boolean getOffOnScreensaver();
+
+	boolean getSyncEffects();
+	
+	String supportedDevices();
+
+	void syncEffects(boolean enabled);
 }

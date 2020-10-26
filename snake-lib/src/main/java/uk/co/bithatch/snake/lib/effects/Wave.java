@@ -13,22 +13,6 @@ public class Wave extends Effect {
 	public Wave() {
 	}
 
-	public Direction getDirection() {
-		return direction;
-	}
-
-	public void setDirection(Direction direction) {
-		this.direction = direction;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((direction == null) ? 0 : direction.hashCode());
-		return result;
-	}
-
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -43,18 +27,34 @@ public class Wave extends Effect {
 		return true;
 	}
 
+	public Direction getDirection() {
+		return direction;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((direction == null) ? 0 : direction.hashCode());
+		return result;
+	}
+
+	public void setDirection(Direction direction) {
+		this.direction = direction;
+	}
+
 	@Override
 	public String toString() {
 		return "Wave [direction=" + direction + "]";
 	}
 
 	@Override
-	protected void onSave(Preferences prefs) {
-		prefs.put("direction", direction.name());
+	protected void onLoad(Preferences prefs) {
+		direction = Direction.valueOf(prefs.get("direction", Direction.FORWARD.name()));
 	}
 
 	@Override
-	protected void onLoad(Preferences prefs) {
-		direction = Direction.valueOf(prefs.get("direction", Direction.FORWARD.name()));
+	protected void onSave(Preferences prefs) {
+		prefs.put("direction", direction.name());
 	}
 }

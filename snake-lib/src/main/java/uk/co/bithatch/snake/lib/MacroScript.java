@@ -5,32 +5,32 @@ import java.util.List;
 
 public class MacroScript implements Macro {
 
-	private String script;
 	private List<String> args;
 	private Key macroKey;
-
-	public String getScript() {
-		return script;
-	}
-
-	public void setScript(String script) {
-		this.script = script;
-	}
+	private String script;
 
 	public List<String> getArgs() {
 		return args;
-	}
-
-	public void setArgs(List<String> args) {
-		this.args = args;
 	}
 
 	public Key getMacroKey() {
 		return macroKey;
 	}
 
+	public String getScript() {
+		return script;
+	}
+
+	public void setArgs(List<String> args) {
+		this.args = args;
+	}
+
 	public void setMacroKey(Key macroKey) {
 		this.macroKey = macroKey;
+	}
+
+	public void setScript(String script) {
+		this.script = script;
 	}
 
 	@Override

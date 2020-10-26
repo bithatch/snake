@@ -6,11 +6,11 @@ import uk.co.bithatch.snake.lib.effects.Effect;
 
 public interface Item {
 
-	Set<Capability> getCapabilities();
+	short getBrightness();
 
-	void setBrightness(short brightness);
+	Set<Capability> getCapabilities();
 
 	Set<Class<? extends Effect>> getSupportedEffects();
 
-	short getBrightness();
+	void setBrightness(short brightness);
 }

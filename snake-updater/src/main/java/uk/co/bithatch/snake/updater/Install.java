@@ -39,126 +39,50 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
 public class Install implements Controller, InstallHandler {
-	private static final String SNAKE_RAZER_DESKTOP = "snake-razer";
+	final static ResourceBundle bundle = ResourceBundle.getBundle(Install.class.getName());
 
 	final static Preferences PREFS = Preferences.userRoot().node("uk").node("co").node("bithatch").node("snake")
 			.node("ui");
-	final static ResourceBundle bundle = ResourceBundle.getBundle(Install.class.getName());
+	private static final String SNAKE_RAZER_DESKTOP = "snake-razer";
 
-	@FXML
-	private Label title;
-	@FXML
-	private BorderPane titleBar;
-	@FXML
-	private ProgressIndicator progress;
-	@FXML
-	private Label status;
 	@FXML
 	private Button browse;
 	@FXML
-	private TextField installLocation;
-	@FXML
-	private BorderPane options;
-	@FXML
-	private VBox progressContainer;
-	@FXML
 	private Hyperlink install;
+	@FXML
+	private TextField installLocation;
 	@FXML
 	private CheckBox installShortcut;
 	@FXML
 	private CheckBox launch;
+	@FXML
+	private BorderPane options;
+	@FXML
+	private ProgressIndicator progress;
+	@FXML
+	private VBox progressContainer;
+	@FXML
+	private Label status;
+	@FXML
+	private Label title;
+	@FXML
+	private BorderPane titleBar;
 
 	private Scene scene;
-	private Bootstrap bootstrap;
-	private ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
-	private Callable<Void> callback;
-
 	private InstallSession session;
-
-	public void setBootstrap(Bootstrap bootstrap) {
-		this.bootstrap = bootstrap;
-	}
-
-	@FXML
-	void evtMin(ActionEvent evt) {
-		Stage stage = (Stage) ((Hyperlink) evt.getSource()).getScene().getWindow();
-		stage.setIconified(true);
-	}
-
-	@FXML
-	void evtClose(ActionEvent evt) {
-		bootstrap.close();
-	}
-
-	@FXML
-	void evtBrowse(ActionEvent evt) {
-		DirectoryChooser fileChooser = new DirectoryChooser();
-		fileChooser.setTitle(bundle.getString("selectTarget"));
-		Path dir = chosenDestination();
-		while (dir != null) {
-			if (Files.isDirectory(dir)) {
-				break;
-			}
-			dir = dir.getParent();
-		}
-		if (dir == null)
-			fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
-		else {
-			fileChooser.setInitialDirectory(dir.toFile());
-		}
-		File file = fileChooser.showDialog((Stage) getScene().getWindow());
-		if (file != null) {
-			installLocation.textProperty().set(file.getPath());
-		}
-	}
-
-	@FXML
-	void evtInstall(ActionEvent evt) {
-		PREFS.put("installLocation", installLocation.textProperty().get());
-		new Thread() {
-			public void run() {
-				try {
-					callback.call();
-				} catch (Exception e) {
-					throw new IllegalStateException("Failed to continue installation.", e);
-				}
-			}
-		}.start();
+	private Bootstrap bootstrap;
+	private Callable<Void> callback;
+	private ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
+	
+	@Override
+	public Path chooseDestination(Callable<Void> callable) {
+		this.callback = callable;
+		return null;
 	}
 
 	@Override
-	public void setScene(Scene scene) {
-		this.scene = scene;
-	}
-
-	@Override
-	public Scene getScene() {
-		return scene;
-	}
-
-	void message(String key, String... args) {
-		if (Platform.isFxApplicationThread()) {
-			String txt = MessageFormat.format(bundle.getString(key), (Object[]) args);
-			status.textProperty().set(txt);
-		} else
-			Platform.runLater(() -> message(key, args));
-	}
-
-	public void doneDownloads() throws Throwable {
-		Platform.runLater(() -> {
-			bootstrap.getStage().show();
-			message("doneDownloads");
-		});
-	}
-
-	@Override
-	public void failed(Throwable t) {
-		Platform.runLater(() -> {
-			message("failed", t.getMessage() == null ? "No message supplied." : t.getMessage());
-			progress.visibleProperty().set(false);
-			progress.managedProperty().set(false);
-			status.getStyleClass().add("danger");
-		});
+	public Path chosenDestination() {
+		return Paths.get(installLocation.textProperty().get());
 	}
 
 	@Override
@@ -185,6 +109,28 @@ public class Install implements Controller, InstallHandler {
 		executor.shutdown();
 	}
 
+	public void doneDownloads() throws Throwable {
+		Platform.runLater(() -> {
+			bootstrap.getStage().show();
+			message("doneDownloads");
+		});
+	}
+
+	@Override
+	public void failed(Throwable t) {
+		Platform.runLater(() -> {
+			message("failed", t.getMessage() == null ? "No message supplied." : t.getMessage());
+			progress.visibleProperty().set(false);
+			progress.managedProperty().set(false);
+			status.getStyleClass().add("danger");
+		});
+	}
+
+	@Override
+	public Scene getScene() {
+		return scene;
+	}
+
 	@Override
 	public void init(InstallSession session) {
 		this.session = session;
@@ -209,21 +155,6 @@ public class Install implements Controller, InstallHandler {
 	}
 
 	@Override
-	public void startInstall() throws Exception {
-		Platform.runLater(() -> {
-			options.visibleProperty().set(false);
-			progressContainer.visibleProperty().set(true);
-			bootstrap.getStage().show();
-			message("startInstall");
-		});
-	}
-
-	@Override
-	public void installProgress(float frac) throws Exception {
-		Platform.runLater(() -> progress.progressProperty().set(frac));
-	}
-
-	@Override
 	public void installFile(Path file, Path d) throws Exception {
 		Platform.runLater(() -> {
 			bootstrap.getStage().show();
@@ -233,29 +164,97 @@ public class Install implements Controller, InstallHandler {
 	}
 
 	@Override
-	public void installFileProgress(Path file, float progress) throws Exception {
-	}
-
-	@Override
 	public void installFileDone(Path file) throws Exception {
 		message("installFileDone", file.getFileName().toString());
 	}
 
 	@Override
-	public Path chosenDestination() {
-		return Paths.get(installLocation.textProperty().get());
+	public void installFileProgress(Path file, float progress) throws Exception {
 	}
 
 	@Override
-	public Path chooseDestination(Callable<Void> callable) {
-		this.callback = callable;
-		return null;
+	public void installProgress(float frac) throws Exception {
+		Platform.runLater(() -> progress.progressProperty().set(frac));
+	}
+
+	public void setBootstrap(Bootstrap bootstrap) {
+		this.bootstrap = bootstrap;
+	}
+
+	@Override
+	public void setScene(Scene scene) {
+		this.scene = scene;
+	}
+
+	@Override
+	public void startInstall() throws Exception {
+		Platform.runLater(() -> {
+			options.visibleProperty().set(false);
+			progressContainer.visibleProperty().set(true);
+			bootstrap.getStage().show();
+			message("startInstall");
+		});
 	}
 
 	protected void checkInstallable() {
 		Path p = chosenDestination();
 		install.disableProperty()
 				.set(Files.isRegularFile(p) || (!isExistsAndIsEmpty(p) && Files.exists(p) && !isSameAppId(p)));
+	}
+
+	@FXML
+	void evtBrowse(ActionEvent evt) {
+		DirectoryChooser fileChooser = new DirectoryChooser();
+		fileChooser.setTitle(bundle.getString("selectTarget"));
+		Path dir = chosenDestination();
+		while (dir != null) {
+			if (Files.isDirectory(dir)) {
+				break;
+			}
+			dir = dir.getParent();
+		}
+		if (dir == null)
+			fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+		else {
+			fileChooser.setInitialDirectory(dir.toFile());
+		}
+		File file = fileChooser.showDialog((Stage) getScene().getWindow());
+		if (file != null) {
+			installLocation.textProperty().set(file.getPath());
+		}
+	}
+
+	@FXML
+	void evtClose(ActionEvent evt) {
+		bootstrap.close();
+	}
+
+	@FXML
+	void evtInstall(ActionEvent evt) {
+		PREFS.put("installLocation", installLocation.textProperty().get());
+		new Thread() {
+			public void run() {
+				try {
+					callback.call();
+				} catch (Exception e) {
+					throw new IllegalStateException("Failed to continue installation.", e);
+				}
+			}
+		}.start();
+	}
+
+	@FXML
+	void evtMin(ActionEvent evt) {
+		Stage stage = (Stage) ((Hyperlink) evt.getSource()).getScene().getWindow();
+		stage.setIconified(true);
+	}
+
+	void message(String key, String... args) {
+		if (Platform.isFxApplicationThread()) {
+			String txt = MessageFormat.format(bundle.getString(key), (Object[]) args);
+			status.textProperty().set(txt);
+		} else
+			Platform.runLater(() -> message(key, args));
 	}
 
 	private boolean isExistsAndIsEmpty(Path p) {

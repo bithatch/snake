@@ -20,8 +20,8 @@ public class Layout {
 	final static System.Logger LOG = System.getLogger(Layout.class.getName());
 
 	private final static Map<String, Layout> layouts = new HashMap<>();
-	private final static Map<String, String> nameToLayout = new HashMap<>();
 	private final static Map<String, String> layoutToName = new HashMap<>();
+	private final static Map<String, String> nameToLayout = new HashMap<>();
 
 	static {
 		Properties p = new Properties();
@@ -119,51 +119,31 @@ public class Layout {
 		return layouts.get(key);
 	}
 
+	private boolean exact;
 	private Key[][] keys;
+	private String layout;
+	private String name;
 	private int x;
 	private int y;
-	private String layout;
-	private boolean exact;
-	private String name;
 
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
+	public Key[][] getKeys() {
+		return keys;
 	}
 
 	public String getLayout() {
 		return layout;
 	}
 
-	public void setLayout(String layout) {
-		this.layout = layout;
+	public String getName() {
+		return name;
 	}
 
 	public int getX() {
 		return x;
 	}
 
-	public void setX(int x) {
-		this.x = x;
-	}
-
 	public int getY() {
 		return y;
-	}
-
-	public void setY(int y) {
-		this.y = y;
-	}
-
-	public Key[][] getKeys() {
-		return keys;
-	}
-
-	public void setKeys(Key[][] keys) {
-		this.keys = keys;
 	}
 
 	public boolean isExact() {
@@ -172,6 +152,26 @@ public class Layout {
 
 	public void setExact(boolean exact) {
 		this.exact = exact;
+	}
+
+	public void setKeys(Key[][] keys) {
+		this.keys = keys;
+	}
+
+	public void setLayout(String layout) {
+		this.layout = layout;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setX(int x) {
+		this.x = x;
+	}
+
+	public void setY(int y) {
+		this.y = y;
 	}
 
 }

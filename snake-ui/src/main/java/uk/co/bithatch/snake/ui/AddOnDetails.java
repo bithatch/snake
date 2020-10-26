@@ -2,8 +2,13 @@ package uk.co.bithatch.snake.ui;
 
 import java.net.URL;
 
+import com.sshtools.icongenerator.IconBuilder;
+import com.sshtools.icongenerator.IconBuilder.AwesomeIconMode;
+import com.sshtools.icongenerator.IconBuilder.TextContent;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -17,7 +22,7 @@ public class AddOnDetails extends AbstractDeviceController {
 	@FXML
 	private Label addOnName;
 	@FXML
-	private ImageView screenshot;
+	private Label screenshot;
 
 	@Override
 	protected void onConfigure() throws Exception {
@@ -29,9 +34,23 @@ public class AddOnDetails extends AbstractDeviceController {
 		addOnName.textProperty().set(addOn.getName());
 		URL ss = addOn.getScreenshot();
 		if (ss == null) {
-//			screenshot.setImage(new Image(ss, true));
-		} else
-			screenshot.setImage(new Image(ss.toExternalForm(), true));
+
+			IconBuilder builder = new IconBuilder();
+			builder.width(96);
+			builder.height(96);
+			builder.text(addOn.getName());
+			builder.autoShape();
+			builder.autoColor();
+			builder.textContent(TextContent.INITIALS);
+			builder.autoTextColor();
+			builder.awesomeIconMode(AwesomeIconMode.AUTO_MATCH);
+			screenshot.setGraphic(builder.build(Canvas.class));
+		} else {
+			ImageView iv = new ImageView(new Image(ss.toExternalForm(), true));
+			iv.setFitHeight(96);
+			iv.setFitWidth(96);
+			screenshot.setGraphic(iv);
+		}
 	}
 
 	@FXML

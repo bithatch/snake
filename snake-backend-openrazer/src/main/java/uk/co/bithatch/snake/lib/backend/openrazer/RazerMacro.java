@@ -8,9 +8,9 @@ public interface RazerMacro extends DBusInterface {
 	
 	void addMacro(String key, String json);
 
-	String getMacros();
-	
 	void deleteMacro(String key);
+	
+	String getMacros();
 	
 	boolean getModeModifier();
 	

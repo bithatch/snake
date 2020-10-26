@@ -6,7 +6,11 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
 @DBusInterfaceName("razer.device.lighting.logo")
 public interface RazerRegionLogo extends DBusInterface {
 	
+	boolean getLogoActive();
+	
 	double getLogoBrightness();
+	
+	void setLogoActive(boolean active);
 	
 	void setLogoBreathDual(byte red1, byte green1, byte blue1, byte red2, byte green2, byte blue2);
 	
@@ -25,8 +29,4 @@ public interface RazerRegionLogo extends DBusInterface {
 	void setLogoStatic(byte red1, byte green1, byte blue1);
 	
 	void setLogoWave(int direction);
-	
-	void setLogoActive(boolean active);
-	
-	boolean getLogoActive();
 }

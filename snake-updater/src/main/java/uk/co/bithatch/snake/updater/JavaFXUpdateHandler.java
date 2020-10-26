@@ -11,29 +11,22 @@ import com.sshtools.forker.updater.UpdateSession;
 
 public class JavaFXUpdateHandler implements UpdateHandler {
 
+	private static JavaFXUpdateHandler instance;
+
 	public static JavaFXUpdateHandler get() {
 		if (instance == null)
 			/* For when launching from development environment */
 			instance = new JavaFXUpdateHandler();
 		return instance;
 	}
-
-	private static JavaFXUpdateHandler instance;
+	
 	private UpdateHandler delegate;
-	private UpdateSession updater;
 	private Semaphore flag = new Semaphore(1);
+	private UpdateSession updater;
 
 	public JavaFXUpdateHandler() {
 		instance = this;
 		flag.acquireUninterruptibly();
-	}
-
-	public void setDelegate(UpdateHandler delegate) {
-		if (this.delegate != null)
-			throw new IllegalStateException("Delegate already set.");
-		this.delegate = delegate;
-		delegate.init(updater);
-		flag.release();
 	}
 
 	@Override
@@ -41,6 +34,16 @@ public class JavaFXUpdateHandler implements UpdateHandler {
 		flag.acquireUninterruptibly();
 		try {
 			delegate.complete();
+		} finally {
+			flag.release();
+		}
+	}
+
+	@Override
+	public void completedManifestLoad(URL location) {
+		flag.acquireUninterruptibly();
+		try {
+			delegate.completedManifestLoad(location);
 		} finally {
 			flag.release();
 		}
@@ -66,6 +69,10 @@ public class JavaFXUpdateHandler implements UpdateHandler {
 		}
 	}
 
+	public UpdateSession getSession() {
+		return updater;
+	}
+
 	@Override
 	public void init(UpdateSession updater) {
 		this.updater = updater;
@@ -78,6 +85,28 @@ public class JavaFXUpdateHandler implements UpdateHandler {
 				}
 			}
 		}.start();
+	}
+
+	public boolean isActive() {
+		return updater != null;
+	}
+
+	@Override
+	public boolean noUpdates(Callable<Void> task) {
+		flag.acquireUninterruptibly();
+		try {
+			return delegate.noUpdates(task);
+		} finally {
+			flag.release();
+		}
+	}
+
+	public void setDelegate(UpdateHandler delegate) {
+		if (this.delegate != null)
+			throw new IllegalStateException("Delegate already set.");
+		this.delegate = delegate;
+		delegate.init(updater);
+		flag.release();
 	}
 
 	@Override
@@ -95,6 +124,16 @@ public class JavaFXUpdateHandler implements UpdateHandler {
 		flag.acquireUninterruptibly();
 		try {
 			delegate.startDownloads();
+		} finally {
+			flag.release();
+		}
+	}
+
+	@Override
+	public void startingManifestLoad(URL location) {
+		flag.acquireUninterruptibly();
+		try {
+			delegate.startingManifestLoad(location);
 		} finally {
 			flag.release();
 		}
@@ -123,36 +162,6 @@ public class JavaFXUpdateHandler implements UpdateHandler {
 	}
 
 	@Override
-	public void startingManifestLoad(URL location) {
-		flag.acquireUninterruptibly();
-		try {
-			delegate.startingManifestLoad(location);
-		} finally {
-			flag.release();
-		}
-	}
-
-	@Override
-	public void completedManifestLoad(URL location) {
-		flag.acquireUninterruptibly();
-		try {
-			delegate.completedManifestLoad(location);
-		} finally {
-			flag.release();
-		}
-	}
-
-	@Override
-	public boolean noUpdates(Callable<Void> task) {
-		flag.acquireUninterruptibly();
-		try {
-			return delegate.noUpdates(task);
-		} finally {
-			flag.release();
-		}
-	}
-
-	@Override
 	public boolean updatesComplete(Callable<Void> task) throws Exception {
 		flag.acquireUninterruptibly();
 		try {
@@ -160,14 +169,6 @@ public class JavaFXUpdateHandler implements UpdateHandler {
 		} finally {
 			flag.release();
 		}
-	}
-
-	public UpdateSession getSession() {
-		return updater;
-	}
-
-	public boolean isActive() {
-		return updater != null;
 	}
 
 }

@@ -6,10 +6,10 @@ import org.freedesktop.dbus.interfaces.DBusInterface;
 @DBusInterfaceName("razer.device.lighting.bw2013")
 public interface RazerBW2013 extends DBusInterface {
 
-	void setPulsate();
-
-	void setStatic();
-	
 	byte getEffect();
+
+	void setPulsate();
+	
+	void setStatic();
 
 }

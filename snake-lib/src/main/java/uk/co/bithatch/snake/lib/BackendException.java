@@ -7,16 +7,16 @@ public class BackendException extends RuntimeException {
 		super();
 	}
 
-	public BackendException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
+	public BackendException(String message) {
+		super(message);
 	}
 
 	public BackendException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
-	public BackendException(String message) {
-		super(message);
+	public BackendException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
 	}
 
 	public BackendException(Throwable cause) {

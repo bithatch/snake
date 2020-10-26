@@ -32,23 +32,65 @@ import javafx.stage.Stage;
 public class Update implements Controller, UpdateHandler {
 
 	final static ResourceBundle bundle = ResourceBundle.getBundle(Update.class.getName());
-
-	@FXML
-	private Label title;
-	@FXML
-	private BorderPane titleBar;
+	
 	@FXML
 	private ProgressIndicator progress;
 	@FXML
 	private Label status;
+	@FXML
+	private Label title;
+	@FXML
+	private BorderPane titleBar;
 
-	private Scene scene;
 	private Bootstrap bootstrap;
-	private ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
 	private ScheduledFuture<?> checkTask;
+	private ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
+	private Scene scene;
 
-	public void setBootstrap(Bootstrap bootstrap) {
-		this.bootstrap = bootstrap;
+	@Override
+	public void complete() {
+		Platform.runLater(() -> {
+			message("success");
+			status.getStyleClass().add("success");
+		});
+		executor.shutdown();
+		bootstrap.close();
+	}
+
+	public void doneCheckUpdateFile(Entry file, boolean requires) throws Throwable {
+		message("doneCheckUpdateFile", file.path().getFileName().toString());
+	}
+
+	public void doneCheckUpdates() throws Throwable {
+		message("doneCheckUpdates");
+	}
+
+	@Override
+	public void doneDownloadFile(Entry file) throws Exception {
+	}
+
+	public void doneDownloadFile(Entry file, Path path) throws Throwable {
+		message("doneDownloadFile", file.path().getFileName().toString());
+	}
+
+	public void doneDownloads() throws Throwable {
+		Platform.runLater(() -> {
+			bootstrap.getStage().show();
+			message("doneDownloads");
+		});
+	}
+
+	@Override
+	public void failed(Throwable t) {
+		Platform.runLater(() -> {
+			message("failed", t.getMessage() == null ? "No message supplied." : t.getMessage());
+			status.getStyleClass().add("danger");
+		});
+	}
+
+	@Override
+	public Scene getScene() {
+		return scene;
 	}
 
 	@Override
@@ -99,15 +141,8 @@ public class Update implements Controller, UpdateHandler {
 		status.textProperty().set(bundle.getString("ready"));
 	}
 
-	@FXML
-	void evtMin(ActionEvent evt) {
-		Stage stage = (Stage) ((Hyperlink) evt.getSource()).getScene().getWindow();
-		stage.setIconified(true);
-	}
-
-	@FXML
-	void evtClose(ActionEvent evt) {
-		bootstrap.close();
+	public void setBootstrap(Bootstrap bootstrap) {
+		this.bootstrap = bootstrap;
 	}
 
 	@Override
@@ -115,37 +150,20 @@ public class Update implements Controller, UpdateHandler {
 		this.scene = scene;
 	}
 
-	@Override
-	public Scene getScene() {
-		return scene;
-	}
-
-	void message(String key, String... args) {
-		if (Platform.isFxApplicationThread()) {
-			String txt = MessageFormat.format(bundle.getString(key), (Object[]) args);
-			status.textProperty().set(txt);
-		} else
-			Platform.runLater(() -> message(key, args));
+	public void startCheckUpdateFile(Entry file) throws Throwable {
+		message("startCheckUpdateFile", file.path().getFileName().toString());
 	}
 
 	public void startCheckUpdates() throws Throwable {
 		message("startCheckUpdates");
 	}
 
-	public void startCheckUpdateFile(Entry file) throws Throwable {
-		message("startCheckUpdateFile", file.path().getFileName().toString());
-	}
-
-	public void doneCheckUpdateFile(Entry file, boolean requires) throws Throwable {
-		message("doneCheckUpdateFile", file.path().getFileName().toString());
-	}
-
-	public void updateCheckUpdatesProgress(float frac) throws Throwable {
-		Platform.runLater(() -> progress.progressProperty().set(frac));
-	}
-
-	public void doneCheckUpdates() throws Throwable {
-		message("doneCheckUpdates");
+	@Override
+	public void startDownloadFile(Entry file) throws Exception {
+		Platform.runLater(() -> {
+			bootstrap.getStage().show();
+			message("startDownloadFile", file.path().getFileName().toString());
+		});
 	}
 
 	@Override
@@ -156,12 +174,8 @@ public class Update implements Controller, UpdateHandler {
 		});
 	}
 
-	@Override
-	public void startDownloadFile(Entry file) throws Exception {
-		Platform.runLater(() -> {
-			bootstrap.getStage().show();
-			message("startDownloadFile", file.path().getFileName().toString());
-		});
+	public void updateCheckUpdatesProgress(float frac) throws Throwable {
+		Platform.runLater(() -> progress.progressProperty().set(frac));
 	}
 
 	@Override
@@ -177,36 +191,22 @@ public class Update implements Controller, UpdateHandler {
 		message("validatingFile", file.path().getFileName().toString());
 	}
 
-	public void doneDownloadFile(Entry file, Path path) throws Throwable {
-		message("doneDownloadFile", file.path().getFileName().toString());
-	}
-
-	public void doneDownloads() throws Throwable {
-		Platform.runLater(() -> {
-			bootstrap.getStage().show();
-			message("doneDownloads");
-		});
-	}
-
-	@Override
-	public void failed(Throwable t) {
-		Platform.runLater(() -> {
-			message("failed", t.getMessage() == null ? "No message supplied." : t.getMessage());
-			status.getStyleClass().add("danger");
-		});
-	}
-
-	@Override
-	public void complete() {
-		Platform.runLater(() -> {
-			message("success");
-			status.getStyleClass().add("success");
-		});
-		executor.shutdown();
+	@FXML
+	void evtClose(ActionEvent evt) {
 		bootstrap.close();
 	}
 
-	@Override
-	public void doneDownloadFile(Entry file) throws Exception {
+	@FXML
+	void evtMin(ActionEvent evt) {
+		Stage stage = (Stage) ((Hyperlink) evt.getSource()).getScene().getWindow();
+		stage.setIconified(true);
+	}
+
+	void message(String key, String... args) {
+		if (Platform.isFxApplicationThread()) {
+			String txt = MessageFormat.format(bundle.getString(key), (Object[]) args);
+			status.textProperty().set(txt);
+		} else
+			Platform.runLater(() -> message(key, args));
 	}
 }
