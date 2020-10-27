@@ -9,7 +9,7 @@ module uk.co.bithatch.snake.updater {
 	requires transitive com.goxr3plus.fxborderlessscene;
     exports uk.co.bithatch.snake.updater;
     opens uk.co.bithatch.snake.updater; 
-    opens uk.co.bithatch.snake.updater.appicon;
+    opens uk.co.bithatch.snake.updater.icons;
 	provides com.sshtools.forker.updater.UpdateHandler with uk.co.bithatch.snake.updater.JavaFXUpdateHandler;
 	provides com.sshtools.forker.updater.InstallHandler with uk.co.bithatch.snake.updater.JavaFXInstallHandler;
 }

@@ -2,7 +2,6 @@
 
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
@@ -32,11 +31,7 @@
          <center>
             <HBox alignment="CENTER" fillHeight="false" BorderPane.alignment="CENTER">
                <children>
-                  <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
-                     <image>
-                        <Image url="@appicon/razer-color-64.png" />
-                     </image>
-                  </ImageView>
+                  <ImageView fx:id="titleBarImage" fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true" />
                   <Label fx:id="title" styleClass="titleBar" text="%title" />
                </children>
             </HBox>

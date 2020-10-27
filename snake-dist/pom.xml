@@ -51,6 +51,8 @@
 			</dependencies>
 			<build>
 				<plugins>
+
+
 					<plugin>
 						<groupId>com.sshtools</groupId>
 						<artifactId>forker-updater-maven-plugin</artifactId>
@@ -63,6 +65,7 @@
 									<goal>updates</goal>
 								</goals>
 								<configuration>
+									<version>${project.version}-${buildNumber}</version>
 									<repositoryDirectory>${project.build.directory}/repository</repositoryDirectory>
 									<launcherScriptName>snake</launcherScriptName>
 									<remoteBase>${snakeRemote}</remoteBase>
@@ -89,7 +92,7 @@
 											<target>docs</target>
 										</bootstrapFile>
 										<bootstrapFile>
-											<source>${basedir}/../CHANGES.md</source>
+											<source>${basedir}/../target/CHANGES.md</source>
 											<target>docs</target>
 										</bootstrapFile>
 									</bootstrapFiles>
@@ -159,6 +162,7 @@
 									<goal>updates</goal>
 								</goals>
 								<configuration>
+									<version>${project.version}-${buildNumber}</version>
 									<repositoryDirectory>${project.build.directory}/repository-noruntime</repositoryDirectory>
 									<launcherScriptName>snake</launcherScriptName>
 									<remoteBase>${snakeRemoteNoRuntime}</remoteBase>
@@ -187,7 +191,7 @@
 											<target>docs</target>
 										</bootstrapFile>
 										<bootstrapFile>
-											<source>${basedir}/../CHANGES.md</source>
+											<source>${basedir}/../target/CHANGES.md</source>
 											<target>docs</target>
 										</bootstrapFile>
 									</bootstrapFiles>
@@ -354,7 +358,7 @@
 										</data>
 										<data>
 											<type>file</type>
-											<src>${basedir}/../snake-ui/src/main/resources/uk/co/bithatch/snake/ui/appicon/razer-color-512.png</src>
+											<src>${basedir}/../snake-ui/src/main/resources/uk/co/bithatch/snake/ui/icons/app512.png</src>
 											<dst>snake-razer.png</dst>
 											<mapper>
 												<type>perm</type>
@@ -450,7 +454,7 @@
 										</data>
 										<data>
 											<type>file</type>
-											<src>${basedir}/../snake-ui/src/main/resources/uk/co/bithatch/snake/ui/appicon/razer-color-512.png</src>
+											<src>${basedir}/../snake-ui/src/main/resources/uk/co/bithatch/snake/ui/icons/app512.png</src>
 											<dst>snake-razer.png</dst>
 											<mapper>
 												<type>perm</type>
@@ -503,7 +507,7 @@
 									<packager>Bithatch</packager>
 									<copyright>2020 Bithatch</copyright>
 									<prefix>/usr</prefix>
-									<icon>${basedir}/src/main/icons/razer-color-256.gif</icon>
+									<icon>${basedir}/src/main/icons/app256.gif</icon>
 									<license>GPLv3</license>
 									<needarch>amd64</needarch>
 									<defaultFilemode>644</defaultFilemode>
@@ -606,7 +610,7 @@
 											<sources>
 												<source>
 													<destination>snake-razer.png</destination>
-													<location>${basedir}/../snake-ui/src/main/resources/uk/co/bithatch/snake/ui/appicon/razer-color-512.png</location>
+													<location>${basedir}/../snake-ui/src/main/resources/uk/co/bithatch/snake/ui/icons/app512.png</location>
 												</source>
 											</sources>
 										</mapping>
@@ -625,7 +629,7 @@
 									<license>GPLv3</license>
 									<group>Applications/System</group>
 									<packager>Bithatch</packager>
-									<icon>${basedir}/src/main/icons/razer-color-256.gif</icon>
+									<icon>${basedir}/src/main/icons/app256.gif</icon>
 									<copyright>2020 Bithatch</copyright>
 									<prefix>/usr</prefix>
 									<needarch>noarch</needarch>
@@ -709,7 +713,7 @@
 											<sources>
 												<source>
 													<destination>snake-razer.png</destination>
-													<location>${basedir}/../snake-ui/src/main/resources/uk/co/bithatch/snake/ui/appicon/razer-color-512.png</location>
+													<location>${basedir}/../snake-ui/src/main/resources/uk/co/bithatch/snake/ui/icons/app512.png</location>
 												</source>
 											</sources>
 										</mapping>
@@ -737,43 +741,7 @@
 								</goals>
 								<configuration>
 									<target>
-										
-										<!-- <mkdir dir="${snakeInstallers}" />
-										<copy todir="${snakeInstallers}">
-											<fileset dir="${project.build.directory}">
-												<include name="*.sh" />
-												<include name="*.deb" />
-											</fileset>
-										</copy>
-										<copy todir="${snakeInstallers}">
-											<fileset
-												dir="${project.build.directory}/rpm/snake/RPMS/amd64">
-												<include name="*.rpm" />
-											</fileset>
-											<globmapper from="snake-*.amd64.rpm"
-												to="snake-amd64.rpm" />
-										</copy>
-										<copy todir="${snakeInstallers}">
-											<fileset
-												dir="${project.build.directory}/rpm/snake-noruntime/RPMS/noarch">
-												<include name="*.rpm" />
-											</fileset>
-											<globmapper from="snake-*.noarch.rpm"
-												to="snake-noruntime.noarch.rpm" />
-										</copy>
-										<tar destfile="${snakeInstallers}/snake-amd64.tar.gz"
-											compression="gzip">
-											<tarfileset dir="${project.build.directory}/image"
-												prefix="snake" />
-										</tar>
-										<tar destfile="${snakeInstallers}/snake-noruntime.tar.gz"
-											compression="gzip">
-											<tarfileset
-												dir="${project.build.directory}/image-noruntime"
-												prefix="snake" />
-										</tar>
-										 -->
-										 
+
 										<copy todir="${project.build.directory}">
 											<fileset
 												dir="${project.build.directory}/rpm/snake/RPMS/amd64">
@@ -790,18 +758,20 @@
 											<globmapper from="snake-*.noarch.rpm"
 												to="snake-noruntime.noarch.rpm" />
 										</copy>
-										<tar destfile="${project.build.directory}/snake-amd64.tar.gz"
+										<tar
+											destfile="${project.build.directory}/snake-amd64.tar.gz"
 											compression="gzip">
 											<tarfileset dir="${project.build.directory}/image"
 												prefix="snake" />
 										</tar>
-										<tar destfile="${project.build.directory}/snake-noruntime.tar.gz"
+										<tar
+											destfile="${project.build.directory}/snake-noruntime.tar.gz"
 											compression="gzip">
 											<tarfileset
 												dir="${project.build.directory}/image-noruntime"
 												prefix="snake" />
 										</tar>
-										
+
 										<mkdir dir="${snakeLocal}" />
 										<copy todir="${snakeLocal}">
 											<fileset dir="${project.build.directory}/repository">
@@ -815,7 +785,7 @@
 												<include name="**/*" />
 											</fileset>
 										</copy>
-										
+
 									</target>
 								</configuration>
 							</execution>
@@ -829,9 +799,8 @@
 		<finalName>snake</finalName>
 		<plugins>
 			<plugin>
-			    <groupId>org.apache.maven.plugins</groupId>
-			    <artifactId>maven-deploy-plugin</artifactId>
-			    <version>3.0.0-M1</version>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
 				<configuration>
 					<skip>true</skip>
 				</configuration>

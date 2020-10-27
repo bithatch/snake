@@ -83,13 +83,17 @@ public class Theme extends AbstractAddOn {
 		if (LOG.isLoggable(Level.DEBUG))
 			LOG.log(Level.DEBUG,
 					String.format("Trying to get resource %s as stream in theme %s (%s).", resource, id, location));
-		InputStream in = getClass().getResourceAsStream(location.toExternalForm() + "/" + resource);
-		if (in == null && parent != null && parent.length() > 0) {
-			if (LOG.isLoggable(Level.DEBUG))
-				LOG.log(Level.DEBUG, String.format("Doesn't exist, trying parent %s.", parent));
-			in = manager.getTheme(parent).getResourceAsStream(location.toExternalForm() + "/" + resource);
+		try {
+			InputStream in = new URL(location.toExternalForm() + "/" + resource).openStream();
+			if (in == null && parent != null && parent.length() > 0) {
+				if (LOG.isLoggable(Level.DEBUG))
+					LOG.log(Level.DEBUG, String.format("Doesn't exist, trying parent %s.", parent));
+				in = manager.getTheme(parent).getResourceAsStream(location.toExternalForm() + "/" + resource);
+			}
+			return in;
+		} catch (IOException ioe) {
+			throw new IllegalStateException(String.format("Failed to load theme resource %s.", resource), ioe);
 		}
-		return in;
 	}
 
 	@Override

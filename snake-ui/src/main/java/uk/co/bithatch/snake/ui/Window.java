@@ -9,6 +9,7 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.BackgroundPosition;
@@ -44,11 +45,15 @@ public class Window extends AbstractController {
 	private StackPane content;
 	@FXML
 	private Hyperlink options;
+	@FXML
+	private ImageView titleBarImage;
 
 	private Rectangle2D bounds;
 
 	@Override
 	protected void onConfigure() throws Exception {
+		titleBarImage.setImage(new Image(context.getConfiguration().themeProperty().getValue().getResource("icons/app64.png")
+				.toExternalForm(), true));
 		titleBar.setBackground(new Background(new BackgroundImage(
 				new Image(context.getConfiguration().themeProperty().getValue().getResource("titleBar.png")
 						.toExternalForm(), true),

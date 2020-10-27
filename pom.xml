@@ -21,6 +21,26 @@
 		<maven.compiler.source>15</maven.compiler.source>
 		<maven.compiler.target>15</maven.compiler.target>
 	</properties>
+
+	<licenses>
+		<license>
+			<name>GNU GENERAL PUBLIC LICENSE Version 3</name>
+			<url>https://www.gnu.org/licenses/gpl-3.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<scm>
+		<url>https://github.com/bithatch/snake/</url>
+		<connection>scm:git:https://github.com/bithatch/snake.git</connection>
+		<developerConnection>scm:git:https://github.com/bithatch/snake.git</developerConnection>
+	</scm>
+	<developers>
+		<developer>
+			<id>brett</id>
+			<name>Brett Smith</name>
+			<email>tanktarta@gmail.com</email>
+		</developer>
+	</developers>
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -40,8 +60,65 @@
 						<skip>true</skip>
 					</configuration>
 				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>buildnumber-maven-plugin</artifactId>
+					<version>1.4</version>
+				</plugin>
 			</plugins>
 		</pluginManagement>
+
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>buildnumber-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>buildnumber</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>create</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<getRevisionOnlyOnce>true</getRevisionOnlyOnce>
+					<format>{0,number}</format>
+					<items>
+						<item>buildNumber</item>
+					</items>
+					<doCheck>false</doCheck>
+					<doUpdate>false</doUpdate>
+					<revisionOnScmFailure>unknownbuild</revisionOnScmFailure>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.2.0</version>
+				<executions>
+					<execution>
+						<id>build-id</id>
+						<phase>package</phase>
+						<goals>
+							<goal>resources</goal>
+						</goals>
+						<configuration>
+							<skip>false</skip>
+							<outputDirectory>${project.build.directory}</outputDirectory>
+							<resources>
+								<resource>
+									<directory>.</directory>
+									<includes>
+										<include>CHANGES.md</include>
+									</includes>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
 	</build>
 	<repositories>
 		<repository>

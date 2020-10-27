@@ -98,14 +98,16 @@ public class SlideyStack extends StackPane {
 	}
 
 	Node fadeIn(Node paneToAdd) {
-		var paneToRemove = getChildren().get(0);
+		var paneToRemove = getChildren().isEmpty() ? null : getChildren().get(0);
 
 		getChildren().add(paneToAdd);
 		var fadeInTransition = new FadeTransition(duration);
 
-		fadeInTransition.setOnFinished(evt -> {
-			getChildren().remove(paneToRemove);
-		});
+		if(paneToRemove != null) {
+			fadeInTransition.setOnFinished(evt -> {
+				getChildren().remove(paneToRemove);
+			});
+		}
 		fadeInTransition.setNode(paneToAdd);
 		fadeInTransition.setFromValue(0);
 		fadeInTransition.setToValue(1);

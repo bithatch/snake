@@ -9,7 +9,7 @@ module uk.co.bithatch.snake.ui {
 	requires SystemTray;
     exports uk.co.bithatch.snake.ui;
     opens uk.co.bithatch.snake.ui;
-    opens uk.co.bithatch.snake.ui.appicon;  
+    opens uk.co.bithatch.snake.ui.icons;  
 	requires com.sshtools.forker.wrapped;
 	requires transitive org.commonmark;
 	requires transitive com.sshtools.icongenerator.common;

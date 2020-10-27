@@ -30,7 +30,7 @@ public abstract class AbstractDetailsController extends AbstractDeviceController
 		deviceImage.setImage(new Image(getDevice().getImage(), true));
 		deviceName.textProperty().set(getDevice().getName());
 		
-		back.visibleProperty().set(!context.getControllers().isEmpty());
+		back.visibleProperty().set(context.getControllers().indexOf(this) > 0);
 
 		onSetDeviceDetails();
 	}

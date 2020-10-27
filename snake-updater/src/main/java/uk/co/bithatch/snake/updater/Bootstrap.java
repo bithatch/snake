@@ -73,7 +73,7 @@ public class Bootstrap extends Application {
 		System.setProperty("suppress.warning", "true");
 
 		List<String> sizes = List.of("32", "64", "96", "128", "256", "512");
-		images = sizes.stream().map(s -> ("/uk/co/bithatch/snake/updater/appicon/razer-color-" + s + ".png"))
+		images = sizes.stream().map(s -> ("/uk/co/bithatch/snake/updater/icons/app" + s + ".png"))
 				.map(s -> getClass().getResource(s).toExternalForm()).map(Image::new).collect(Collectors.toList());
 	}
 

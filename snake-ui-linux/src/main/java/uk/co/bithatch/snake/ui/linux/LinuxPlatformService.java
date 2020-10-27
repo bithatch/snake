@@ -21,9 +21,11 @@ import uk.co.bithatch.snake.ui.PlatformService;
 public class LinuxPlatformService implements PlatformService {
 
 	private static final String SNAKE_RAZER_DESKTOP = "snake-razer.desktop";
-	
-	private static final String BETA_CHANNEL = System.getProperty("forker.betaChannel", "http://www.bithatch.co.uk/repositories/snake/snapshot");
-	private static final String STABLE_CHANNEL = System.getProperty("forker.releaseChannel", "http://www.bithatch.co.uk/repositories/snake/stable");
+
+	private static final String BETA_CHANNEL = System.getProperty("forker.betaChannel",
+			"http://www.bithatch.co.uk/repositories/snake/snapshot");
+	private static final String STABLE_CHANNEL = System.getProperty("forker.releaseChannel",
+			"http://www.bithatch.co.uk/repositories/snake/stable");
 
 	@Override
 	public String getAvailableVersion() {
@@ -40,7 +42,7 @@ public class LinuxPlatformService implements PlatformService {
 		try {
 			Path appCfg = getAppCfg();
 			Path path = checkDir(appCfg).resolve("updates");
-			if(Files.exists(path))
+			if (Files.exists(path))
 				return contains(path, "remote-manifest " + BETA_CHANNEL);
 			else {
 				path = checkDir(appCfg.toAbsolutePath().getParent()).resolve("app.cfg");
@@ -116,8 +118,9 @@ public class LinuxPlatformService implements PlatformService {
 
 	@Override
 	public void setStartOnLogin(boolean startOnLogin) throws IOException {
-		writeDesktopFile(getAutostartFile(), "Snake", "Control and configure your Razer devices", startOnLogin,
-				"-- --no-open");
+		if (isStartOnLogin() != startOnLogin)
+			writeDesktopFile(getAutostartFile(), "Snake", "Control and configure your Razer devices", startOnLogin,
+					"-- --no-open");
 	}
 
 	@Override
@@ -205,7 +208,7 @@ public class LinuxPlatformService implements PlatformService {
 			pw.println("Terminal=false");
 			File iconFile = checkFilesParent(new File(getShare(), "pixmaps" + File.separator + "snake-razer.png"));
 			try (FileOutputStream fos = new FileOutputStream(iconFile)) {
-				try (InputStream in = App.class.getResourceAsStream("appicon/razer-color-512.png")) {
+				try (InputStream in = App.class.getResourceAsStream("icons/app512.png")) {
 					in.transferTo(fos);
 				}
 			}

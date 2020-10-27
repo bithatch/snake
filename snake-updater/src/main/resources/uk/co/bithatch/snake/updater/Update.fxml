@@ -28,7 +28,7 @@
 					<children>
 						<ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
 							<image>
-								<Image url="@/uk/co/bithatch/snake/updater/appicon/razer-color-64.png" />
+								<Image url="@icons/app48.png" />
 							</image>
 						</ImageView>
 						<Label fx:id="title" styleClass="titleBar" text="%title" />

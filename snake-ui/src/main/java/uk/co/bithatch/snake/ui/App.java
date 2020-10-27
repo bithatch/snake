@@ -35,16 +35,15 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import uk.co.bithatch.snake.lib.Backend;
+import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.ui.Configuration.TrayIcon;
 import uk.co.bithatch.snake.ui.SlideyStack.Direction;
 
 public class App extends Application {
-	
+
 	static {
 		/* Need to load once so themes can see. TODO move this to theme system */
-		Font.loadFont(
-				AwesomeIcons.class.getResource("fontawesome-webfont.ttf")
-						.toExternalForm(), 12);
+		Font.loadFont(AwesomeIcons.class.getResource("fontawesome-webfont.ttf").toExternalForm(), 12);
 	}
 	public static int DROP_SHADOW_SIZE = 11;
 
@@ -71,7 +70,8 @@ public class App extends Application {
 		StringBuilder bui = new StringBuilder();
 
 		// Get the base colour. All other colours are derived from this
-		Color backgroundColour = new Color(0, 0, 0, 1.0 - ((double) configuration.transparencyProperty().get() / 100.0));
+		Color backgroundColour = new Color(0, 0, 0,
+				1.0 - ((double) configuration.transparencyProperty().get() / 100.0));
 
 		if (backgroundColour.getOpacity() == 0) {
 			// Prevent total opacity, as mouse events won't be received
@@ -144,7 +144,7 @@ public class App extends Application {
 		loadQueue.shutdownNow();
 		loadQueue = Executors.newSingleThreadExecutor();
 	}
-	
+
 	public Configuration getConfiguration() {
 		return configuration;
 	}
@@ -210,6 +210,15 @@ public class App extends Application {
 
 	public AddOnManager getAddOnManager() {
 		return addOnManager;
+	}
+
+	public void openDevice(Device device) throws Exception {
+		controllers.clear();
+		stackPane.getChildren().clear();
+		if (backend.getDevices().size() != 1) {
+			push(Overview.class, Direction.FADE_IN);
+		}
+		push(DeviceDetails.class, Direction.FADE_IN).setDevice(device);
 	}
 
 	public <C extends Controller> C openScene(Class<C> controller) throws IOException {
@@ -295,13 +304,13 @@ public class App extends Application {
 
 		try {
 			C fc = openScene(controller, null);
+			controllers.push(fc);
 			if (fc instanceof AbstractDeviceController && from instanceof AbstractDeviceController) {
 				var device = ((AbstractDeviceController) from).getDevice();
 				if (device != null)
 					((AbstractDeviceController) fc).setDevice(device);
 			}
 			stackPane.push(direction, fc.getScene().getRoot());
-			controllers.push(fc);
 			if (primaryScene instanceof BorderlessScene) {
 				/* TODO: Not totally sure why ... */
 				setColors(controller, primaryScene);
@@ -346,8 +355,8 @@ public class App extends Application {
 
 		Platform.setImplicitExit(configuration.trayIconProperty().getValue() == TrayIcon.OFF);
 		configuration.themeProperty().addListener((e) -> recreateScene());
-		configuration.trayIconProperty()
-				.addListener((e) -> Platform.setImplicitExit(configuration.trayIconProperty().getValue() == TrayIcon.OFF));
+		configuration.trayIconProperty().addListener(
+				(e) -> Platform.setImplicitExit(configuration.trayIconProperty().getValue() == TrayIcon.OFF));
 
 		String activeBackend = PREFS.get("backend", "");
 		for (Backend possibleBackend : ServiceLoader.load(Backend.class)) {
@@ -390,7 +399,7 @@ public class App extends Application {
 			PlatformService.get().setStartOnLogin(true);
 			PREFS.putBoolean("installed", true);
 		}
-		
+
 		addOnManager.start();
 	}
 
@@ -412,12 +421,18 @@ public class App extends Application {
 		primaryStage.widthProperty().addListener((e) -> configuration.wProperty().set((int) primaryStage.getWidth()));
 		primaryStage.heightProperty().addListener((e) -> configuration.hProperty().set((int) primaryStage.getHeight()));
 		primaryStage.setTitle(BUNDLE.getString("title"));
-		primaryStage.getIcons().add(new Image(App.class.getResourceAsStream("appicon/razer-color-512.png")));
-		primaryStage.getIcons().add(new Image(App.class.getResourceAsStream("appicon/razer-color-256.png")));
-		primaryStage.getIcons().add(new Image(App.class.getResourceAsStream("appicon/razer-color-128.png")));
-		primaryStage.getIcons().add(new Image(App.class.getResourceAsStream("appicon/razer-color-96.png")));
-		primaryStage.getIcons().add(new Image(App.class.getResourceAsStream("appicon/razer-color-64.png")));
-		primaryStage.getIcons().add(new Image(App.class.getResourceAsStream("appicon/razer-color-32.png")));
+		primaryStage.getIcons().add(
+				new Image(configuration.themeProperty().getValue().getResource("icons/app32.png").toExternalForm()));
+		primaryStage.getIcons().add(
+				new Image(configuration.themeProperty().getValue().getResource("icons/app64.png").toExternalForm()));
+		primaryStage.getIcons().add(
+				new Image(configuration.themeProperty().getValue().getResource("icons/app96.png").toExternalForm()));
+		primaryStage.getIcons().add(
+				new Image(configuration.themeProperty().getValue().getResource("icons/app128.png").toExternalForm()));
+		primaryStage.getIcons().add(
+				new Image(configuration.themeProperty().getValue().getResource("icons/app256.png").toExternalForm()));
+		primaryStage.getIcons().add(
+				new Image(configuration.themeProperty().getValue().getResource("icons/app512.png").toExternalForm()));
 		primaryStage.onCloseRequestProperty().set(we -> {
 			we.consume();
 			close();
@@ -448,17 +463,11 @@ public class App extends Application {
 				tray = new Tray(this);
 			}
 
+			controllers.clear();
 			if (backend.getDevices().size() == 1) {
-				DeviceDetails details = openScene(DeviceDetails.class);
-				details.setDevice(backend.getDevices().get(0));
-				stackPane.getChildren().add(details.getScene().getRoot());
-				controllers.clear();
-				controllers.push(details);
+				push(DeviceDetails.class, Direction.FADE_IN).setDevice(backend.getDevices().get(0));
 			} else {
-				Overview fc = openScene(Overview.class, null);
-				stackPane.getChildren().add(fc.getScene().getRoot());
-				controllers.clear();
-				controllers.push(fc);
+				push(Overview.class, Direction.FADE_IN);
 			}
 		} catch (Exception e) {
 			LOG.log(Level.ERROR, "Failed to initialize.", e);

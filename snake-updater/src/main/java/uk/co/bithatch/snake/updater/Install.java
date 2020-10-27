@@ -95,7 +95,7 @@ public class Install implements Controller, InstallHandler {
 						.comment("Control and configure your Razer devices").name("Snake")
 						.executable(installLocation.textProperty().get() + File.separator + "bin/snake")
 						.addCategories("Utility", "Core").addKeywords("razer", "snake", "mamba", "chroma", "deathadder")
-						.icon(Install.class.getResource("appicon/razer-color-512.png").toExternalForm()));
+						.icon(Install.class.getResource("icons/app512.png").toExternalForm()));
 			} else {
 				session.uninstallShortcut(SNAKE_RAZER_DESKTOP);
 			}

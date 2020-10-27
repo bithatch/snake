@@ -93,7 +93,7 @@
       				</VBox>
                   <HBox fx:id="updatesContainer" fillHeight="false" styleClass="tools">
                      <children>
-                        <VBox fillWidth="false" maxHeight="-Infinity" maxWidth="-Infinity" styleClass="tools">
+                        <VBox fillWidth="false" maxHeight="-Infinity" maxWidth="-Infinity">
                            <children>
                               <Label maxWidth="-Infinity" styleClass="title" text="%updates" />
                               <HBox>

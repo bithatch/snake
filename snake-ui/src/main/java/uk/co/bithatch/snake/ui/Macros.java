@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.System.Logger.Level;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -50,11 +48,11 @@ import javafx.util.converter.IntegerStringConverter;
 import uk.co.bithatch.snake.lib.Key;
 import uk.co.bithatch.snake.lib.Macro;
 import uk.co.bithatch.snake.lib.MacroKey;
+import uk.co.bithatch.snake.lib.MacroKey.State;
 import uk.co.bithatch.snake.lib.MacroScript;
 import uk.co.bithatch.snake.lib.MacroSequence;
 import uk.co.bithatch.snake.lib.MacroURL;
 import uk.co.bithatch.snake.lib.ValidationException;
-import uk.co.bithatch.snake.lib.MacroKey.State;
 import uk.co.bithatch.snake.ui.SlideyStack.Direction;
 
 public class Macros extends AbstractDetailsController {

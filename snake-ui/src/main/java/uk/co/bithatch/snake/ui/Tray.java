@@ -101,8 +101,11 @@ public class Tray implements AutoCloseable, BackendListener, Listener {
 		}
 		var menu = toMenu == null ? new Menu(device.getName(), img) : toMenu;
 		var openDev = new MenuItem(bundle.getString("open"), (e) -> Platform.runLater(() -> {
-			context.open();
-			context.push(DeviceDetails.class, Direction.FROM_RIGHT).setDevice(device);
+			try {
+				context.open();
+				context.openDevice(device);
+			} catch (Exception ex) {
+			}
 		}));
 		menu.add(openDev);
 		menuEntries.add(openDev);
@@ -399,16 +402,17 @@ public class Tray implements AutoCloseable, BackendListener, Listener {
 		} else {
 			switch (icon) {
 			case LIGHT:
-				systemTray.setImage(App.class.getResource("appicon/razer-light-128.png"));
+				systemTray.setImage(App.class.getResource("icons/tray-light32.png"));
 				break;
 			case DARK:
-				systemTray.setImage(App.class.getResource("appicon/razer-dark-128.png"));
+				systemTray.setImage(App.class.getResource("icons/tray-dark32.png"));
 				break;
 			case AUTO:
 				// TODO
 			case COLOR:
 			default:
-				systemTray.setImage(App.class.getResource("appicon/razer-color-128.png"));
+				systemTray.setImage(
+						context.getConfiguration().themeProperty().getValue().getResource("icons/tray32.png"));
 				break;
 			}
 		}
