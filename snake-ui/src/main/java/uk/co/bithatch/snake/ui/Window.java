@@ -19,7 +19,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
-import uk.co.bithatch.snake.ui.SlideyStack.Direction;
+import uk.co.bithatch.snake.ui.widgets.Direction;
 
 public class Window extends AbstractController {
 
@@ -122,7 +122,7 @@ public class Window extends AbstractController {
 
 	@FXML
 	void evtAbout(ActionEvent evt) {
-		context.push(About.class, Direction.FADE_IN);
+		context.push(About.class, Direction.FADE);
 	}
 
 	@FXML

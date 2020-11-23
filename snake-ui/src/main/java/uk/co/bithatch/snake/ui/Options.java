@@ -8,7 +8,6 @@ import java.util.ResourceBundle;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ColorPicker;
@@ -24,9 +23,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import uk.co.bithatch.snake.lib.Capability;
-import uk.co.bithatch.snake.ui.AddOnManager.Listener;
 import uk.co.bithatch.snake.ui.Configuration.TrayIcon;
-import uk.co.bithatch.snake.ui.SlideyStack.Direction;
+import uk.co.bithatch.snake.ui.addons.AddOn;
+import uk.co.bithatch.snake.ui.addons.AddOnManager.Listener;
+import uk.co.bithatch.snake.ui.addons.Theme;
+import uk.co.bithatch.snake.ui.widgets.Direction;
 
 public class Options extends AbstractDeviceController implements Listener {
 
@@ -236,22 +237,22 @@ public class Options extends AbstractDeviceController implements Listener {
 	}
 
 	@FXML
-	void evtStartUpdate(ActionEvent evt) {
+	void evtStartUpdate() {
 		System.exit(100);
 	}
 
 	@FXML
-	void evtTheme(ActionEvent evt) {
+	void evtTheme() {
 		context.getConfiguration().themeProperty().setValue(theme.getSelectionModel().getSelectedItem());
 	}
 
 	@FXML
-	void evtOpenAddOns(ActionEvent evt) {
+	void evtOpenAddOns() {
 		context.push(AddOns.class, Direction.FROM_BOTTOM);
 	}
 
 	@FXML
-	void evtBack(ActionEvent evt) {
+	void evtBack() {
 		if (context.getWindow() != null) {
 			context.getWindow().getOptions().visibleProperty().set(true);
 		}

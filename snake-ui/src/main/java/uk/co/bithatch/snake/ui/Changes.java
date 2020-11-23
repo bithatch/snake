@@ -18,7 +18,6 @@ import org.commonmark.renderer.html.HtmlRenderer.Builder;
 import org.commonmark.renderer.html.HtmlWriter;
 
 import javafx.animation.FadeTransition;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
@@ -91,7 +90,7 @@ public class Changes extends AbstractDeviceController {
 	}
 
 	@FXML
-	void evtBack(ActionEvent evt) {
+	void evtBack() {
 		context.pop();
 	}
 

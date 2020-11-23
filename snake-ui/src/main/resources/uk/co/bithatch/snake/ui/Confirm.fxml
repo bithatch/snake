@@ -8,7 +8,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.Confirm">
    <center>
-      <VBox alignment="CENTER" fillWidth="false" BorderPane.alignment="CENTER">
+      <VBox alignment="CENTER" fillWidth="false" styleClass="row" BorderPane.alignment="CENTER">
          <children>
             <Label fx:id="title" styleClass="title" text="Title" />
             <Label fx:id="description" text="Description" />

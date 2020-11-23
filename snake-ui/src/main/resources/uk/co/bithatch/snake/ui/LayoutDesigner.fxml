@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.LayoutDesigner">
+   <children>
+      <VBox fx:id="popupMessages" alignment="CENTER_LEFT" styleClass="popupMessages" />
+      <BorderPane fx:id="header" styleClass="nav">
+         <center>
+            <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
+               <children>
+                  <Group>
+                     <children>
+                        <ImageView fx:id="deviceImage" fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true" styleClass="titleImage" />
+                        <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true" styleClass="titleImage" x="60.0" y="6.0">
+                           <image>
+                              <Image url="@effects/matrix32.png" />
+                           </image>
+                        </ImageView>
+                     </children>
+                  </Group>
+                  <VBox>
+                     <children>
+                        <Label styleClass="title" text="%title" />
+                        <Label fx:id="deviceName" text="Device Name" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+         </center>
+         <right>
+            <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
+               <children>
+                  <Label fx:id="brightnessLabel" text="%brightness">
+                     <graphic>
+                        <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@icons/brightness24.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </Label>
+                  <Slider fx:id="brightness" />
+                  <Hyperlink fx:id="back" onAction="#evtBack" styleClass="iconButton" text="%back" />
+               </children>
+            </HBox>
+         </right>
+      </BorderPane>
+      <ToolBar fx:id="toolBar" prefHeight="40.0" prefWidth="200.0" styleClass="transparentBackground">
+        <items>
+          <Button fx:id="addView" mnemonicParsing="false" onAction="#evtAddView" styleClass="defaultIconButton" text="%addView" />
+            <Button fx:id="removeView" mnemonicParsing="false" onAction="#evtRemoveView" styleClass="defaultIconButton" text="%removeView" />
+            <Button fx:id="export" mnemonicParsing="false" onAction="#evtExport" styleClass="defaultIconButton" text="%export" />
+        </items>
+      </ToolBar>
+      <BorderPane VBox.vgrow="ALWAYS">
+         <center>
+            <StackPane fx:id="stack" />
+         </center>
+         <styleClass>
+            <String fx:value="spaced" />
+            <String fx:value="padded" />
+         </styleClass>
+         <right>
+            <TabPane fx:id="sideBar" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+              <tabs>
+                <Tab text="%component">
+                  <content>
+                    <AnchorPane minHeight="0.0" minWidth="0.0">
+                           <children>
+                              <VBox styleClass="column">
+                                 <children>
+                                    <Label fx:id="componentType" styleClass="subtitle" text="Type" />
+                                    <CheckBox fx:id="enabled" mnemonicParsing="false" text="%enabled" />
+                                    <Label fx:id="widthLabel" styleClass="emphasis" text="%width" />
+                                    <Spinner fx:id="width" editable="true" />
+                                    <Label styleClass="emphasis" text="%label" />
+                                    <TextArea fx:id="label" prefColumnCount="10" prefRowCount="2" />
+                                    <Label styleClass="emphasis" text="%matrix" />
+                                    <HBox alignment="CENTER_LEFT">
+                                       <children>
+                                          <Label fx:id="matrixXLabel" prefWidth="96.0" styleClass="gapLeft" text="%matrixX" />
+                                          <ComboBox fx:id="matrixX" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER_LEFT">
+                                       <children>
+                                          <Label fx:id="matrixYLabel" prefWidth="96.0" styleClass="gapLeft" text="%matrixY" />
+                                          <ComboBox fx:id="matrixY" />
+                                       </children>
+                                    </HBox>
+                                    <HBox>
+                                       <children>
+                                          <Label fx:id="regionLabel" prefWidth="96.0" styleClass="gapLeft" text="%region" />
+                                          <ComboBox fx:id="region" />
+                                       </children>
+                                    </HBox>
+                                    <Hyperlink fx:id="removeElement" onAction="#evtRemoveElement" text="%removeElement" />
+                                 </children>
+                              </VBox>
+                           </children>
+                        </AnchorPane>
+                  </content>
+                </Tab>
+                <Tab text="%view">
+                  <content>
+                    <AnchorPane minHeight="0.0" minWidth="0.0">
+                           <children>
+                              <VBox styleClass="column">
+                                 <children>
+                                    <Label fx:id="positionLabel" styleClass="emphasis" text="%position" />
+                                    <ComboBox fx:id="position" prefWidth="150.0" />
+                                    <Label styleClass="emphasis" text="%image" />
+                                    <VBox>
+                                       <children>
+                                          <RadioButton fx:id="autoImage" mnemonicParsing="false" selected="true" text="%autoImage">
+                                             <toggleGroup>
+                                                <ToggleGroup fx:id="imageSource" />
+                                             </toggleGroup>
+                                          </RadioButton>
+                                          <RadioButton fx:id="fileImage" mnemonicParsing="false" text="%fileImage" toggleGroup="$imageSource" />
+                                          <RadioButton fx:id="urlImage" mnemonicParsing="false" text="%urlImage" toggleGroup="$imageSource" />
+                                          <HBox alignment="CENTER_LEFT" styleClass="gapLeft">
+                                             <children>
+                                                <TextField fx:id="imageUri" />
+                                                <Hyperlink fx:id="browseImage" onAction="#evtBrowseImage" text="%browseImage" />
+                                             </children>
+                                          </HBox>
+                                          <Label text="%imageScale" />
+                                          <Slider fx:id="imageScale" />
+                                          <Label text="%opacity" />
+                                          <Slider fx:id="opacity" />
+                                          <CheckBox fx:id="desaturate" mnemonicParsing="false" text="%desaturate" />
+                                       </children>
+                                       <styleClass>
+                                          <String fx:value="gapLeft" />
+                                          <String fx:value="column" />
+                                       </styleClass>
+                                    </VBox>
+                                 </children>
+                              </VBox>
+                           </children>
+                        </AnchorPane>
+                  </content>
+                </Tab>
+              </tabs>
+            </TabPane>
+         </right>
+      </BorderPane>
+   </children>
+</VBox>

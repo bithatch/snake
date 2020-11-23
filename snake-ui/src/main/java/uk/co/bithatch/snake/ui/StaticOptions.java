@@ -4,25 +4,25 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ColorPicker;
 import uk.co.bithatch.snake.lib.effects.Static;
+import uk.co.bithatch.snake.ui.effects.StaticEffectHandler;
+import uk.co.bithatch.snake.ui.util.JavaFX;
 
-public class StaticOptions extends AbstractEffectController<Static> {
+public class StaticOptions extends AbstractBackendEffectController<Static, StaticEffectHandler> {
 
 	@FXML
 	private ColorPicker color;
 
 	private boolean adjusting = false;
 
+	public int[] getColor() {
+		return JavaFX.toRGB(color.valueProperty().get());
+	}
+
 	@Override
 	protected void onConfigure() throws Exception {
 		color.valueProperty().addListener((e) -> {
 			if (!adjusting) {
-				try {
-					Static effect = (Static) getEffect().clone();
-					effect.setColor(UIHelpers.toRGB(color.valueProperty().get()));
-					context.getScheduler().execute(() ->getRegion().setEffect(effect));
-				} catch (CloneNotSupportedException cnse) {
-					throw new IllegalStateException(cnse);
-				}
+				getEffectHandler().store(getRegion(), this);
 			}
 		});
 	}
@@ -32,7 +32,7 @@ public class StaticOptions extends AbstractEffectController<Static> {
 		Static effect = getEffect();
 		adjusting = true;
 		try {
-			color.valueProperty().set(UIHelpers.toColor(effect.getColor()));
+			color.valueProperty().set(JavaFX.toColor(effect.getColor()));
 		} finally {
 			adjusting = false;
 		}

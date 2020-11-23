@@ -1,8 +1,6 @@
 package uk.co.bithatch.snake.lib.effects;
 
 import java.util.Arrays;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
 
 public class Matrix extends Effect {
 
@@ -55,58 +53,9 @@ public class Matrix extends Effect {
 		return "Matrix [cells=" + Arrays.toString(cells) + "]";
 	}
 
-	@Override
-	protected void onLoad(Preferences prefs) {
-		Preferences matrix = prefs.node("matrix");
-		int rows = matrix.getInt("rows", 0);
-		if (rows == 0) {
-			cells = null;
-		} else {
-			cells = new int[rows][][];
-			for (int i = 0; i < rows; i++) {
-				var data = matrix.get("row" + i, "");
-				if (!data.equals("")) {
-					String[] rowRgb = data.split(":");
-					int[][] row = new int[rowRgb.length][3];
-					int col = 0;
-					for (String rgb : rowRgb) {
-						row[col][0] = Integer.parseInt(rgb.substring(0, 2), 16);
-						row[col][1] = Integer.parseInt(rgb.substring(2, 4), 16);
-						row[col][2] = Integer.parseInt(rgb.substring(4, 6), 16);
-						col++;
-					}
-					cells[i] = row;
-				}
-			}
-		}
-	}
-
-	@Override
-	protected void onSave(Preferences prefs) {
-		/* Delete existing matrix */
-		Preferences matrix = prefs.node("matrix");
-		try {
-			matrix.removeNode();
-			matrix = prefs.node("matrix");
-		} catch (BackingStoreException bse) {
-			throw new IllegalStateException("Failed to remove old matrix.", bse);
-		}
-
-		if (cells != null) {
-			int rowIdx = 0;
-			for (int[][] row : cells) {
-				StringBuilder b = new StringBuilder();
-				if (row != null) {
-					for (int[] rgb : row) {
-						if (b.length() > 0)
-							b.append(":");
-						b.append(String.format("%02x%02x%02x", rgb[0], rgb[1], rgb[2]));
-					}
-					matrix.put("row" + rowIdx, b.toString());
-				}
-				rowIdx++;
-			}
-			matrix.putInt("rows", rowIdx);
+	public void clear() {
+		if (cells != null && cells.length > 0) {
+			cells = new int[cells.length][cells[0].length][3];
 		}
 	}
 

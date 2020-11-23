@@ -9,9 +9,9 @@
 }
 
 * {
-	-fx-background: #000000ad;
+	-fx-background: #000000;
 	-fx-accent: #ffffff;
-	-fx-base: #0f0f0f;
+	-fx-base: #000000;
 	-fx-inner-background: #0f0f0f;
 	-fx-default-background: #000000;
 	-fx-focus-color: #ffffff;
@@ -20,32 +20,92 @@
 	-fx-light-text-color: #a9a9a9;
 }
 
-Label, CheckBox {
-    -fx-font-family: 'Roboto Light';	
+/* Context menus */
+
+.context-menu, .context-menu:focused {
+	-fx-background-color: -fx-default-background;
+	-fx-border-color: -fx-accent;
+   
+}
+
+.menu-item {
+	-fx-background-color: -fx-default-background;
+}
+
+.menu-item .label {
+    -fx-text-fill: -fx-light-text-color;
+}
+
+.menu-item:focused {
+	-fx-background-color: -fx-accent;	
+}
+
+.menu-item:focused .label {
+   -fx-text-fill: -fx-default-background;
 }
 
 /* Generic spacing styles */
 
 .gapRight {
-    -fx-padding: 0 2em 0 0;
+    -fx-padding: 0.0 2.0em 0.0 0.0;
 }
 
 .gapLeft {
-    -fx-padding: 0 0 0 2em;
+    -fx-padding: 0.0 0.0 0.0 2.0em;
+}
+
+.gapBottom {
+    -fx-padding: 0.0 0.0 1.0em 0.0;
+}
+
+.gapTop {
+    -fx-padding: 1.0em 0.0 0.0 0.0;
 }
 
 .regions {
-    -fx-padding: 1em 1em 1em 1em;
-    -fx-spacing: 1em;
-    -fx-font-size: 10px;
+    -fx-padding: 1.0em 1.0em 1.0em 1.0em;
+    -fx-spacing: 1.0em;
+    -fx-font-size: 10.0px;
+}
+
+.padded {
+    -fx-padding: 4.0px;
+}
+
+.iconBar {
+    -fx-padding: 4.0px;
+    -fx-spacing: 4.0px;
+}
+
+.tools {
+    -fx-padding: 1.0em 1.0em 1.0em 1.0em;
+    -fx-spacing: 1.0em;
+}
+
+.row {
+    -fx-spacing: 1.0em;
+}
+
+.column {
+    -fx-spacing: 1.0em;
+}
+
+.spaced {
+    -fx-hgap: 1.0em;
+    -fx-vgap: 1.0em;
+}
+
+.compactTools {
+    -fx-padding: 0.25em;
+    -fx-spacing: 0.25em;
 }
 
 /* Some components we hide the focus (such as ListView used for devices ) */
 
 .focusless:focused {
     -fx-background-color: -fx-box-border, -fx-control-inner-background;
-    -fx-background-insets: 0, 1;
-    -fx-padding: 1;
+    -fx-background-insets: 0.0, 1.0;
+    -fx-padding: 1.0;
 }
 
 /* Logical text styles for anything that needs mild emphasis  */
@@ -55,143 +115,159 @@ Label, CheckBox {
 }
 
 .small {
-    -fx-font-size: 10px;
+    -fx-font-size: 10.0px;
 }
 
 .title {
-    -fx-font-size: 24px;
+    -fx-font-size: 24.0px;
     -fx-text-fill: -fx-accent;
     -fx-font-family: 'FROSTBITE Narrow';
 }
 
 .subtitle {
-    -fx-font-size: 18px;
+    -fx-font-size: 18.0px;
     -fx-text-fill: -fx-accent;
     -fx-font-family: 'FROSTBITE Narrow';
 }
 
 .header {
-    -fx-font-size: 18px;
+    -fx-font-size: 18.0px;
     -fx-text-fill: -fx-accent;
-    -fx-padding: 0 0 1em 0;
 }
 
 .titleBar {
-    -fx-font-size: 32px;
+    -fx-font-size: 32.0px;
     -fx-text-fill: -fx-accent;
     -fx-font-family: 'FROSTBITE Narrow';
 }
 
 .description {
-	-fx-padding: 1em;
-    -fx-font-size: 18px;
+	-fx-padding: 1.0em;
+    -fx-font-size: 18.0px;
 }
 
 /* Various icon, image and icon button styles */
-
-.padded {
-    -fx-padding: 4px;
+GeneratedIcon {
+	-icon-border-color: -fx-accent;
+	-icon-border-width: 2.5;
+	-icon-text-color: -fx-accent;
+	-icon-color: -fx-accent;
+	-icon-shape: ROUND;
+	-icon-opacity: 0; 
+    -icon-text-font-family: 'Roboto Light';
+    -icon-text-font-size: 12pt;
 }
 
-.iconBar {
-    -fx-padding: 4px;
-    -fx-spacing: 4px;
-}
-
-.tools {
-    -fx-padding: 1em 1em 1em 1em;
-    -fx-spacing: 1em;
-}
-
-.row {
-    -fx-spacing: 1em;
-}
-
-.column {
-    -fx-spacing: 1em;
-}
-
-.spaced {
-    -fx-hgap: 1em;
-    -fx-vgap: 1em;
-}
-
-.compactTools {
-    -fx-padding: 0.25em;
-    -fx-spacing: 0.25em;
+GeneratedIcon.cell {
+	-icon-border-width: 2;
+    -icon-text-font-size: 8pt;
 }
 
 .control {
-	-fx-pref-width: 280px;
-	-fx-padding: 1em 0 0 0;
+	-fx-padding: 1.0em 0.0 0.0 0.0;
 }
 
-.icon, .iconButton, .smallIconButton, .largeIconButton, .iconButton:visited, .smallIconButton:visited, .largeIconButton:visited {
+.icon, .defaultIconButton, .iconButton, .smallIcon, .smallIconButton, .largeIconButton, .iconButton:visited, .defaultIconButton:visited, .smallIconButton:visited, .largeIconButton:visited {
 	-fx-underline: false;
-    -fx-border-width: 0;
+    -fx-border-width: 0.0;
     -fx-text-fill: -fx-dark-text-color;
 }
 
-.iconButton:pressed, .iconButton:hover, .smallIconButton:pressed, .smallIconButton:hover, .largeIconButton:pressed, .largeIconButton:hover {
+.iconButton:pressed, .ic-snake-outline-coloronButton:hover, .defaultIconButton:pressed, .defaultIconButton:hover, .smallIconButton:pressed, .smallIconButton:hover, .largeIconButton:pressed, .largeIconButton:hover {
     -fx-text-fill: -fx-accent;
 }
 
 .icon, .iconButton {
-    -fx-font-size: 32px;
+    -fx-font-size: 32.0px;
 }
 
-.smallIconButton {
-    -fx-font-size: 22px;
+.smallIcon, .smallIconButton {
+    -fx-font-size: 22.0px;
 }
 
 .largeIconButton, .largeIcon, .titleIcon {
     -fx-text-fill: -fx-accent;
-    -fx-font-size: 72px;
+    -fx-font-size: 72.0px;
+}
+
+.icon, .smallIcon {
+    -fx-text-fill: -fx-accent;
 }
 
 .hugeIcon {
     -fx-text-fill: -fx-accent;
-    -fx-font-size: 256px;
+    -fx-font-size: 256.0px;
 }
 
 .mediumIcon {
     -fx-text-fill: -fx-accent;
-    -fx-font-size: 48px;
+    -fx-font-size: 48.0px;
 }
 
 .titleIcon {
-    -fx-padding: 0 0.25em 0 0;
+    -fx-padding: 0.0 0.25em 0.0 0.0;
 }
 
 .titleImage {
-	-fx-fit-height: 96px;
-	-fx-fit-width: 96px;
-    -fx-padding: 0 0.25em 0 0;
+	-fx-fit-height: 96.0px;
+	-fx-fit-width: 96.0px;
+    -fx-padding: 0.0 0.25em 0.0 0.0;
 }
 
 /* Logical information message level styles */
+.popupMessages {
+    -fx-font-size: 12pt;
+}
+
+.popupMessages Hyperlink, .popupMessages .icon {	
+    -fx-text-fill: white;
+}
+
+.deemphasis {
+    -fx-opacity: 0.4;
+}
 
 .danger {
     -fx-text-fill: red;
+}
+
+.popupMessages .danger {
+    -fx-text-fill: white;
+    -fx-background-color: #aa0000;
 }
 
 .warning {
     -fx-text-fill: orange;
 }
 
+.popupMessages .warning {
+    -fx-text-fill: white;
+    -fx-background-color: orange;
+}
+
 .success {
     -fx-text-fill: green;
 }
 
+.popupMessages .success {
+    -fx-text-fill: white;
+    -fx-background-color: green;
+}
+
 .info {
-    -fx-text-fill: blue;
+    -fx-text-fill: #003bd0;
+}
+
+.popupMessages .info {
+    -fx-text-fill: white;
+    -fx-background-color: #003bd0;
 }
 
 /* Nav areas, i.e the bar at the top of the UI that contains back icon, filters and device image / title etc */
 
 .nav {
-    -fx-padding: 8px; 
-	-fx-pref-height: 96px;
+    -fx-padding: 8.0px; 
+	-fx-pref-height: 96.0px;
 }
 
 /* Status areas, a horizontal group of components, each conveying different status information such as
@@ -199,11 +275,11 @@ Label, CheckBox {
  */
 
 .status {
-	-fx-spacing: 1em;
+	-fx-spacing: 1.0em;
 }
 
 .deviceOverview .title {
-	-fx-font-size: 16px;
+	-fx-font-size: 16.0px;
 }
 
 .statusImage {
@@ -219,22 +295,28 @@ Label, CheckBox {
 /* Matrix UI */
 
 .keyboard {
-    -fx-hgap: 4px;
-    -fx-vgap: 4px;
+    -fx-hgap: 4.0px;
+    -fx-vgap: 4.0px;
 }
 
 .key {
-	-fx-font-size: 10px;
-	-fx-pref-width: 36px;
-	-fx-pref-height: 36px;
+	-fx-font-size: 10.0px;
+	-fx-pref-width: 36.0px;
+	-fx-pref-height: 36.0px;
     -fx-background-color: linear-gradient(#222222, #111111);
-    -fx-background-radius: 4;
-    -fx-background-insets: 0; 
+    -fx-background-radius: 4.0;
+    -fx-background-insets: 0.0; 
     -fx-text-fill: white;
 }
 
+.single-row-matrix .key {
+	-fx-font-size: 12.0px;
+	-fx-pref-width: 56.0px;
+	-fx-pref-height: 56.0px;
+}
+
 .key Label {
-	-fx-effect: dropshadow( one-pass-box , white , 4 , 0.0 , 0 , 0 );
+	-fx-effect: dropshadow( one-pass-box , white , 4.0 , 0.0 , 0.0 , 0.0 );
 }
 
 .key:hover {
@@ -250,8 +332,8 @@ Label, CheckBox {
 	
 .key2 {
     -fx-background-color: -fx-text-base-color, -fx-text-base-color, -fx-accent, -fx-body-color;
-    -fx-background-insets: 0 0 -1 0, 0, 1, 2;
-    -fx-background-radius: 3px, 3px, 2px, 1px;
+    -fx-background-insets: 0.0 0.0 -1.0 0.0, 0.0, 1.0, 2.0;
+    -fx-background-radius: 3.0px, 3.0px, 2.0px, 1.0px;
     -fx-padding: 0.333333em 0.666667em 0.333333em 0.666667em; 
     -fx-text-fill: -fx-text-base-color;
     -fx-alignment: CENTER;
@@ -264,7 +346,7 @@ Label, CheckBox {
     -fx-background-color: transparent;
     -fx-padding: 0.25em; /* 3 */
     -fx-text-fill: -fx-text-inner-color;
-    -fx-opacity: 1;
+    -fx-opacity: 1.0;
 }
 
 .devices .list-cell:filled:selected:focused, .devices .list-cell:filled:selected {
@@ -274,24 +356,97 @@ Label, CheckBox {
 
 /* Options UI */
 #trayOptions {
-	-fx-pref-width: 340px;	
+	-fx-pref-width: 340.0px;	
 }
 
+/* Controls */
+.controls-nolayout {
+	-fx-column-halignment: left;	
+	-fx-row-valignment: top;
+}
+
+.controls-nolayout .control {
+	-fx-pref-width: 256px;
+}
+
+.control-layoutcontrol {
+	-fx-pref-width: 500px;
+	-fx-pref-height: 500px;
+}
 
 /* Additional generic component styles */
+Hyperlink, Hyperlink:visited {
+    -fx-text-fill: -fx-accent;
+	-fx-underline: false;
+}
 
-TextField {
-    -fx-background-color: -fx-mid-text-color;
-    -fx-text-fill: -fx-default-background;
+Hyperlink:hover {
+    -fx-text-fill: -fx-dark-text-color;
+	-fx-underline: true;
+}
+
+TextField, TextArea {
+    -fx-background-color: -fx-default-background;
+    -fx-border-color: -fx-inner-background;
+}
+
+Spinner .text-field {
+    -fx-background-color: -fx-default-background;
+}
+
+TextArea .content {
+    -fx-background-color: -fx-default-background;
+}
+
+TextField:focused, TextArea:focused {
+	-fx-border-color: -fx-accent;
 }
 
 .tooltip {
-    -fx-background: rgba(30,30,30);
+    -fx-background: rgba(30.0,30.0,30.0);
     -fx-text-fill: white;
-    -fx-background-color: rgba(30,30,30,0.8);
-    -fx-background-radius: 6px;
-    -fx-background-insets: 0;
+    -fx-background-color: rgba(30.0,30.0,30.0,0.8);
+    -fx-background-radius: 6.0px;
+    -fx-background-insets: 0.0;
     -fx-padding: 0.667em 0.75em 0.667em 0.75em; /* 10px */
-    -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.5) , 10, 0.0 , 0 , 3 );
-    -fx-font-size: 12px;
+    -fx-effect: dropshadow( three-pass-box , rgba(0.0,0.0,0.0,0.5) , 10.0, 0.0 , 0.0 , 3.0 );
+    -fx-font-size: 12.0px;
+}
+
+
+Label, CheckBox {
+    -fx-font-family: 'Roboto Light';	
+}
+
+LayoutEditor {
+	-snake-line-color: -fx-accent;
+}
+
+LayoutEditor .layout {
+	-fx-padding: 10px 10px 10px 10px;
+}
+
+LayoutEditor .layout-label {
+    -fx-font-size: 24.0px;
+    -fx-text-fill: -fx-accent;
+    -fx-font-family: 'FROSTBITE Narrow';
+}
+
+.tab .tab-label { 
+    -fx-alignment: CENTER;
+    -fx-text-fill: -fx-accent;
+    -fx-font-size: 18px;
+    -fx-font-family: 'FROSTBITE Narrow';
+}
+
+.selectable-area {
+	-snake-outline-color: -fx-accent; 
+}
+
+LEDGraphic, AreaGraphic, KeyGraphic {
+	-snake-outline-color: -fx-light-text-color;
+}
+
+LEDGraphic:selected, AreaGraphic:selected, KeyGraphic:selected {
+	-snake-outline-color: -fx-accent;
 }

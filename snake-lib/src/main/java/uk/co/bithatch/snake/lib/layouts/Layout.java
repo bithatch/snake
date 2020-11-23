@@ -15,6 +15,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 
+@Deprecated
 public class Layout {
 
 	final static System.Logger LOG = System.getLogger(Layout.class.getName());
@@ -69,22 +70,22 @@ public class Layout {
 				}
 
 				Layout layoutObj = new Layout();
-				layoutObj.setKeys(new Key[height][width]);
+				layoutObj.setKeys(new MatrixCell[height][width]);
 				layoutObj.setLayout(layout);
 				layoutObj.setName(layoutName);
 				layoutObj.setX(width);
 				layoutObj.setY(height);
 				layoutObj.setExact(exact);
-				layoutObj.setKeys(new Key[height][]);
+				layoutObj.setKeys(new MatrixCell[height][]);
 				for (int r = 0; r < height; r++) {
-					Key[] rowArr = new Key[width];
+					MatrixCell[] rowArr = new MatrixCell[width];
 					layoutObj.getKeys()[r] = rowArr;
 				}
 
 				JsonObject mapObj = map.getAsJsonObject();
 
 				for (int r = 0; r < height; r++) {
-					Key[] rowArr = new Key[width];
+					MatrixCell[] rowArr = new MatrixCell[width];
 					layoutObj.getKeys()[r] = rowArr;
 					JsonElement row = mapObj.get("row" + r);
 					if (row == null)
@@ -92,7 +93,7 @@ public class Layout {
 					JsonArray rowObj = row.getAsJsonArray();
 					for (JsonElement el : rowObj) {
 						JsonObject elObj = el.getAsJsonObject();
-						Key keyObj = new Key();
+						MatrixCell keyObj = new MatrixCell();
 						JsonElement labelEl = elObj.get("label");
 						keyObj.setLabel(labelEl.isJsonNull() ? null : labelEl.getAsString());
 						keyObj.setDisabled(elObj.has("disabled") ? elObj.get("disabled").getAsBoolean() : false);
@@ -100,10 +101,10 @@ public class Layout {
 						JsonElement matrix = elObj.get("matrix");
 						if (matrix != null) {
 							JsonArray arr = matrix.getAsJsonArray();
-							keyObj.setY(arr.get(0).getAsInt());
-							keyObj.setX(arr.get(1).getAsInt());
+							keyObj.setMatrixY(arr.get(0).getAsInt());
+							keyObj.setMatrixX(arr.get(1).getAsInt());
 						}
-						layoutObj.getKeys()[keyObj.getY()][keyObj.getX()] = keyObj;
+						layoutObj.getKeys()[(int)keyObj.getMatrixY()][(int)keyObj.getMatrixX()] = keyObj;
 					}
 				}
 
@@ -120,13 +121,13 @@ public class Layout {
 	}
 
 	private boolean exact;
-	private Key[][] keys;
+	private MatrixCell[][] keys;
 	private String layout;
 	private String name;
 	private int x;
 	private int y;
 
-	public Key[][] getKeys() {
+	public MatrixCell[][] getKeys() {
 		return keys;
 	}
 
@@ -154,7 +155,7 @@ public class Layout {
 		this.exact = exact;
 	}
 
-	public void setKeys(Key[][] keys) {
+	public void setKeys(MatrixCell[][] keys) {
 		this.keys = keys;
 	}
 

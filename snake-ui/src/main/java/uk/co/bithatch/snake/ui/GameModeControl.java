@@ -13,7 +13,7 @@ public class GameModeControl extends ControlController {
 	private Label off;
 
 	@Override
-	protected void onSetDevice() {
+	protected void onSetControlDevice() {
 		on.onMouseClickedProperty().set((e) -> gameMode.valueProperty().set(1));
 		off.onMouseClickedProperty().set((e) -> gameMode.valueProperty().set(0));
 		gameMode.valueProperty().set(getDevice().isGameMode() ? 1 : 0);

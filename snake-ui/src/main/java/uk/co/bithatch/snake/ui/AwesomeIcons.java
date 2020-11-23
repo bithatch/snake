@@ -266,4 +266,7 @@ public class AwesomeIcons {
 	public static final String ICON_FOLDER_CLOSE_ALT = "\uf114";
 	public static final String ICON_FOLDER_OPEN_ALT = "\uf115";
 	public static final String ICON_PLUG = "\uf1e6";
+	
+	public static void load() {
+	}
 }

@@ -2,6 +2,7 @@ package uk.co.bithatch.snake.lib;
 
 public class Colors {
 
+	public final static int[] COLOR_BLACK = new int[3];
 	public static int[] fromHex(String hex) {
 		if(hex.startsWith("#"))
 			hex = hex.substring(1);

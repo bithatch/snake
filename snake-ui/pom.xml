@@ -40,7 +40,6 @@
 		<dependency>
 			<groupId>uk.co.bithatch</groupId>
 			<artifactId>FX-BorderlessScene</artifactId>
-			<version>5.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.dorkbox</groupId>
@@ -60,15 +59,13 @@
 		<dependency>
 			<groupId>com.sshtools</groupId>
 			<artifactId>icon-generator-javafx</artifactId>
-			<version>1.3.1</version>
+			<version>1.4.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy</artifactId>
 			<version>3.0.6</version>
 		</dependency>
-
-
 	</dependencies>
 	<profiles>
 		<profile>

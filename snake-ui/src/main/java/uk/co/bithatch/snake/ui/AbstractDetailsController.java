@@ -25,11 +25,12 @@ public abstract class AbstractDetailsController extends AbstractDeviceController
 
 	@Override
 	protected final void onSetDevice() throws Exception {
+
 		header.setBackground(createHeaderBackground());
 
-		deviceImage.setImage(new Image(getDevice().getImage(), true));
+		deviceImage.setImage(new Image(context.getDefaultImage(getDevice().getType(), context.getCache().getCachedImage(getDevice().getImage())), true));
 		deviceName.textProperty().set(getDevice().getName());
-		
+
 		back.visibleProperty().set(context.getControllers().indexOf(this) > 0);
 
 		onSetDeviceDetails();

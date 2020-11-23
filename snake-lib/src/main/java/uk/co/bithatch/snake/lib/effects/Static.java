@@ -1,9 +1,6 @@
 package uk.co.bithatch.snake.lib.effects;
 
 import java.util.Arrays;
-import java.util.prefs.Preferences;
-
-import uk.co.bithatch.snake.lib.Colors;
 
 public class Static extends Effect {
 
@@ -48,14 +45,4 @@ public class Static extends Effect {
 		return "Static [color=" + Arrays.toString(color) + "]";
 	}
 
-
-	@Override
-	protected void onLoad(Preferences prefs) {
-		color = Colors.fromHex(prefs.get("color", "#00ff00"));
-	}
-
-	@Override
-	protected void onSave(Preferences prefs) {
-		prefs.put("color", Colors.toHex(color));
-	}
 }

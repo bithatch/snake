@@ -1,9 +1,6 @@
 package uk.co.bithatch.snake.lib.effects;
 
 import java.util.Arrays;
-import java.util.prefs.Preferences;
-
-import uk.co.bithatch.snake.lib.Colors;
 
 public class Ripple extends Effect {
 	public enum Mode {
@@ -75,19 +72,5 @@ public class Ripple extends Effect {
 	@Override
 	public String toString() {
 		return "Ripple [mode=" + mode + ", color=" + Arrays.toString(color) + ", refreshRate=" + refreshRate + "]";
-	}
-
-	@Override
-	protected void onLoad(Preferences prefs) {
-		mode = Mode.valueOf(prefs.get("mode", Mode.RANDOM.name()));
-		refreshRate = prefs.getDouble("refreshRate", 100);
-		color = Colors.fromHex(prefs.get("color", "#00ff00"));
-	}
-
-	@Override
-	protected void onSave(Preferences prefs) {
-		prefs.put("mode", mode.name());
-		prefs.putDouble("refreshRate", refreshRate);
-		prefs.put("color", Colors.toHex(color));
 	}
 }

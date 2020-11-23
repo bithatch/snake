@@ -3,7 +3,7 @@ package uk.co.bithatch.snake.ui;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import uk.co.bithatch.snake.ui.SlideyStack.Direction;
+import uk.co.bithatch.snake.ui.widgets.Direction;
 
 public class About extends AbstractDeviceController {
 

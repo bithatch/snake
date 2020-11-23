@@ -11,7 +11,6 @@ import java.util.prefs.Preferences;
 import org.apache.commons.lang3.StringUtils;
 
 import javafx.animation.FadeTransition;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -23,7 +22,9 @@ import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import uk.co.bithatch.snake.ui.SlideyStack.Direction;
+import uk.co.bithatch.snake.ui.addons.AddOn;
+import uk.co.bithatch.snake.ui.util.JavaFX;
+import uk.co.bithatch.snake.ui.widgets.Direction;
 
 public class AddOns extends AbstractController {
 	final static Preferences PREFS = Preferences.userNodeForPackage(AddOns.class);
@@ -137,26 +138,20 @@ public class AddOns extends AbstractController {
 	}
 
 	@FXML
-	void evtDeleteAddOn(ActionEvent evt) {
+	void evtDeleteAddOn() {
 		AddOn addOn = getSelectedAddOn();
 		Node addOnNode = installed.getSelectionModel().getSelectedItem();
-		Confirm confirm = context.push(Confirm.class, Direction.FADE_IN);
+		Confirm confirm = context.push(Confirm.class, Direction.FADE);
 		confirm.confirm(bundle, "deleteAddOn", () -> {
 			try {
 				context.getAddOnManager().uninstall(addOn);
-				UIHelpers.zoomTo(installed, addOnNode);
-				FadeTransition anim = new FadeTransition(Duration.seconds(1));
-				anim.setCycleCount(1);
-				anim.setNode(addOnNode);
-				anim.setFromValue(1);
-				anim.setToValue(0);
-				anim.play();
-				anim.onFinishedProperty().set((e) -> {
+				JavaFX.zoomTo(installed, addOnNode);
+				JavaFX.fadeHide(addOnNode, 1, (e) -> {
 					installed.itemsProperty().get().remove(addOnNode);
 					if (installed.itemsProperty().get().size() > 0)
-						UIHelpers.zoomTo(installed, installed.itemsProperty().get().get(0));
+						JavaFX.zoomTo(installed, installed.itemsProperty().get().get(0));
 				});
-			} catch (IOException e) {
+			} catch (Exception e) {
 				LOG.log(java.lang.System.Logger.Level.ERROR, "Failed to delete add-on.", e);
 				error("failedToDeleteAddOn", e.getMessage());
 			}
@@ -164,15 +159,15 @@ public class AddOns extends AbstractController {
 	}
 
 	@FXML
-	void evtAdd(ActionEvent evt) {
+	void evtAdd() {
 		error(null);
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle(bundle.getString("selectAddOn"));
 		var path = PREFS.get("lastAddOnLocation", System.getProperty("user.dir") + File.separator + "add-on.jar");
 		fileChooser.getExtensionFilters()
-				.add(new ExtensionFilter(bundle.getString("addOnFileExtension"), "*.plugin.groovy", "*.jar", "*.zip"));
+				.add(new ExtensionFilter(bundle.getString("addOnFileExtension"), "*.plugin.groovy", "*.jar", "*.zip", "*.json"));
 		fileChooser.getExtensionFilters().add(new ExtensionFilter(bundle.getString("allFileExtensions"), "*.*"));
-		UIHelpers.selectFilesDir(fileChooser, path);
+		JavaFX.selectFilesDir(fileChooser, path);
 		File file = fileChooser.showOpenDialog((Stage) getScene().getWindow());
 		if (file != null) {
 			PREFS.put("lastAddOnLocation", file.getAbsolutePath());
@@ -181,7 +176,7 @@ public class AddOns extends AbstractController {
 				Controller c = addAddOn(addOn);
 
 				Parent root = c.getScene().getRoot();
-				UIHelpers.zoomTo(installed, root);
+				JavaFX.zoomTo(installed, root);
 				FadeTransition anim = new FadeTransition(Duration.seconds(3));
 				anim.setCycleCount(1);
 				anim.setNode(root);
@@ -198,14 +193,14 @@ public class AddOns extends AbstractController {
 	}
 
 	@FXML
-	void evtUrl(ActionEvent evt) {
+	void evtUrl() { 
 		error(null);
 		AddOn addOn = getSelectedAddOn();
 		context.getHostServices().showDocument(addOn.getUrl());
 	}
 
 	@FXML
-	void evtBack(ActionEvent evt) {
+	void evtBack() {
 		context.pop();
 	}
 }

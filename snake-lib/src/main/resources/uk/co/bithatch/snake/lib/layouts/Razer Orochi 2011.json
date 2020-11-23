@@ -1,0 +1,30 @@
+{
+    "matrixHeight": 0,
+    "matrixWidth": 0,
+    "deviceType": "MOUSE",
+	"name": "Razer Orochi 2011",
+    "views": [
+      {
+        "desaturateImage": false,
+        "imageOpacity": 1.0,
+        "imageScale": 1.0,
+        "position": "TOP",
+        "elements": [
+          {
+            "type": "AREA",
+            "x": 0.49909276,
+            "y": 0.70961833,
+            "label": "Logo",
+            "region": "LOGO"
+          },
+          {
+            "type": "AREA",
+            "x": 0.49909276,
+            "y": 0.25770992,
+            "label": "Scroll",
+            "region": "SCROLL"
+          }
+        ]
+      }
+    ]
+  }

@@ -11,7 +11,7 @@ public class MacroSequence extends ArrayList<Macro> {
 	}
 
 	public MacroSequence(Key key) {
-		setMacroKey(key);
+		setMacroKey(key); 
 	}
 
 	public Key getMacroKey() {

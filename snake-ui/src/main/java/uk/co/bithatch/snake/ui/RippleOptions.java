@@ -10,9 +10,11 @@ import javafx.scene.control.Slider;
 import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.effects.Ripple;
 import uk.co.bithatch.snake.lib.effects.Ripple.Mode;
-import uk.co.bithatch.snake.ui.SlideyStack.Direction;
+import uk.co.bithatch.snake.ui.effects.RippleEffectHandler;
+import uk.co.bithatch.snake.ui.util.JavaFX;
+import uk.co.bithatch.snake.ui.widgets.Direction;
 
-public class RippleOptions extends AbstractEffectController<Ripple> {
+public class RippleOptions extends AbstractBackendEffectController<Ripple, RippleEffectHandler> {
 
 	@FXML
 	private Slider refreshRate;
@@ -31,61 +33,42 @@ public class RippleOptions extends AbstractEffectController<Ripple> {
 
 	private boolean adjusting = false;
 
+	public double getRefreshRate() {
+		return refreshRate.valueProperty().get();
+	}
+
+	public Mode getMode() {
+		if (single.selectedProperty().get())
+			return Mode.SINGLE;
+		else
+			return Mode.RANDOM;
+	}
+
+	public int[] getColor() {
+		return JavaFX.toRGB(color.valueProperty().get());
+	}
+
 	@Override
 	protected void onConfigure() throws Exception {
 		color.disableProperty().bind(Bindings.not(single.selectedProperty()));
 		colorLabel.setLabelFor(color);
 		colorLabel.managedProperty().bind(colorLabel.visibleProperty());
-		colorLabel.visibleProperty().bind(color.visibleProperty());;
+		colorLabel.visibleProperty().bind(color.visibleProperty());
+		;
 		color.managedProperty().bind(color.visibleProperty());
 		color.visibleProperty().bind(single.visibleProperty());
 		random.managedProperty().bind(random.visibleProperty());
 		single.managedProperty().bind(single.visibleProperty());
 		single.selectedProperty().addListener((e) -> {
 			if (single.isSelected())
-				setSingle();
+				update();
 		});
 		random.selectedProperty().addListener((e) -> {
 			if (random.isSelected())
-				setRandom();
+				update();
 		});
-		color.valueProperty().addListener((e) -> setSingle());
-		refreshRate.valueProperty().addListener((e) -> {
-			if (!adjusting) {
-				try {
-					Ripple effect = (Ripple) getEffect().clone();
-					effect.setRefreshRate((double) refreshRate.valueProperty().get());
-					context.getScheduler().execute(() -> getRegion().setEffect(effect));
-				} catch (CloneNotSupportedException cnse) {
-					throw new IllegalStateException(cnse);
-				}
-			}
-		});
-	}
-
-	protected void setRandom() {
-		if (!adjusting) {
-			try {
-				Ripple breath = (Ripple) getEffect().clone();
-				breath.setMode(Mode.RANDOM);
-				context.getScheduler().execute(() -> getRegion().setEffect(breath));
-			} catch (CloneNotSupportedException cnse) {
-				throw new IllegalStateException(cnse);
-			}
-		}
-	}
-
-	protected void setSingle() {
-		if (!adjusting) {
-			try {
-				Ripple breath = (Ripple) getEffect().clone();
-				breath.setColor(UIHelpers.toRGB(color.valueProperty().get()));
-				breath.setMode(Mode.SINGLE);
-				context.getScheduler().execute(() -> getRegion().setEffect(breath));
-			} catch (CloneNotSupportedException cnse) {
-				throw new IllegalStateException(cnse);
-			}
-		}
+		color.valueProperty().addListener((e) -> update());
+		refreshRate.valueProperty().addListener((e) -> update());
 	}
 
 	@FXML
@@ -112,7 +95,7 @@ public class RippleOptions extends AbstractEffectController<Ripple> {
 				break;
 			}
 			refreshRate.valueProperty().set(effect.getRefreshRate());
-			color.valueProperty().set(UIHelpers.toColor(effect.getColor()));
+			color.valueProperty().set(JavaFX.toColor(effect.getColor()));
 			random.visibleProperty().set(getRegion().getCapabilities().contains(Capability.RIPPLE_RANDOM));
 			single.visibleProperty().set(getRegion().getCapabilities().contains(Capability.RIPPLE_SINGLE));
 		} finally {
@@ -120,4 +103,8 @@ public class RippleOptions extends AbstractEffectController<Ripple> {
 		}
 	}
 
+	protected void update() {
+		if (!adjusting)
+			getEffectHandler().store(getRegion(), this);
+	}
 }

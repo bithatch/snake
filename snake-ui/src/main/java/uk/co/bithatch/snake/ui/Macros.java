@@ -24,7 +24,6 @@ import com.sshtools.icongenerator.AwesomeIcon;
 import com.sshtools.icongenerator.IconBuilder;
 
 import javafx.beans.binding.Bindings;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
@@ -53,7 +52,8 @@ import uk.co.bithatch.snake.lib.MacroScript;
 import uk.co.bithatch.snake.lib.MacroSequence;
 import uk.co.bithatch.snake.lib.MacroURL;
 import uk.co.bithatch.snake.lib.ValidationException;
-import uk.co.bithatch.snake.ui.SlideyStack.Direction;
+import uk.co.bithatch.snake.ui.util.JavaFX;
+import uk.co.bithatch.snake.ui.widgets.Direction;
 
 public class Macros extends AbstractDetailsController {
 
@@ -261,7 +261,7 @@ public class Macros extends AbstractDetailsController {
 	}
 
 	@Override
-	protected void onCleanUp() {
+	protected void onDeviceCleanUp() {
 		if (LOG.isLoggable(Level.DEBUG))
 			LOG.log(Level.DEBUG, "Stopping macros scheduler.");
 		executor.shutdown();
@@ -435,7 +435,7 @@ public class Macros extends AbstractDetailsController {
 	}
 
 	@FXML
-	void evtAdd(ActionEvent evt) {
+	void evtAdd() {
 		Map<Key, MacroSequence> existing = getDevice().getMacros();
 		for (Key k : Key.values()) {
 			if (!existing.containsKey(k)) {
@@ -451,7 +451,7 @@ public class Macros extends AbstractDetailsController {
 	}
 
 	@FXML
-	void evtAddMacro(ActionEvent evt) {
+	void evtAddMacro() {
 		var mk = new MacroKey();
 		var seq = getSelectedSequence();
 		seq.add(mk);
@@ -464,12 +464,12 @@ public class Macros extends AbstractDetailsController {
 	}
 
 	@FXML
-	void evtRecordMacro(ActionEvent evt) {
+	void evtRecordMacro() {
 		context.push(Record.class, Direction.FROM_LEFT).setMacroSequence(getSelectedSequence());
 	}
 
 	@FXML
-	void evtDelete(ActionEvent evt) {
+	void evtDelete() {
 		Macro m = getSelectedMacro();
 		var seq = getSelectedSequence();
 		if (m == null)
@@ -484,13 +484,13 @@ public class Macros extends AbstractDetailsController {
 	}
 
 	@FXML
-	void evtExport(ActionEvent evt) {
+	void evtExport() {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle(bundle.getString("selectExportFile"));
 		var path = PREFS.get("lastExportLocation", System.getProperty("user.dir") + File.separator + "macros.json");
 		fileChooser.getExtensionFilters().add(new ExtensionFilter(bundle.getString("macroFileExtension"), "*.json"));
 		fileChooser.getExtensionFilters().add(new ExtensionFilter(bundle.getString("allFiles"), "*.*"));
-		UIHelpers.selectFilesDir(fileChooser, path);
+		JavaFX.selectFilesDir(fileChooser, path);
 		File file = fileChooser.showSaveDialog((Stage) getScene().getWindow());
 		if (file != null) {
 			PREFS.put("lastExportLocation", file.getAbsolutePath());
@@ -503,14 +503,14 @@ public class Macros extends AbstractDetailsController {
 	}
 
 	@FXML
-	void evtImport(ActionEvent evt) {
+	void evtImport() {
 
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle(bundle.getString("selectImportFile"));
 		var path = PREFS.get("lastExportLocation", System.getProperty("user.dir") + File.separator + "macros.json");
 		fileChooser.getExtensionFilters().add(new ExtensionFilter(bundle.getString("macroFileExtension"), "*.json"));
 		fileChooser.getExtensionFilters().add(new ExtensionFilter(bundle.getString("allFiles"), "*.*"));
-		UIHelpers.selectFilesDir(fileChooser, path);
+		JavaFX.selectFilesDir(fileChooser, path);
 		File file = fileChooser.showOpenDialog((Stage) getScene().getWindow());
 		if (file != null) {
 			PREFS.put("lastExportLocation", file.getAbsolutePath());
@@ -525,13 +525,13 @@ public class Macros extends AbstractDetailsController {
 	}
 
 	@FXML
-	void evtScriptBrowse(ActionEvent evt) {
+	void evtScriptBrowse() {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle(bundle.getString("selectExecutable"));
 		var path = scriptLocation.textProperty().get();
 		if (path == null || path.equals(""))
 			path = System.getProperty("user.dir");
-		UIHelpers.selectFilesDir(fileChooser, path);
+		JavaFX.selectFilesDir(fileChooser, path);
 		File file = fileChooser.showOpenDialog((Stage) getScene().getWindow());
 		if (file != null) {
 			scriptLocation.textProperty().set(file.getPath());
@@ -542,7 +542,7 @@ public class Macros extends AbstractDetailsController {
 	}
 
 	@FXML
-	void evtUrlOpen(ActionEvent evt) {
+	void evtUrlOpen() {
 		context.getHostServices().showDocument(urlLocation.textProperty().get());
 	}
 

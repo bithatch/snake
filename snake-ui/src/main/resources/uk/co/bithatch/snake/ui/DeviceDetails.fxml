@@ -1,78 +1,87 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.String?>
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Slider?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 
-<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.DeviceDetails">
-   <top>
-      <BorderPane fx:id="header" prefHeight="96.0" styleClass="nav" BorderPane.alignment="CENTER">
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.DeviceDetails">
+   <children>
+      <VBox fx:id="popupMessages" styleClass="popupMessages" />
+      <BorderPane VBox.vgrow="ALWAYS">
+         <top>
+            <BorderPane fx:id="header" prefHeight="96.0" styleClass="nav" BorderPane.alignment="CENTER">
+               <center>
+                  <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
+                     <children>
+                        <ImageView fx:id="deviceImage" fitHeight="64.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true" styleClass="titleImage" />
+                        <Label fx:id="deviceName" styleClass="title" text="Device Name" />
+                     </children>
+                  </HBox>
+               </center>
+               <right>
+                  <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
+                     <children>
+                        <Label fx:id="brightnessLabel" text="%brightness">
+                           <graphic>
+                              <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@icons/brightness24.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Label>
+                        <Slider fx:id="brightness" />
+                        <Hyperlink fx:id="back" onAction="#evtBack" styleClass="iconButton" text="%back" />
+                     </children>
+                  </HBox>
+               </right>
+            </BorderPane>
+         </top>
          <center>
-            <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
+            <StackPane BorderPane.alignment="CENTER">
                <children>
-                  <ImageView fx:id="deviceImage" fitHeight="64.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true" styleClass="titleImage" />
-                  <Label fx:id="deviceName" styleClass="title" text="Device Name" />
+                  <Region fx:id="background" />
+                  <BorderPane fx:id="centre" styleClass="padded" />
                </children>
-            </HBox>
+            </StackPane>
          </center>
-         <right>
-            <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
-               <children>
-                  <Hyperlink fx:id="back" onAction="#evtBack" styleClass="iconButton" text="%back" />
-               </children>
-            </HBox>
-         </right>
+         <bottom>
+            <BorderPane BorderPane.alignment="CENTER">
+               <center>
+                  <BorderPane>
+                     <center>
+                        <HBox alignment="CENTER_LEFT" styleClass="iconBar">
+                           <children>
+                              <Hyperlink fx:id="design" onAction="#evtDesign" text="%design" />
+                              <HBox fx:id="layoutTools" alignment="CENTER_LEFT" styleClass="column">
+                                 <children>
+                                    <Hyperlink fx:id="standardView" onAction="#evtStandardView" text="%standardView" />
+                                    <Hyperlink fx:id="layoutView" onAction="#evtLayoutView" text="%layoutView" />
+                                 </children>
+                              </HBox>
+                              <Hyperlink fx:id="macros" onAction="#evtMacros" text="%macros" />
+                           </children>
+                        </HBox>
+                     </center>
+                  </BorderPane>
+               </center>
+               <right>
+                  <HBox fx:id="decoratedTools" alignment="CENTER_RIGHT" styleClass="iconBar" BorderPane.alignment="CENTER">
+                     <children>
+                        <Hyperlink onAction="#evtAbout" styleClass="smallIconButton" text="%about" />
+                        <Hyperlink onAction="#evtOptions" styleClass="smallIconButton" text="%options" />
+                     </children>
+                  </HBox>
+               </right>
+            </BorderPane>
+         </bottom>
       </BorderPane>
-   </top>
-   <center>
-      <StackPane BorderPane.alignment="CENTER">
-         <children>
-            <Region fx:id="background" />
-            <ScrollPane fx:id="scroll" hbarPolicy="NEVER">
-               <content>
-                  <FlowPane fx:id="controls" prefWrapLength="2000.0" rowValignment="TOP" styleClass="tools" />
-               </content>
-               <styleClass>
-                  <String fx:value="focusless" />
-                  <String fx:value="transparentBackground" />
-               </styleClass>
-            </ScrollPane>
-         </children>
-      </StackPane>
-   </center>
-   <bottom>
-      <BorderPane BorderPane.alignment="CENTER">
-         <center>
-            <HBox alignment="CENTER" styleClass="iconBar">
-               <children>
-                  <Hyperlink fx:id="macros" onAction="#evtMacros" text="%macros">
-                     <graphic>
-                        <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@icons/macros32.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </Hyperlink>
-               </children>
-            </HBox>
-         </center>
-         <right>
-            <HBox fx:id="decoratedTools" alignment="CENTER_RIGHT" styleClass="iconBar" BorderPane.alignment="CENTER">
-               <children>
-                  <Hyperlink onAction="#evtAbout" styleClass="smallIconButton" text="%about" />
-                  <Hyperlink onAction="#evtOptions" styleClass="smallIconButton" text="%options" />
-               </children>
-            </HBox>
-         </right>
-      </BorderPane>
-   </bottom>
-</BorderPane>
+   </children>
+</VBox>

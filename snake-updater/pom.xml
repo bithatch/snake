@@ -30,7 +30,6 @@
 		<dependency>
 			<groupId>uk.co.bithatch</groupId>
 			<artifactId>FX-BorderlessScene</artifactId>
-			<version>5.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sshtools</groupId>

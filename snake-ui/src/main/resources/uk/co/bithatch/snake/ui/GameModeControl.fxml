@@ -7,7 +7,7 @@
 
 <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="300.0" styleClass="control" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.GameModeControl">
    <children>
-      <HBox>
+      <HBox styleClass="gapBottom">
          <children>
             <Label styleClass="header" text="%gameMode" />
          </children>

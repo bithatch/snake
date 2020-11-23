@@ -30,7 +30,7 @@
                            </image>
                         </ImageView>
                      </graphic></Label>
-                  <Label fx:id="brightness" text="99%" />
+                  <Label fx:id="brightnessAmount" text="99%" />
                   <Label fx:id="battery" styleClass="smallIcon" text="%batteryFull" />
                   <Label fx:id="charging" styleClass="smallIcon" text="%charging" />
                </children>

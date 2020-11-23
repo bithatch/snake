@@ -12,7 +12,7 @@ public class PollRateControl extends ControlController {
 	private Slider pollRate;
 
 	@Override
-	protected void onSetDevice() {
+	protected void onSetControlDevice() {
 		Device dev = getDevice();
 		pollRate.maxProperty().set(2);
 		setPollRateForDevice(dev);

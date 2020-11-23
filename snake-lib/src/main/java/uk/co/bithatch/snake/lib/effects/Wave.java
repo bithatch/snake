@@ -1,7 +1,5 @@
 package uk.co.bithatch.snake.lib.effects;
 
-import java.util.prefs.Preferences;
-
 public class Wave extends Effect {
 
 	public enum Direction {
@@ -46,15 +44,5 @@ public class Wave extends Effect {
 	@Override
 	public String toString() {
 		return "Wave [direction=" + direction + "]";
-	}
-
-	@Override
-	protected void onLoad(Preferences prefs) {
-		direction = Direction.valueOf(prefs.get("direction", Direction.FORWARD.name()));
-	}
-
-	@Override
-	protected void onSave(Preferences prefs) {
-		prefs.put("direction", direction.name());
 	}
 }

@@ -13,10 +13,12 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import com.goxr3plus.fxborderlessscene.borderless.BorderlessScene;
@@ -36,8 +38,17 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import uk.co.bithatch.snake.lib.Backend;
 import uk.co.bithatch.snake.lib.Device;
+import uk.co.bithatch.snake.lib.DeviceType;
+import uk.co.bithatch.snake.lib.Region;
+import uk.co.bithatch.snake.lib.effects.Off;
 import uk.co.bithatch.snake.ui.Configuration.TrayIcon;
-import uk.co.bithatch.snake.ui.SlideyStack.Direction;
+import uk.co.bithatch.snake.ui.addons.AddOnManager;
+import uk.co.bithatch.snake.ui.addons.Theme;
+import uk.co.bithatch.snake.ui.effects.EffectAcquisition;
+import uk.co.bithatch.snake.ui.effects.EffectManager;
+import uk.co.bithatch.snake.ui.util.JavaFX;
+import uk.co.bithatch.snake.ui.widgets.Direction;
+import uk.co.bithatch.snake.ui.widgets.SlideyStack;
 
 public class App extends Application {
 
@@ -82,7 +93,7 @@ public class App extends Application {
 		bui.append("* {\n");
 
 		bui.append("-fx-background: ");
-		bui.append(UIHelpers.toHex(backgroundColour, true));
+		bui.append(JavaFX.toHex(backgroundColour, true));
 		bui.append(";\n");
 		bui.append("}\n");
 		return bui.toString();
@@ -137,16 +148,27 @@ public class App extends Application {
 	private List<Backend> backends = new ArrayList<>();
 	private AddOnManager addOnManager;
 	private Configuration configuration;
-
+	private DeviceLayoutManager layouts;
+	private Cache cache;
 	private boolean backendInited;
+
+	private EffectManager effectManager;
 
 	public void clearLoadQueue() {
 		loadQueue.shutdownNow();
 		loadQueue = Executors.newSingleThreadExecutor();
 	}
 
+	public DeviceLayoutManager getLayouts() {
+		return layouts;
+	}
+
 	public Configuration getConfiguration() {
 		return configuration;
+	}
+
+	public Cache getCache() {
+		return cache;
 	}
 
 	public void close() {
@@ -154,29 +176,50 @@ public class App extends Application {
 	}
 
 	public void close(boolean shutdown) {
-		if (!Platform.isFxApplicationThread())
-			Platform.runLater(() -> close(shutdown));
-		else {
-			if (shutdown) {
-				clearControllers();
-				if (LOG.isLoggable(Level.DEBUG))
-					LOG.log(Level.DEBUG, "Shutting down app.");
-				scheduler.shutdown();
+		if (shutdown) {
+			if (configuration.turnOffOnExit().getValue()) {
 				try {
-					tray.close();
+					for (Device dev : backend.getDevices()) {
+						dev.setEffect(new Off());
+					}
 				} catch (Exception e) {
 				}
-				try {
-					backend.close();
-				} catch (Exception e) {
-				}
-				Platform.exit();
-			} else {
-				if (LOG.isLoggable(Level.DEBUG))
-					LOG.log(Level.DEBUG, "Hiding app.");
-				primaryStage.hide();
 			}
+			layouts.saveAll();
+			try {
+				getPreferences().flush();
+			} catch (BackingStoreException bse) {
+				LOG.log(Level.ERROR, "Failed to flush configuration.", bse);
+			}
+
+			Platform.runLater(() -> clearControllers());
+			if (LOG.isLoggable(Level.DEBUG))
+				LOG.log(Level.DEBUG, "Shutting down app.");
+			try {
+				cache.close();
+			} catch (Exception e) {
+			}
+			scheduler.shutdownNow();
+			loadQueue.shutdownNow();
+			try {
+				tray.close();
+			} catch (Exception e) {
+			}
+			try {
+				backend.close();
+			} catch (Exception e) {
+			}
+			Platform.exit();
+		} else {
+			if (LOG.isLoggable(Level.DEBUG))
+				LOG.log(Level.DEBUG, "Hiding app.");
+
+			Platform.runLater(() -> primaryStage.hide());
 		}
+	}
+
+	public EffectManager getEffectManager() {
+		return effectManager;
 	}
 
 	public Backend getBackend() {
@@ -185,10 +228,6 @@ public class App extends Application {
 
 	public ExecutorService getLoadQueue() {
 		return loadQueue;
-	}
-
-	public SlideyStack getStack() {
-		return stackPane;
 	}
 
 	public Window getWindow() {
@@ -216,9 +255,9 @@ public class App extends Application {
 		controllers.clear();
 		stackPane.getChildren().clear();
 		if (backend.getDevices().size() != 1) {
-			push(Overview.class, Direction.FADE_IN);
+			push(Overview.class, Direction.FADE);
 		}
-		push(DeviceDetails.class, Direction.FADE_IN).setDevice(device);
+		push(DeviceDetails.class, Direction.FADE).setDevice(device);
 	}
 
 	public <C extends Controller> C openScene(Class<C> controller) throws IOException {
@@ -271,13 +310,15 @@ public class App extends Application {
 		ss.add(url);
 	}
 
-	public void pop() {
+	public Controller pop() {
 		if (!controllers.isEmpty()) {
 			addOnManager.pop(controllers.peek());
 			stackPane.pop();
 			Controller c = controllers.pop();
 			c.cleanUp();
+			return c;
 		}
+		return null;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -303,17 +344,17 @@ public class App extends Application {
 		}
 
 		try {
+			if (primaryScene instanceof BorderlessScene) {
+				/* TODO: Not totally sure why ... */
+				setColors(controller, primaryScene);
+			}
 			C fc = openScene(controller, null);
 			controllers.push(fc);
+			stackPane.push(direction, fc.getScene().getRoot());
 			if (fc instanceof AbstractDeviceController && from instanceof AbstractDeviceController) {
 				var device = ((AbstractDeviceController) from).getDevice();
 				if (device != null)
 					((AbstractDeviceController) fc).setDevice(device);
-			}
-			stackPane.push(direction, fc.getScene().getRoot());
-			if (primaryScene instanceof BorderlessScene) {
-				/* TODO: Not totally sure why ... */
-				setColors(controller, primaryScene);
 			}
 			addOnManager.push(fc);
 			return fc;
@@ -345,10 +386,12 @@ public class App extends Application {
 			});
 		}
 
+		scheduler = Executors.newScheduledThreadPool(1);
+		cache = new Cache(this);
+		layouts = new DeviceLayoutManager(this);
+		effectManager = new EffectManager(this);
 		addOnManager = new AddOnManager(this);
 		configuration = new Configuration(PREFS, this);
-
-		scheduler = Executors.newScheduledThreadPool(1);
 
 		setUserAgentStylesheet(STYLESHEET_MODENA);
 		writeCSS(configuration);
@@ -369,6 +412,7 @@ public class App extends Application {
 		}
 		if (backend == null && !backends.isEmpty())
 			backend = backends.get(0);
+		
 
 		// Setup the window
 		this.primaryStage = primaryStage;
@@ -453,21 +497,14 @@ public class App extends Application {
 		/* The main view */
 		try {
 			if (!backendInited) {
-				if (backend == null)
-					throw new IllegalStateException(
-							"No backend modules available on the classpath or module path. You need at least one backend. For example, snake-backend-openrazer is the default backend.");
-				backend.init();
-				backendInited = true;
-
-				/* The tray */
-				tray = new Tray(this);
+				initBackend();
 			}
 
 			controllers.clear();
 			if (backend.getDevices().size() == 1) {
-				push(DeviceDetails.class, Direction.FADE_IN).setDevice(backend.getDevices().get(0));
+				push(DeviceDetails.class, Direction.FADE).setDevice(backend.getDevices().get(0));
 			} else {
-				push(Overview.class, Direction.FADE_IN);
+				push(Overview.class, Direction.FADE);
 			}
 		} catch (Exception e) {
 			LOG.log(Level.ERROR, "Failed to initialize.", e);
@@ -513,6 +550,63 @@ public class App extends Application {
 		}
 	}
 
+	protected void initBackend() throws Exception {
+		if (backend == null)
+			throw new IllegalStateException(
+					"No backend modules available on the classpath or module path. You need at least one backend. For example, snake-backend-openrazer is the default backend.");
+		backend.init();
+		backendInited = true;
+
+		/* The tray */
+		tray = new Tray(this);
+
+		/* Activate the selected effect on all devices */
+		try {
+			for (Device dev : backend.getDevices()) {
+				try {
+					
+					/* Acquire an effects controller for this device */
+					EffectAcquisition acq = effectManager.acquire(dev);
+					
+					EffectHandler<?, ?> deviceEffect = acq.getEffect(dev);
+					boolean activated = false;
+					if (deviceEffect != null && deviceEffect.isMatrixBased()) {
+						/* Always activates at device level */
+						acq.activate(dev, deviceEffect);
+						activated = true;
+					} else {
+						/* No effect configured for device as a whole, check the regions */
+						for (Region r : dev.getRegions()) {
+							EffectHandler<?, ?> regionEffect = acq.getEffect(r);
+							if (regionEffect != null) {
+								acq.activate(r, regionEffect);
+								activated = true;
+							}
+						}
+					}
+
+					/* Now try at device level */
+					if (!activated && deviceEffect != null) {
+						acq.activate(dev, deviceEffect);
+						activated = true;
+					}
+
+					if (!activated) {
+						/* Get the first effect and activate on whole device */
+						Set<EffectHandler<?, ?>> effects = effectManager.getEffects(dev);
+						if (!effects.isEmpty()) {
+							acq.activate(dev, effects.iterator().next());
+						}
+					}
+				} catch (Exception e) {
+					LOG.log(Level.ERROR, String.format("Failed to set initial effects fot %s. ", dev.getSerial()), e);
+				}
+			}
+		} catch (Exception e) {
+			LOG.log(Level.ERROR, "Failed to set initial effects. Failed to enumerate devices.", e);
+		}
+	}
+
 	private void recreateScene() {
 		try {
 			clearControllers();
@@ -531,6 +625,25 @@ public class App extends Application {
 
 	public Stack<Controller> getControllers() {
 		return controllers;
+	}
+
+	public Preferences getPreferences() {
+		return PREFS;
+	}
+
+	public Preferences getPreferences(Device device) {
+		return getPreferences().node("devices").node(device.getSerial());
+	}
+
+	public Preferences getPreferences(String deviceType) {
+		return getPreferences().node("deviceTypes").node(deviceType);
+	}
+
+	public String getDefaultImage(DeviceType type, String uri) {
+		if(uri == null || uri.equals("")) {
+			uri = configuration.themeProperty().getValue().getResource("devices/" + type.name().toLowerCase() + "512.png").toExternalForm();
+		}
+		return uri;
 	}
 
 }

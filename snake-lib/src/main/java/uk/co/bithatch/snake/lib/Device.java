@@ -1,10 +1,13 @@
 package uk.co.bithatch.snake.lib;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import uk.co.bithatch.snake.lib.Region.Name;
 import uk.co.bithatch.snake.lib.effects.Effect;
+import uk.co.bithatch.snake.lib.layouts.ComponentType;
 
 public interface Device extends AutoCloseable, Grouping, Lit {
 
@@ -101,4 +104,22 @@ public interface Device extends AutoCloseable, Grouping, Lit {
 	void setPollRate(int pollRate);
 
 	void setSuspended(boolean suspended);
+
+	default List<Name> getRegionNames() {
+		List<Name> l = new ArrayList<>();
+		for (Region r : getRegions()) {
+			l.add(r.getName());
+		}
+		return l;
+	}
+
+	default List<ComponentType> getSupportedComponentTypes() {
+		List<ComponentType> l = new ArrayList<>();
+		l.add(ComponentType.AREA);
+		if (getCapabilities().contains(Capability.MATRIX))
+			l.add(ComponentType.LED);
+		if (getCapabilities().contains(Capability.DEDICATED_MACRO_KEYS))
+			l.add(ComponentType.KEY);
+		return l;
+	}
 }

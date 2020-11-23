@@ -11,7 +11,7 @@ public class DPIControl extends ControlController {
 	private Slider dpi;
 
 	@Override
-	protected void onSetDevice() {
+	protected void onSetControlDevice() {
 		dpi.maxProperty().set(getDevice().getMaxDPI());
 		dpi.valueProperty().set(getDevice().getDPI()[0]);
 		dpi.snapToTicksProperty().set(true);

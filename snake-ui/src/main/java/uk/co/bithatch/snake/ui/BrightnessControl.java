@@ -24,7 +24,7 @@ public class BrightnessControl extends ControlController {
 	private boolean adjustingSingle = false;
 
 	@Override
-	protected void onSetDevice() {
+	protected void onSetControlDevice() {
 
 		List<Slider> others = new ArrayList<>();
 

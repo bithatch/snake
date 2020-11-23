@@ -3,7 +3,6 @@ package uk.co.bithatch.snake.ui;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
@@ -25,11 +24,11 @@ public class Confirm extends AbstractController implements Modal {
 	private Runnable onYes;
 	private Runnable onNo;
 
-	public void confirm(ResourceBundle bundle, String prefix, Runnable onYes, String... args) {
+	public void confirm(ResourceBundle bundle, String prefix, Runnable onYes, Object... args) {
 		confirm(bundle, prefix, onYes, null, args);
 	}
 
-	public void confirm(ResourceBundle bundle, String prefix, Runnable onYes, Runnable onNo, String... args) {
+	public void confirm(ResourceBundle bundle, String prefix, Runnable onYes, Runnable onNo, Object... args) {
 		title.textProperty().set(MessageFormat.format(bundle.getString(prefix + ".title"), (Object[]) args));
 		description.textProperty()
 				.set(MessageFormat.format(bundle.getString(prefix + ".description"), (Object[]) args));
@@ -40,7 +39,7 @@ public class Confirm extends AbstractController implements Modal {
 	}
 
 	@FXML
-	void evtNo(ActionEvent evt) {
+	void evtNo() {
 		if (onNo != null) {
 			onNo.run();
 		}
@@ -48,7 +47,7 @@ public class Confirm extends AbstractController implements Modal {
 	}
 
 	@FXML
-	void evtYes(ActionEvent evt) {
+	void evtYes() {
 		onYes.run();
 		context.pop();
 	}

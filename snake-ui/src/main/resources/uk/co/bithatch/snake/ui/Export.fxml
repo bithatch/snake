@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.Export">
+   <center>
+      <VBox alignment="CENTER" fillWidth="false" prefWidth="600.0" styleClass="column" BorderPane.alignment="CENTER">
+         <children>
+            <Label fx:id="title" styleClass="title" text="Title" />
+            <Label fx:id="description" prefWidth="500.0" styleClass="info" text="Description" wrapText="true" />
+            <VBox alignment="CENTER" styleClass="column">
+               <children>
+                  <GridPane>
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="120.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="300.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="200.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                     <children>
+                        <Label styleClass="emphasis" text="%addOnName" GridPane.rowIndex="2" />
+                        <Label styleClass="emphasis" text="%addOnDescription" GridPane.rowIndex="3" />
+                        <Label styleClass="emphasis" text="%author" GridPane.rowIndex="7" />
+                        <Label styleClass="emphasis" text="%license" GridPane.rowIndex="8" />
+                        <Label styleClass="small" text="%addOnName.info" wrapText="true" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                        <Label styleClass="small" text="%addOnDescription.info" wrapText="true" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+                        <Label styleClass="small" text="%author.info" wrapText="true" GridPane.columnIndex="2" GridPane.rowIndex="7" />
+                        <Label styleClass="small" text="%license.info" wrapText="true" GridPane.columnIndex="2" GridPane.rowIndex="8" />
+                        <TextField fx:id="addOnName" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <Label styleClass="emphasis" text="%addOnId" />
+                        <Label fx:id="addOnId" text="Add On Id" GridPane.columnIndex="1" />
+                        <Label styleClass="small" text="%addOnId.info" wrapText="true" GridPane.columnIndex="2" />
+                        <TextArea fx:id="addOnDescription" prefHeight="200.0" prefWidth="200.0" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.rowSpan="3" GridPane.vgrow="ALWAYS" />
+                        <TextField fx:id="author" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                        <TextField fx:id="license" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                        <Label styleClass="emphasis" text="%addOnType" GridPane.rowIndex="1" />
+                        <Label fx:id="addOnType" text="Add On Type" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <Label styleClass="small" text="%addOnType.info" wrapText="true" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                        <Label styleClass="emphasis" text="%url" GridPane.rowIndex="6" />
+                        <TextField fx:id="url" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                        <Label styleClass="small" text="%url.info" wrapText="true" GridPane.columnIndex="2" GridPane.rowIndex="6" />
+                        <Label styleClass="emphasis" text="%output" GridPane.rowIndex="10" />
+                        <Label styleClass="small" text="%output.info" GridPane.columnIndex="2" GridPane.rowIndex="10" />
+                        <BorderPane prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="10">
+                           <center>
+                              <TextField fx:id="output" BorderPane.alignment="CENTER" />
+                           </center>
+                           <right>
+                              <Button mnemonicParsing="false" onAction="#evtBrowse" text="%browse" BorderPane.alignment="CENTER" />
+                           </right>
+                        </BorderPane>
+                        <Label styleClass="emphasis" text="%outputType" GridPane.rowIndex="9" />
+                        <Label styleClass="small" text="%outputType.info" wrapText="true" GridPane.columnIndex="2" GridPane.rowIndex="9" />
+                        <ComboBox fx:id="outputType" onAction="#evtOutputType" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+                     </children>
+                     <styleClass>
+                        <String fx:value="three-col-form" />
+                        <String fx:value="spaced" />
+                     </styleClass>
+                  </GridPane>
+                  <HBox styleClass="column">
+                     <children>
+                        <Hyperlink fx:id="cancel" onAction="#evtCancel" text="Cancel" />
+                        <Hyperlink fx:id="confirm" onAction="#evtConfirm" text="Confirm" />
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+   </center>
+   <top>
+      <VBox fx:id="popupMessages" alignment="CENTER_LEFT" BorderPane.alignment="CENTER">
+         <styleClass>
+            <String fx:value="popupMessages" />
+            <String fx:value="padded" />
+         </styleClass></VBox>
+   </top>
+</BorderPane>

@@ -1,10 +1,13 @@
 package uk.co.bithatch.snake.lib;
 
+import java.lang.System.Logger.Level;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 public interface Backend extends AutoCloseable, Grouping {
+
+	final static System.Logger LOG = System.getLogger(Backend.class.getName());
 
 	public interface BackendListener {
 		void deviceAdded(Device device);
@@ -26,7 +29,8 @@ public interface Backend extends AutoCloseable, Grouping {
 			}
 			return l == 0 ? -1 : (int) ((float) tot / (float) l);
 		} catch (Exception e) {
-			throw new IllegalStateException("Failed to get battery summary.", e);
+			LOG.log(Level.DEBUG, "Failed to get battery status.", e);
+			return 0;
 		}
 	}
 

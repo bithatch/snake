@@ -5,13 +5,12 @@ import java.util.ResourceBundle;
 
 import javafx.animation.FadeTransition;
 import javafx.beans.property.Property;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.util.Duration;
 import uk.co.bithatch.snake.lib.BackendException;
-import uk.co.bithatch.snake.ui.SlideyStack.Direction;
+import uk.co.bithatch.snake.ui.widgets.Direction;
 
 public class Error extends AbstractDeviceController {
 	final static ResourceBundle bundle = ResourceBundle.getBundle(Error.class.getName());
@@ -35,7 +34,7 @@ public class Error extends AbstractDeviceController {
 	}
 
 	@FXML
-	void evtRetry(ActionEvent evt) {
+	void evtRetry() {
 		try {
 			context.push(Overview.class, Direction.FROM_BOTTOM);
 			context.remove(this);
@@ -68,12 +67,12 @@ public class Error extends AbstractDeviceController {
 	}
 
 	@FXML
-	void evtAbout(ActionEvent evt) {
-		context.push(About.class, Direction.FADE_IN);
+	void evtAbout() {
+		context.push(About.class, Direction.FADE);
 	}
 
 	@FXML
-	void evtOptions(ActionEvent evt) {
+	void evtOptions() {
 		context.push(Options.class, Direction.FROM_BOTTOM);
 	}
 }

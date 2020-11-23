@@ -28,17 +28,17 @@ import dorkbox.systemTray.MenuItem;
 import dorkbox.systemTray.Separator;
 import dorkbox.systemTray.SystemTray;
 import javafx.application.Platform;
+import uk.co.bithatch.snake.lib.Backend.BackendListener;
 import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.Device;
+import uk.co.bithatch.snake.lib.Device.Listener;
 import uk.co.bithatch.snake.lib.Grouping;
 import uk.co.bithatch.snake.lib.Item;
 import uk.co.bithatch.snake.lib.Lit;
 import uk.co.bithatch.snake.lib.Region;
-import uk.co.bithatch.snake.lib.Backend.BackendListener;
-import uk.co.bithatch.snake.lib.Device.Listener;
-import uk.co.bithatch.snake.lib.effects.Effect;
 import uk.co.bithatch.snake.ui.Configuration.TrayIcon;
-import uk.co.bithatch.snake.ui.SlideyStack.Direction;
+import uk.co.bithatch.snake.ui.effects.EffectAcquisition;
+import uk.co.bithatch.snake.ui.widgets.Direction;
 
 public class Tray implements AutoCloseable, BackendListener, Listener {
 
@@ -80,7 +80,7 @@ public class Tray implements AutoCloseable, BackendListener, Listener {
 	}
 
 	Menu addDevice(Device device, Menu toMenu) throws IOException {
-		var img = device.getImage();
+		var img = context.getDefaultImage(device.getType(), context.getCache().getCachedImage(device.getImage()));
 		if (img.startsWith("http:") || img.startsWith("https:")) {
 			var url = new URL(img);
 			var path = url.getPath();
@@ -160,21 +160,22 @@ public class Tray implements AutoCloseable, BackendListener, Listener {
 	}
 
 	void addEffectsMenu(Lit lit, Menu menu, Device device, boolean addToRoot) {
-		Class<? extends Effect> configurable = null;
-		for (Class<? extends Effect> fx : lit.getSupportedEffects()) {
-			var mi = new MenuItem(fx.getSimpleName(), (e) -> {
-				context.getScheduler().execute(() -> lit.setEffect(lit.createEffect(fx)));
+		EffectHandler<?, ?> configurable = null;
+		EffectAcquisition acq = context.getEffectManager().getRootAcquisition(Lit.getDevice(lit));
+		EffectHandler<?, ?> selected = acq.getEffect(lit);
+		for (EffectHandler<?, ?> fx : context.getEffectManager().getEffects(lit)) {
+			var mi = new MenuItem(fx.getDisplayName(), (e) -> {
+				context.getScheduler().execute(() -> acq.activate(lit, fx));
 			});
-			mi.setImage(context.getConfiguration().themeProperty().getValue().getEffectImage(24, fx));
+			mi.setImage(fx.getEffectImage(24));
 			menu.add(mi);
-			if (lit.getEffect() != null && fx.equals(lit.getEffect().getClass())
-					&& AbstractEffectController.hasController(fx)) {
+			if (fx.hasOptions() && fx.equals(selected)) {
 				configurable = fx;
 			}
 			if (addToRoot)
 				menuEntries.add(mi);
 		}
-		Class<? extends Effect> fConfigurable = configurable;
+		EffectHandler<?, ?> fConfigurable = configurable;
 		if (configurable != null) {
 			var mi = new MenuItem(bundle.getString("effectOptions"),
 					createAwesomeIcon(bundle.getString("effectOptionsIcon"), 32), (e) -> {
@@ -267,51 +268,53 @@ public class Tray implements AutoCloseable, BackendListener, Listener {
 
 	private void rebuildMenu() {
 		clearMenus();
-		var menu = systemTray.getMenu();
-		try {
+		if (systemTray != null) {
+			var menu = systemTray.getMenu();
+			try {
 
-			boolean devices = false;
-			List<Device> devs = context.getBackend().getDevices();
-			var backend = context.getBackend();
-			var globals = false;
+				boolean devices = false;
+				List<Device> devs = context.getBackend().getDevices();
+				var backend = context.getBackend();
+				var globals = false;
 
-			if (devs.size() == 1) {
-				addDevice(devs.get(0), menu);
-				devices = true;
-			} else {
-				var mi = new MenuItem(bundle.getString("open"), (e) -> context.open());
-				menuEntries.add(mi);
-				menu.add(mi);
-				addSeparator(menu);
-
-				if (backend.getCapabilities().contains(Capability.BRIGHTNESS)) {
-					brightnessMenu(menu, backend);
-					globals = true;
-				}
-				if (backend.getCapabilities().contains(Capability.GAME_MODE)) {
-					gameMode(menu, backend);
-					globals = true;
-				}
-				if (globals)
-					addSeparator(menu);
-				for (Device dev : devs) {
-					var devmenu = addDevice(dev, null);
-					systemTray.getMenu().add(devmenu);
-					menuEntries.add(devmenu);
+				if (devs.size() == 1) {
+					addDevice(devs.get(0), menu);
 					devices = true;
-				}
-			}
-			if (devices)
-				addSeparator(menu);
-		} catch (Exception e) {
-			// TODO add error item / tooltip?
-			systemTray.setTooltip("Erro!");
-			e.printStackTrace();
-		}
+				} else {
+					var mi = new MenuItem(bundle.getString("open"), (e) -> context.open());
+					menuEntries.add(mi);
+					menu.add(mi);
+					addSeparator(menu);
 
-		var quit = new MenuItem(bundle.getString("quit"), (e) -> context.close(true));
-		menuEntries.add(quit);
-		menu.add(quit).setShortcut('q');
+					if (backend.getCapabilities().contains(Capability.BRIGHTNESS)) {
+						brightnessMenu(menu, backend);
+						globals = true;
+					}
+					if (backend.getCapabilities().contains(Capability.GAME_MODE)) {
+						gameMode(menu, backend);
+						globals = true;
+					}
+					if (globals)
+						addSeparator(menu);
+					for (Device dev : devs) {
+						var devmenu = addDevice(dev, null);
+						systemTray.getMenu().add(devmenu);
+						menuEntries.add(devmenu);
+						devices = true;
+					}
+				}
+				if (devices)
+					addSeparator(menu);
+			} catch (Exception e) {
+				// TODO add error item / tooltip?
+				systemTray.setTooltip("Erro!");
+				e.printStackTrace();
+			}
+
+			var quit = new MenuItem(bundle.getString("quit"), (e) -> context.close(true));
+			menuEntries.add(quit);
+			menu.add(quit).setShortcut('q');
+		}
 	}
 
 	private void addSeparator(Menu menu) {
@@ -322,9 +325,11 @@ public class Tray implements AutoCloseable, BackendListener, Listener {
 	}
 
 	private void clearMenus() {
-		var menu = systemTray.getMenu();
-		for (Entry dev : menuEntries) {
-			menu.remove(dev);
+		if (systemTray != null) {
+			var menu = systemTray.getMenu();
+			for (Entry dev : menuEntries) {
+				menu.remove(dev);
+			}
 		}
 		menuEntries.clear();
 	}

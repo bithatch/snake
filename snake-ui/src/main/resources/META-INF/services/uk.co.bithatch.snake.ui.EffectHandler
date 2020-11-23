@@ -1,0 +1,11 @@
+uk.co.bithatch.snake.ui.effects.OffEffectHandler
+uk.co.bithatch.snake.ui.effects.OnEffectHandler
+uk.co.bithatch.snake.ui.effects.BreathEffectHandler
+uk.co.bithatch.snake.ui.effects.PulsateEffectHandler
+uk.co.bithatch.snake.ui.effects.ReactiveEffectHandler
+uk.co.bithatch.snake.ui.effects.RippleEffectHandler
+uk.co.bithatch.snake.ui.effects.SpectrumEffectHandler
+uk.co.bithatch.snake.ui.effects.StarlightEffectHandler
+uk.co.bithatch.snake.ui.effects.StaticEffectHandler
+uk.co.bithatch.snake.ui.effects.WaveEffectHandler
+uk.co.bithatch.snake.ui.effects.StaticEffectHandler

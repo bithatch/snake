@@ -4,7 +4,6 @@ import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 
 import javafx.animation.FadeTransition;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -12,8 +11,8 @@ import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.util.Duration;
 import uk.co.bithatch.snake.lib.Device;
-import uk.co.bithatch.snake.lib.Region;
 import uk.co.bithatch.snake.lib.Device.Listener;
+import uk.co.bithatch.snake.lib.Region;
 
 public class BatteryControl extends ControlController implements Listener {
 	@FXML
@@ -47,7 +46,7 @@ public class BatteryControl extends ControlController implements Listener {
 	}
 
 	@Override
-	protected void onSetDevice() {
+	protected void onSetControlDevice() {
 		Device dev = getDevice();
 		setBatteryDevice(dev);
 		getDevice().addListener(this);
@@ -127,19 +126,14 @@ public class BatteryControl extends ControlController implements Listener {
 	}
 
 	@Override
-	protected void onCleanUp() {
+	protected void onDeviceCleanUp() {
 		getDevice().removeListener(this);
 		chargingAnim.stop();
 	}
 
 	@Override
-	public void changed(Device device, Region region) {
-		if (!Platform.isFxApplicationThread())
-			Platform.runLater(() -> changed(device, region));
-		else {
-			if (region == null)
-				setBatteryDevice(device);
-		}
+	public void onChanged(Device device, Region region) {
+		setBatteryDevice(device);
 	}
 
 }

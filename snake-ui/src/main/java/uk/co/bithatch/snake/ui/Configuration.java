@@ -14,6 +14,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.paint.Color;
+import uk.co.bithatch.snake.ui.addons.Theme;
 
 public class Configuration {
 
@@ -23,6 +24,7 @@ public class Configuration {
 
 	private Property<Theme> theme = new SimpleObjectProperty<>();
 	private BooleanProperty decorated = new SimpleBooleanProperty();
+	private BooleanProperty turnOffOnExit = new SimpleBooleanProperty();
 	private IntegerProperty x = new SimpleIntegerProperty();
 	private IntegerProperty y = new SimpleIntegerProperty();
 	private IntegerProperty w = new SimpleIntegerProperty();
@@ -137,6 +139,8 @@ public class Configuration {
 				transparency.setValue(0);
 			}
 		});
+		turnOffOnExit.setValue(node.getBoolean("turnOffOnExit", true));
+		turnOffOnExit.addListener(new BooleanPreferenceUpdateChangeListener(node, "turnOffOnExit"));
 
 		x.setValue(node.getInt("x", 0));
 		x.addListener(new IntegerPreferenceUpdateChangeListener(node, "x"));
@@ -209,6 +213,10 @@ public class Configuration {
 
 	public Property<Boolean> decoratedProperty() {
 		return decorated;
+	}
+
+	public Property<Boolean> turnOffOnExit() {
+		return turnOffOnExit;
 	}
 
 	public Property<Theme> themeProperty() {

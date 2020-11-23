@@ -1,0 +1,23 @@
+{
+	"matrixHeight": 0,
+	"matrixWidth": 0,
+	"name": "Razer Ouroboros",
+	"deviceType": "MOUSE",
+	"views": [
+		{
+			"desaturateImage": false,
+			"imageOpacity": 1.0,
+			"imageScale": 0.79710144,
+			"position": "TOP",
+			"elements": [
+				{
+					"type": "AREA",
+					"x": 0.50064063,
+					"y": 0.28758916,
+					"label": "Scroll",
+					"region": "SCROLL"
+				}
+			]
+		}
+	]
+}

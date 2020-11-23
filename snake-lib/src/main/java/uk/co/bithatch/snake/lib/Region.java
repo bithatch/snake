@@ -11,6 +11,4 @@ public interface Region extends Item, Lit {
 
 	Name getName();
 
-	void load(String path) throws Exception;
-
 }

@@ -11,9 +11,11 @@ import javafx.scene.control.ToggleGroup;
 import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.effects.Starlight;
 import uk.co.bithatch.snake.lib.effects.Starlight.Mode;
-import uk.co.bithatch.snake.ui.SlideyStack.Direction;
+import uk.co.bithatch.snake.ui.effects.StarlightEffectHandler;
+import uk.co.bithatch.snake.ui.util.JavaFX;
+import uk.co.bithatch.snake.ui.widgets.Direction;
 
-public class StarlightOptions extends AbstractEffectController<Starlight> {
+public class StarlightOptions extends AbstractBackendEffectController<Starlight, StarlightEffectHandler> {
 	@FXML
 	private ColorPicker color;
 
@@ -47,6 +49,36 @@ public class StarlightOptions extends AbstractEffectController<Starlight> {
 
 	private boolean adjusting = false;
 
+	public int getSpeed() {
+		return (int) speed.valueProperty().get();
+	}
+
+	public Mode getMode() {
+		if (single.selectedProperty().get())
+			return Mode.SINGLE;
+		else if (dual.selectedProperty().get())
+			return Mode.DUAL;
+		else
+			return Mode.RANDOM;
+	}
+
+	public int[] getColor() {
+		return JavaFX.toRGB(color.valueProperty().get());
+	}
+
+	public int[] getColor1() {
+		return JavaFX.toRGB(color1.valueProperty().get());
+	}
+
+	public int[] getColor2() {
+		return JavaFX.toRGB(color2.valueProperty().get());
+	}
+
+	protected void update() {
+		if (!adjusting)
+			getEffectHandler().store(getRegion(), this);
+	}
+
 	@Override
 	protected void onConfigure() throws Exception {
 
@@ -57,15 +89,15 @@ public class StarlightOptions extends AbstractEffectController<Starlight> {
 		single.managedProperty().bind(single.visibleProperty());
 		dual.managedProperty().bind(dual.visibleProperty());
 		color.managedProperty().bind(color.visibleProperty());
-		
+
 		colorLabel.visibleProperty().bind(single.visibleProperty());
 		color1Label.visibleProperty().bind(color1.visibleProperty());
 		color2Label.visibleProperty().bind(color2.visibleProperty());
-		
+
 		colorLabel.setLabelFor(color);
 		color1Label.setLabelFor(color1);
 		color2Label.setLabelFor(color2);
-		
+
 		color.disableProperty().bind(Bindings.not(single.selectedProperty()));
 		color1.disableProperty().bind(Bindings.not(dual.selectedProperty()));
 		color2.disableProperty().bind(Bindings.not(dual.selectedProperty()));
@@ -73,72 +105,25 @@ public class StarlightOptions extends AbstractEffectController<Starlight> {
 		color.visibleProperty().bind(single.visibleProperty());
 		color1.visibleProperty().bind(dual.visibleProperty());
 		color2.visibleProperty().bind(dual.visibleProperty());
-		
+
 		dual.selectedProperty().addListener((e) -> {
 			if (dual.isSelected())
-				setDual();
+				update();
 		});
 		single.selectedProperty().addListener((e) -> {
 			if (single.isSelected())
-				setSingle();
+				update();
 		});
 		random.selectedProperty().addListener((e) -> {
 			if (random.isSelected())
-				setRandom();
+				update();
 		});
-		color.valueProperty().addListener((e) -> setSingle());
-		color1.valueProperty().addListener((e) -> setDual());
-		color2.valueProperty().addListener((e) -> setDual());
+		color.valueProperty().addListener((e) -> update());
+		color1.valueProperty().addListener((e) -> update());
+		color2.valueProperty().addListener((e) -> update());
 		speed.valueProperty().addListener((e) -> {
-			if (!adjusting) {
-				try {
-					Starlight reactive = (Starlight) getEffect().clone();
-					reactive.setSpeed((int) speed.valueProperty().get());
-					context.getScheduler().execute(() -> getRegion().setEffect(reactive));
-				} catch (CloneNotSupportedException cnse) {
-					throw new IllegalStateException(cnse);
-				}
-			}
+			update();
 		});
-	}
-
-	protected void setRandom() {
-		if (!adjusting) {
-			try {
-				Starlight breath = (Starlight) getEffect().clone();
-				breath.setMode(Mode.RANDOM);
-				context.getScheduler().execute(() -> getRegion().setEffect(breath));
-			} catch (CloneNotSupportedException cnse) {
-				throw new IllegalStateException(cnse);
-			}
-		}
-	}
-
-	protected void setSingle() {
-		if (!adjusting) {
-			try {
-				Starlight breath = (Starlight) getEffect().clone();
-				breath.setColor(UIHelpers.toRGB(color.valueProperty().get()));
-				breath.setMode(Mode.SINGLE);
-				context.getScheduler().execute(() -> getRegion().setEffect(breath));
-			} catch (CloneNotSupportedException cnse) {
-				throw new IllegalStateException(cnse);
-			}
-		}
-	}
-
-	protected void setDual() {
-		if (!adjusting) {
-			try {
-				Starlight breath = (Starlight) getEffect().clone();
-				breath.setColor1(UIHelpers.toRGB(color1.valueProperty().get()));
-				breath.setColor2(UIHelpers.toRGB(color1.valueProperty().get()));
-				breath.setMode(Mode.DUAL);
-				context.getScheduler().execute(() -> getRegion().setEffect(breath));
-			} catch (CloneNotSupportedException cnse) {
-				throw new IllegalStateException(cnse);
-			}
-		}
 	}
 
 	@Override
@@ -157,9 +142,9 @@ public class StarlightOptions extends AbstractEffectController<Starlight> {
 				random.selectedProperty().set(true);
 				break;
 			}
-			color.valueProperty().set(UIHelpers.toColor(effect.getColor()));
-			color1.valueProperty().set(UIHelpers.toColor(effect.getColor1()));
-			color2.valueProperty().set(UIHelpers.toColor(effect.getColor2()));
+			color.valueProperty().set(JavaFX.toColor(effect.getColor()));
+			color1.valueProperty().set(JavaFX.toColor(effect.getColor1()));
+			color2.valueProperty().set(JavaFX.toColor(effect.getColor2()));
 			speed.valueProperty().set(effect.getSpeed());
 			random.visibleProperty().set(getRegion().getCapabilities().contains(Capability.STARLIGHT_RANDOM));
 			single.visibleProperty().set(getRegion().getCapabilities().contains(Capability.STARLIGHT_SINGLE));

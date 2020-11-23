@@ -9,7 +9,7 @@
 
 <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" styleClass="control" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.DPIControl">
    <children>
-      <HBox>
+      <HBox styleClass="gapBottom">
          <children>
             <Label styleClass="header" text="%dpi" />
          </children>

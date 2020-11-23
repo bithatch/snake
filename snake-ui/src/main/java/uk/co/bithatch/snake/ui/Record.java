@@ -6,7 +6,6 @@ import java.util.ResourceBundle;
 import com.sshtools.icongenerator.IconBuilder;
 import com.sshtools.icongenerator.IconBuilder.AwesomeIconMode;
 
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
@@ -141,22 +140,22 @@ public class Record extends AbstractDetailsController {
 	}
 
 	@FXML
-	void evtBack(ActionEvent evt) {
+	void evtBack() {
 		context.pop();
 	}
 
 	@FXML
-	void evtStartRecord(ActionEvent evt) {
+	void evtStartRecord() {
 		updateState(State.RECORDING);
 	}
 
 	@FXML
-	void evtPause(ActionEvent evt) {
+	void evtPause() {
 		updateState(State.PAUSED);
 	}
 
 	@FXML
-	void evtStop(ActionEvent evt) {
+	void evtStop() {
 		updateState(State.IDLE);
 	}
 

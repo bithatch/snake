@@ -1,9 +1,6 @@
 package uk.co.bithatch.snake.lib.effects;
 
 import java.util.Arrays;
-import java.util.prefs.Preferences;
-
-import uk.co.bithatch.snake.lib.Colors;
 
 public class Reactive extends Effect {
 
@@ -58,17 +55,5 @@ public class Reactive extends Effect {
 	@Override
 	public String toString() {
 		return "Reactive [color=" + Arrays.toString(color) + ", speed=" + speed + "]";
-	}
-
-	@Override
-	protected void onLoad(Preferences prefs) {
-		speed = prefs.getInt("speed", 100);
-		color = Colors.fromHex(prefs.get("color", "#00ff00"));
-	}
-
-	@Override
-	protected void onSave(Preferences prefs) {
-		prefs.putInt("speed", speed);
-		prefs.put("color", Colors.toHex(color));
 	}
 }

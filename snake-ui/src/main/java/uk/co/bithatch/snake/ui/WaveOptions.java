@@ -6,8 +6,9 @@ import javafx.scene.control.Slider;
 import javafx.scene.input.MouseEvent;
 import uk.co.bithatch.snake.lib.effects.Wave;
 import uk.co.bithatch.snake.lib.effects.Wave.Direction;
+import uk.co.bithatch.snake.ui.effects.WaveEffectHandler;
 
-public class WaveOptions extends AbstractEffectController<Wave> {
+public class WaveOptions extends AbstractBackendEffectController<Wave, WaveEffectHandler> {
 
 	@FXML
 	private Slider direction;
@@ -18,15 +19,7 @@ public class WaveOptions extends AbstractEffectController<Wave> {
 	protected void onConfigure() throws Exception {
 		direction.valueProperty().addListener((e) -> {
 			if (!adjusting) {
-				try {
-					Wave breath = (Wave) getEffect().clone();
-					Direction dir = uk.co.bithatch.snake.lib.effects.Wave.Direction
-							.values()[(int) direction.valueProperty().get()];
-					breath.setDirection(dir);
-					context.getScheduler().execute(() -> getRegion().setEffect(breath));
-				} catch (CloneNotSupportedException cnse) {
-					throw new IllegalStateException(cnse);
-				}
+				getEffectHandler().store(getRegion(), this);
 			}
 		});
 	}
@@ -55,6 +48,10 @@ public class WaveOptions extends AbstractEffectController<Wave> {
 	@FXML
 	void evtForward(MouseEvent evt) {
 		direction.valueProperty().set(1.0);
+	}
+
+	public Direction getDirection() {
+		return Direction.values()[(int) direction.getValue()];
 	}
 
 }

@@ -8,9 +8,11 @@ import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import uk.co.bithatch.snake.lib.effects.Breath;
 import uk.co.bithatch.snake.lib.effects.Breath.Mode;
-import uk.co.bithatch.snake.ui.SlideyStack.Direction;
+import uk.co.bithatch.snake.ui.effects.BreathEffectHandler;
+import uk.co.bithatch.snake.ui.util.JavaFX;
+import uk.co.bithatch.snake.ui.widgets.Direction;
 
-public class BreathOptions extends AbstractEffectController<Breath> {
+public class BreathOptions extends AbstractBackendEffectController<Breath, BreathEffectHandler> {
 
 	@FXML
 	private ColorPicker color;
@@ -41,6 +43,27 @@ public class BreathOptions extends AbstractEffectController<Breath> {
 
 	private boolean adjusting = false;
 
+	public Mode getMode() {
+		if (single.selectedProperty().get())
+			return Mode.SINGLE;
+		else if (dual.selectedProperty().get())
+			return Mode.DUAL;
+		else
+			return Mode.RANDOM;
+	}
+
+	public int[] getColor() {
+		return JavaFX.toRGB(color.valueProperty().get());
+	}
+
+	public int[] getColor1() {
+		return JavaFX.toRGB(color1.valueProperty().get());
+	}
+
+	public int[] getColor2() {
+		return JavaFX.toRGB(color2.valueProperty().get());
+	}
+
 	@Override
 	protected void onConfigure() throws Exception {
 		color.disableProperty().bind(Bindings.not(single.selectedProperty()));
@@ -51,58 +74,24 @@ public class BreathOptions extends AbstractEffectController<Breath> {
 		color2Label.setLabelFor(color2);
 		dual.selectedProperty().addListener((e) -> {
 			if (dual.isSelected())
-				setDual();
+				update();
 		});
 		single.selectedProperty().addListener((e) -> {
 			if (single.isSelected())
-				setSingle();
+				update();
 		});
 		random.selectedProperty().addListener((e) -> {
 			if (random.isSelected())
-				setRandom();
+				update();
 		});
-		color.valueProperty().addListener((e) -> setSingle());
-		color1.valueProperty().addListener((e) -> setDual());
-		color2.valueProperty().addListener((e) -> setDual());
+		color.valueProperty().addListener((e) -> update());
+		color1.valueProperty().addListener((e) -> update());
+		color2.valueProperty().addListener((e) -> update());
 	}
 
-	protected void setRandom() {
-		if (!adjusting) {
-			try {
-				Breath breath = (Breath) getEffect().clone();
-				breath.setMode(Mode.RANDOM);
-				context.getScheduler().execute(() -> getRegion().setEffect(breath));
-			} catch (CloneNotSupportedException cnse) {
-				throw new IllegalStateException(cnse);
-			}
-		}
-	}
-
-	protected void setSingle() {
-		if (!adjusting) {
-			try {
-				Breath breath = (Breath) getEffect().clone();
-				breath.setColor(UIHelpers.toRGB(color.valueProperty().get()));
-				breath.setMode(Mode.SINGLE);
-				context.getScheduler().execute(() -> getRegion().setEffect(breath));
-			} catch (CloneNotSupportedException cnse) {
-				throw new IllegalStateException(cnse);
-			}
-		}
-	}
-
-	protected void setDual() {
-		if (!adjusting) {
-			try {
-				Breath breath = (Breath) getEffect().clone();
-				breath.setColor1(UIHelpers.toRGB(color1.valueProperty().get()));
-				breath.setColor2(UIHelpers.toRGB(color1.valueProperty().get()));
-				breath.setMode(Mode.DUAL);
-				context.getScheduler().execute(() -> getRegion().setEffect(breath));
-			} catch (CloneNotSupportedException cnse) {
-				throw new IllegalStateException(cnse);
-			}
-		}
+	protected void update() {
+		if(!adjusting)
+			getEffectHandler().store(getRegion(), BreathOptions.this);
 	}
 
 	@Override
@@ -121,9 +110,9 @@ public class BreathOptions extends AbstractEffectController<Breath> {
 				random.selectedProperty().set(true);
 				break;
 			}
-			color.valueProperty().set(UIHelpers.toColor(effect.getColor()));
-			color1.valueProperty().set(UIHelpers.toColor(effect.getColor1()));
-			color2.valueProperty().set(UIHelpers.toColor(effect.getColor2()));
+			color.valueProperty().set(JavaFX.toColor(effect.getColor()));
+			color1.valueProperty().set(JavaFX.toColor(effect.getColor1()));
+			color2.valueProperty().set(JavaFX.toColor(effect.getColor2()));
 		} finally {
 			adjusting = false;
 		}

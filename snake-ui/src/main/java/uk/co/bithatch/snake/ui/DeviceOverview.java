@@ -4,8 +4,6 @@ import java.net.URL;
 import java.util.Objects;
 
 import javafx.animation.FadeTransition;
-import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
@@ -13,10 +11,10 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.Device;
-import uk.co.bithatch.snake.lib.Region;
 import uk.co.bithatch.snake.lib.Device.Listener;
+import uk.co.bithatch.snake.lib.Region;
 import uk.co.bithatch.snake.lib.effects.Effect;
-import uk.co.bithatch.snake.ui.SlideyStack.Direction;
+import uk.co.bithatch.snake.ui.widgets.Direction;
 
 public class DeviceOverview extends AbstractDeviceController implements Listener {
 
@@ -33,15 +31,13 @@ public class DeviceOverview extends AbstractDeviceController implements Listener
 	@FXML
 	private ImageView effect;
 	@FXML
-	private Label brightness;
-	@FXML
-	private Label brightnessLabel;
-	@FXML
 	private Label charging;
 	@FXML
 	private Label battery;
 	@FXML
 	private Hyperlink macros;
+	@FXML
+	private Label brightnessAmount;
 
 	private Effect lastEffect;
 	private FadeTransition chargingAnim;
@@ -57,14 +53,12 @@ public class DeviceOverview extends AbstractDeviceController implements Listener
 		Device dev = getDevice();
 		dev.addListener(this);
 		deviceName.textProperty().set(dev.getName());
-		deviceImage.setImage(new Image(dev.getImage(), true));
+		deviceImage.setImage(new Image(context.getCache().getCachedImage(context.getDefaultImage(dev.getType(), dev.getImage())), true));
 		deviceSerial.textProperty().set(dev.getSerial());
 		deviceFirmware.textProperty().set(dev.getFirmware());
 		macros.managedProperty().bind(macros.visibleProperty());
 		macros.visibleProperty().set(dev.getCapabilities().contains(Capability.MACROS));
 		effect.visibleProperty().set(dev.getCapabilities().contains(Capability.EFFECTS));
-		brightness.visibleProperty().set(dev.getCapabilities().contains(Capability.BRIGHTNESS));
-		brightnessLabel.visibleProperty().set(dev.getCapabilities().contains(Capability.BRIGHTNESS));
 		battery.visibleProperty().set(dev.getCapabilities().contains(Capability.BATTERY));
 		charging.visibleProperty().set(dev.getCapabilities().contains(Capability.BATTERY));
 		updateFromDevice(dev);
@@ -78,7 +72,7 @@ public class DeviceOverview extends AbstractDeviceController implements Listener
 				effect.setImage(new Image(effectImage.toExternalForm()));
 		}
 		if (dev.getCapabilities().contains(Capability.BRIGHTNESS)) {
-			brightness.textProperty().set(dev.getBrightness() + "%");
+			brightnessAmount.textProperty().set(dev.getBrightness() + "%");
 		}
 		if (dev.getCapabilities().contains(Capability.BATTERY)) {
 			int level = dev.getBattery();
@@ -95,29 +89,25 @@ public class DeviceOverview extends AbstractDeviceController implements Listener
 	}
 
 	@FXML
-	void evtSelect(ActionEvent evt) {
+	void evtSelect() {
 		context.push(DeviceDetails.class, this, Direction.FROM_RIGHT);
 	}
 
 	@FXML
-	void evtMacros(ActionEvent evt) {
+	void evtMacros() {
 		context.push(Macros.class, this, Direction.FROM_BOTTOM);
 	}
 
 	@Override
-	protected void onCleanUp() {
+	protected void onDeviceCleanUp() {
 		getDevice().removeListener(this);
 		chargingAnim.stop();
 		lowAnim.stop();
 	}
 
 	@Override
-	public void changed(Device device, Region region) {
-		if (!Platform.isFxApplicationThread())
-			Platform.runLater(() -> changed(device, region));
-		else {
-			if (region == null)
-				updateFromDevice(device);
-		}
+	public void onChanged(Device device, Region region) {
+		if (region == null)
+			updateFromDevice(device);
 	}
 }

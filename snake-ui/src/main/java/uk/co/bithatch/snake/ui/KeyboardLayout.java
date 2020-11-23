@@ -356,12 +356,12 @@ public class KeyboardLayout extends Pane {
 	}
 
 	private double computeContentWidth(List<Node> managedChildren, double height, boolean minimum) {
-		double x = xProperty().get().doubleValue();
+		double x = xProperty().get() == null ? 0 : xProperty().get().doubleValue();
 		return x * keyWidthProperty().get() + (x - 1) * snapSpaceX(getSpacing());
 	}
 
 	private double computeContentHeight(List<Node> managedChildren, double height, boolean minimum) {
-		double y = yProperty().get().doubleValue();
+		double y = yProperty().get() == null ? 0 : yProperty().get().doubleValue();
 		return y * keyHeightProperty().get() + (y - 1) * snapSpaceY(getSpacing());
 	}
 

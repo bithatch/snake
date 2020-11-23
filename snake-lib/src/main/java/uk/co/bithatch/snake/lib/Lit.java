@@ -4,7 +4,7 @@ import uk.co.bithatch.snake.lib.effects.Effect;
 
 public interface Lit extends Item {
 
-	Effect createEffect(Class<? extends Effect> clazz);
+	<E extends Effect> E createEffect(Class<E> clazz);
 
 	Effect getEffect();
 
@@ -13,4 +13,11 @@ public interface Lit extends Item {
 	}
 
 	void setEffect(Effect effect);
+
+	void updateEffect(Effect effect);
+
+	static Device getDevice(Lit component) {
+		return component == null ? null
+				: (component instanceof Device ? ((Device) component) : ((Region) component).getDevice());
+	}
 }
