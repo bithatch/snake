@@ -1,7 +1,5 @@
 package uk.co.bithatch.snake.lib.layouts;
 
-import uk.co.bithatch.snake.lib.Region;
-
 public interface MatrixIO extends IO {
 
 	int getMatrixX();

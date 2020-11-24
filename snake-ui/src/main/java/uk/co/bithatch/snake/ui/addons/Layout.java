@@ -106,7 +106,11 @@ public class Layout extends AbstractJsonAddOn {
 	public void setArchive(Path archive) {
 		super.setArchive(archive);
 		if (layout != null)
-			layout.setBase(archive);
+			try {
+				layout.setBase(archive.toUri().toURL());
+			} catch (MalformedURLException e) {
+				throw new IllegalStateException("Failed to set base.", e);
+			}
 	}
 
 	@Override
@@ -118,7 +122,7 @@ public class Layout extends AbstractJsonAddOn {
 	protected void construct(JsonObject addOnJson) {
 		/* Layout */
 		JsonObject sequenceJson = addOnJson.get("layout").getAsJsonObject();
-		layout = new DeviceLayout(archive, sequenceJson);
+		layout = new DeviceLayout(null, sequenceJson);
 		if (layout.getName() == null)
 			layout.setName(getName());
 	}

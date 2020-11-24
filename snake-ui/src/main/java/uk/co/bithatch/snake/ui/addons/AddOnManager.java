@@ -150,7 +150,7 @@ public class AddOnManager {
 					Layout addOn = new Layout(layoutFile.toPath().resolve(layoutFile.getName() + ".json"), context);
 					addOns.put(new AddOnKey(addOn.getClass(), addOn.getId()), addOn);
 					DeviceLayout layout = addOn.getLayout();
-					layout.setBase(addOn.getArchive());
+					layout.setBase(addOn.getArchive().toUri().toURL());
 					layout.setReadOnly(true);
 					context.getLayouts().addLayout(layout);
 				} catch (Exception e) {
@@ -608,7 +608,7 @@ public class AddOnManager {
 				((Script) addOn).install();
 			} else if (addOn instanceof Layout) {
 				DeviceLayout layout = ((Layout) addOn).getLayout();
-				layout.setBase(addOn.getArchive());
+				layout.setBase(addOn.getArchive().toUri().toURL());
 				layout.setReadOnly(true);
 				context.getLayouts().addLayout(layout);
 			}

@@ -1,7 +1,5 @@
 package uk.co.bithatch.snake.lib.layouts;
 
-import uk.co.bithatch.snake.lib.Region;
-
 public abstract class AbstractMatrixIO extends AbstractIO implements MatrixIO {
 	private int matrixX;
 	private int matrixY;

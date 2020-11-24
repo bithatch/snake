@@ -45,6 +45,12 @@
 			<groupId>com.dorkbox</groupId>
 			<artifactId>SystemTray</artifactId>
 			<version>3.17</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.sshtools</groupId>

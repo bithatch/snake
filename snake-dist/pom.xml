@@ -115,6 +115,7 @@
 										<systemModule>java.xml</systemModule>
 										<systemModule>jdk.unsupported</systemModule>
 										<systemModule>jdk.crypto.ec</systemModule>
+										<systemModule>jdk.zipfs</systemModule>
 
 										<systemModule>java.instrument</systemModule>
 										<systemModule>java.management</systemModule>
@@ -139,6 +140,8 @@
 									</systemModules>
 									<classpathJars>
 										<classpathJar>asm</classpathJar>
+										<classpathJar>slf4j-api</classpathJar>
+										<classpathJar>slf4j-simple</classpathJar>
 									</classpathJars>
 									<automaticModules>
 										<automaticModule>dbus-java</automaticModule>

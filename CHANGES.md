@@ -6,12 +6,14 @@
    have their own layout. The layouts are then used in all other aspects of Snake, such
    as the main UI, the custom effects editor and the macro user interface.
    
- * New main user interface making use of layouts (if your device has one)
+ * New main user interface making use of layouts (if your device has one). 
       
- * Matrix effect can now use custom effects created using a new timeline editor user interface. 
-   Effects are made up of key frames, with lighting interpolated between.
+ * You can now create custom effects on devices that have the Matrix capability. Animations
+   are based around the concept of Key Frames. All lights in the matrix interpolate between
+   the current key frame and the next (using a configurable algorithm). The effects can
+   be exported the be shared with others as an add-on.
    
- * Nicer effects
+ * Smoother UI effects.
  
  * Lots of internal refactoring. 
 

@@ -3,7 +3,6 @@ package uk.co.bithatch.snake.lib.layouts;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -192,17 +191,14 @@ public class DeviceView implements IOListener {
 			listeners.get(i).elementAdded(this, element);
 	}
 
-	public String getResolvedImageUri(Path base) {
+	public String getResolvedImageUri(URL base) {
 		if (imageUri == null)
 			return null;
 		try {
 			new URL(imageUri);
 		} catch (MalformedURLException murle) {
 			if (base != null) {
-				try {
-					return base.resolve(imageUri).toUri().toURL().toExternalForm();
-				} catch (MalformedURLException e) {
-				}
+				return base.toExternalForm() + "/" + imageUri;
 			} else {
 				if (imageUri.startsWith("/")) {
 					return new File(imageUri).toURI().toString();

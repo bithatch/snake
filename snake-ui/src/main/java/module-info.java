@@ -3,6 +3,7 @@ module uk.co.bithatch.snake.ui {
     requires transitive javafx.controls;
     requires transitive javafx.graphics;
 	requires transitive javafx.fxml;
+	requires jdk.zipfs;
 	requires transitive uk.co.bithatch.snake.lib;
 	requires transitive javafx.web;
 	requires com.goxr3plus.fxborderlessscene;

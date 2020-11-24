@@ -1,6 +1,6 @@
 package uk.co.bithatch.snake.lib.layouts;
 
-import java.nio.file.Path;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -39,7 +39,7 @@ public class DeviceLayout implements uk.co.bithatch.snake.lib.layouts.DeviceView
 	private int matrixWidth;
 	private int matrixHeight;
 	private boolean readOnly;
-	private Path base;
+	private URL base;
 	private DeviceType deviceType = DeviceType.UNRECOGNISED;
 	private List<Listener> listeners = new ArrayList<>();
 
@@ -55,7 +55,7 @@ public class DeviceLayout implements uk.co.bithatch.snake.lib.layouts.DeviceView
 		}
 	}
 
-	public DeviceLayout(Path archive, JsonObject sequenceJson) {
+	public DeviceLayout(URL archive, JsonObject sequenceJson) {
 		setBase(archive);
 		setName(sequenceJson.has("name") ? sequenceJson.get("name").getAsString() : null);
 		setMatrixHeight(sequenceJson.get("matrixHeight").getAsInt());
@@ -200,12 +200,12 @@ public class DeviceLayout implements uk.co.bithatch.snake.lib.layouts.DeviceView
 		}
 	}
 
-	public void setBase(Path base) {
+	public void setBase(URL base) {
 		this.base = base;
 		fireChanged(null);
 	}
 
-	public Path getBase() {
+	public URL getBase() {
 		return base;
 	}
 

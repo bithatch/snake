@@ -2,7 +2,6 @@ package uk.co.bithatch.snake.lib.layouts;
 
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -70,14 +69,7 @@ public class DeviceLayouts implements uk.co.bithatch.snake.lib.layouts.DeviceLay
 	}
 
 	public boolean hasOfficialLayout(Device device) {
-
-		/* Now look for a default resource with the device name */
-		URL res = getClass().getResource(device.getName() + ".json");
-		if (res == null) {
-			return false;
-		} else {
-			return true;
-		}
+		return getLayoutResource(device.getName() + ".json") != null;
 	}
 
 	public boolean hasLayout(Device device) {
@@ -100,7 +92,7 @@ public class DeviceLayouts implements uk.co.bithatch.snake.lib.layouts.DeviceLay
 			return layout;
 
 		/* Now look for a default resource with the device name */
-		URL res = getClass().getResource(device.getName() + ".json");
+		URL res = getLayoutResource(device.getName() + ".json");
 		if (res == null) {
 			/* That doesn't exist. Is there a matrix layout we can convert? */
 			if (device.getCapabilities().contains(Capability.KEYBOARD_LAYOUT)) {
@@ -116,7 +108,7 @@ public class DeviceLayouts implements uk.co.bithatch.snake.lib.layouts.DeviceLay
 		} else {
 			try (InputStream in = res.openStream()) {
 				JsonElement json = Json.toJson(in);
-				DeviceLayout builtInlayout = new DeviceLayout(Path.of(res.toURI()), json.getAsJsonObject());
+				DeviceLayout builtInlayout = new DeviceLayout(res, json.getAsJsonObject());
 				builtInlayout.setReadOnly(true);
 				addLayout(builtInlayout);
 				return builtInlayout;
@@ -217,5 +209,16 @@ public class DeviceLayouts implements uk.co.bithatch.snake.lib.layouts.DeviceLay
 	public void viewElementChanged(DeviceLayout layout, DeviceView view, IO element) {
 		for (int i = listeners.size() - 1; i >= 0; i--)
 			listeners.get(i).viewElementChanged(layout, view, element);
+	}
+
+	protected URL getLayoutResource(String name) {
+		URL res = getClass().getResource(name);
+		if (res == null) {
+			res = ClassLoader.getSystemClassLoader()
+					.getResource(DeviceLayouts.class.getPackageName().replace('.', '/') + "/" + name);
+			return res;
+		} else {
+			return res;
+		}
 	}
 }
