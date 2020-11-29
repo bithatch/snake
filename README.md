@@ -38,7 +38,7 @@ wget -O snake-installer-amd64.sh \
 
 #### From Your Desktop
 
- *  Download [snake-amd64-installer.sh](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT/snake-installer-amd64.sh).
+ *  Download [snake-amd64-installer.sh](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT-24/snake-installer-amd64.sh).
  *  Add Execute permission to the downloaded *snake-installer.sh* in your file manager.
  *  Use the Open action in your file manager to start the installer.
 
@@ -58,32 +58,21 @@ bin/snake &
 
 #### From Your Desktop
 
- *  Download [snake-amd64.tar.gz](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT/snake-amd64.tar.gz)
+ *  Download [snake-amd64.tar.gz](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT-24/snake-amd64.tar.gz)
  *  Use the Open action in your file manager to locate and start `bin/snake` in the extracted folder.
  
 ### No-Runtime Packages
 
 The above packages all include a stripped down amd64 Java runtime so you do not need to install your own. If you  have another architecture such as X86 or Arm, or just want a smaller download, you can use your own runtime. It just needs to be at least [Java 15](https://adoptopenjdk.net/). 
 
- * [Installer](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT/snake-installer-noruntime.sh)
- * [Tar Archive](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT/snake-noruntime.tar.gz)
+ * [Installer](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT-24/snake-installer-noruntime.sh)
+ * [Tar Archive](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT-24/snake-noruntime.tar.gz)
  
 All these packages include the `bin/snake` launcher script. You may need to edit this if you want to use a runtime other than the system default.
  
 ### OS Packages
 
-**NOTE: These experimental packages are not recommended currently, there are known issues**
-
-There are many packaging formats for Linux, so I will only be providing a few common ones.
-
- * [amd64 DEB package](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT/snake-amd64.deb)
- * [amd64 RPM package](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT/snake-amd64.rpm)
- * [Generic No Runtime DEB package](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT/snake-noruntime.deb)
- * [Generic No Runtime RPM package](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT/snake-noruntime.noarch.rpm)
- 
-Install according to your distributions instructions. Usually it should just be a case of clicking on the downloaded file. 
-
-** I do not currently provide repositories for these OS specific packages, but they will mostly auto update in the same way as other packages.**~
+Not currently available.
 
 ## Updating
 
