@@ -104,7 +104,6 @@
                               <Label styleClass="subtitle" text="%macroKeySubtitle" />
                               <ComboBox fx:id="macroKey" prefWidth="150.0" />
                               <Hyperlink onAction="#evtAddMacro" text="%addMacro" />
-                              <Hyperlink fx:id="recordMacro" onAction="#evtRecordMacro" text="%recordMacro" />
                            </children>
                            <styleClass>
                               <String fx:value="tools" />

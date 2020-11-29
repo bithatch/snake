@@ -10,12 +10,13 @@ import java.util.concurrent.TimeUnit;
 import uk.co.bithatch.snake.lib.Colors;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.Lit;
-import uk.co.bithatch.snake.lib.Sequence;
+import uk.co.bithatch.snake.lib.effects.Effect;
 import uk.co.bithatch.snake.lib.effects.Matrix;
 import uk.co.bithatch.snake.lib.layouts.Cell;
-import uk.co.bithatch.snake.ui.CustomOptions;
+import uk.co.bithatch.snake.ui.AbstractEffectController;
 
-public class BlinkEffectHandler extends AbstractEffectHandler<Sequence, CustomOptions> {
+public class BlinkEffectHandler
+		extends AbstractEffectHandler<Matrix, AbstractEffectController<Matrix, BlinkEffectHandler>> {
 
 	private ScheduledFuture<?> task;
 	private boolean on;
@@ -48,12 +49,13 @@ public class BlinkEffectHandler extends AbstractEffectHandler<Sequence, CustomOp
 	}
 
 	@Override
-	protected void onActivate(Lit component) {
+	protected Matrix onActivate(Lit component) {
 		effect = component.createEffect(Matrix.class);
 		int[] dw = Lit.getDevice(component).getMatrixSize();
 		effect.setCells(new int[dw[0]][dw[1]][]);
 		on = true;
 		reset(component);
+		return effect;
 	}
 
 	protected synchronized void reset(Lit component) {
@@ -66,7 +68,7 @@ public class BlinkEffectHandler extends AbstractEffectHandler<Sequence, CustomOp
 	}
 
 	@Override
-	public Class<CustomOptions> getOptionsController() {
+	public Class<AbstractEffectController<Matrix, BlinkEffectHandler>> getOptionsController() {
 		throw new UnsupportedOperationException();
 	}
 
@@ -86,7 +88,8 @@ public class BlinkEffectHandler extends AbstractEffectHandler<Sequence, CustomOp
 	}
 
 	@Override
-	protected void onStore(Lit component, CustomOptions controller) throws Exception {
+	protected void onStore(Lit component, AbstractEffectController<Matrix, BlinkEffectHandler> controller)
+			throws Exception {
 	}
 
 	void frame(Lit component) {
@@ -130,5 +133,10 @@ public class BlinkEffectHandler extends AbstractEffectHandler<Sequence, CustomOp
 		effect.clear();
 		highlights.addAll(Arrays.asList(cells));
 		reset(component);
+	}
+
+	@Override
+	public Class<? extends Effect> getBackendEffectClass() {
+		return Matrix.class;
 	}
 }

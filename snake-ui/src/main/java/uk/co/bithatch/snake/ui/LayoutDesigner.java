@@ -11,13 +11,19 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.Set;
 
+import org.controlsfx.control.SearchableComboBox;
+import org.controlsfx.control.ToggleSwitch;
+
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Slider;
@@ -29,14 +35,21 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.util.Callback;
 import javafx.util.Duration;
 import uk.co.bithatch.snake.lib.BrandingImage;
 import uk.co.bithatch.snake.lib.Capability;
+import uk.co.bithatch.snake.lib.Device;
+import uk.co.bithatch.snake.lib.InputEventCode;
 import uk.co.bithatch.snake.lib.Lit;
 import uk.co.bithatch.snake.lib.Region;
+import uk.co.bithatch.snake.lib.effects.Off;
+import uk.co.bithatch.snake.lib.layouts.Accessory;
+import uk.co.bithatch.snake.lib.layouts.Accessory.AccessoryType;
 import uk.co.bithatch.snake.lib.layouts.Area;
 import uk.co.bithatch.snake.lib.layouts.Cell;
 import uk.co.bithatch.snake.lib.layouts.ComponentType;
@@ -51,7 +64,6 @@ import uk.co.bithatch.snake.lib.layouts.MatrixIO;
 import uk.co.bithatch.snake.lib.layouts.RegionIO;
 import uk.co.bithatch.snake.lib.layouts.ViewPosition;
 import uk.co.bithatch.snake.ui.addons.Layout;
-import uk.co.bithatch.snake.ui.designer.LayoutEditor;
 import uk.co.bithatch.snake.ui.designer.TabbedViewer;
 import uk.co.bithatch.snake.ui.designer.Viewer.ViewerListener;
 import uk.co.bithatch.snake.ui.designer.ViewerView;
@@ -78,11 +90,9 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 	@FXML
 	private Hyperlink browseImage;
 	@FXML
-	private Label componentType;
-	@FXML
 	private CheckBox desaturate;
 	@FXML
-	private CheckBox enabled;
+	private ToggleSwitch enabled;
 	@FXML
 	private Button export;
 	@FXML
@@ -96,21 +106,35 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 	@FXML
 	private TextArea label;
 	@FXML
-	private ComboBox<Integer> matrixX;
+	private Spinner<Integer> matrixX;
 	@FXML
 	private Label matrixXLabel;
 	@FXML
-	private ComboBox<Integer> matrixY;
+	private Spinner<Integer> matrixY;
 	@FXML
 	private Label matrixYLabel;
+	@FXML
+	private Label labelLabel;
 	@FXML
 	private Slider opacity;
 	@FXML
 	private ComboBox<ViewPosition> position;
 	@FXML
+	private ComboBox<AccessoryType> accessory;
+	@FXML
 	private Label positionLabel;
 	@FXML
 	private Label regionLabel;
+	@FXML
+	private Label keyMappingLabel;
+	@FXML
+	private Label legacyKeyMappingLabel;
+	@FXML
+	private Label accessoryLabel;
+	@FXML
+	private Label matrixLabel;
+	@FXML
+	private Label noSelection;
 	@FXML
 	private ComboBox<Region.Name> region;
 	@FXML
@@ -130,6 +154,10 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 	private Spinner<Integer> width;
 	@FXML
 	private Label widthLabel;
+	@FXML
+	private SearchableComboBox<InputEventCode> keyMapping;
+	@FXML
+	private SearchableComboBox<uk.co.bithatch.snake.lib.Key> legacyKeyMapping;
 
 	private DeviceLayout layout;
 	private boolean adjusting;
@@ -155,6 +183,7 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 	@Override
 	public void layoutChanged(DeviceLayout layout) {
 		Platform.runLater(() -> {
+			configureForView();
 			deviceViewer.refresh();
 		});
 	}
@@ -180,7 +209,7 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 	@Override
 	public void viewChanged(DeviceLayout layout, DeviceView view) {
 		if (Platform.isFxApplicationThread())
-			configureForView(deviceViewer.getSelectedView());
+			configureForView();
 		else
 			Platform.runLater(() -> viewAdded(layout, view));
 	}
@@ -206,56 +235,93 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 	@Override
 	protected void onSetDeviceDetails() throws Exception {
 		JavaFX.bindManagedToVisible(enabled, width, widthLabel, toolBar, sideBar, removeElement, matrixX, matrixY,
-				matrixXLabel, matrixYLabel, position, positionLabel, region, regionLabel);
-		sideBar.visibleProperty().bind(toolBar.visibleProperty());
+				matrixXLabel, matrixYLabel, position, positionLabel, region, regionLabel, legacyKeyMapping, legacyKeyMappingLabel, keyMapping, keyMappingLabel,
+				accessory, accessoryLabel, labelLabel, label, matrixLabel, noSelection);
+
 		matrixXLabel.labelForProperty().set(matrixX);
 		matrixYLabel.labelForProperty().set(matrixY);
-		matrixXLabel.labelForProperty().set(matrixX);
+		positionLabel.labelForProperty().set(position);
+
+		sideBar.visibleProperty().bind(toolBar.visibleProperty());
 		matrixXLabel.visibleProperty().bind(matrixX.visibleProperty());
 		matrixYLabel.visibleProperty().bind(matrixY.visibleProperty());
 		widthLabel.visibleProperty().bind(width.visibleProperty());
-		positionLabel.labelForProperty().set(position);
 		positionLabel.visibleProperty().bind(position.visibleProperty());
 		regionLabel.visibleProperty().bind(region.visibleProperty());
+		accessoryLabel.visibleProperty().bind(accessory.visibleProperty());
+		labelLabel.visibleProperty().bind(label.visibleProperty());
+		keyMappingLabel.visibleProperty().bind(keyMapping.visibleProperty());
+		legacyKeyMappingLabel.visibleProperty().bind(legacyKeyMapping.visibleProperty());
+		matrixLabel.visibleProperty().bind(Bindings.or(matrixX.visibleProperty(), Bindings
+				.or(Bindings.or(keyMapping.visibleProperty(), matrixY.visibleProperty()), matrixY.visibleProperty())));
 
-		deviceViewer = new TabbedViewer(context, getDevice());
+		Callback<ListView<Region.Name>, ListCell<Region.Name>> factory = new Callback<ListView<Region.Name>, ListCell<Region.Name>>() {
+
+			@Override
+			public ListCell<Region.Name> call(ListView<Region.Name> l) {
+				return new ListCell<Region.Name>() {
+
+					@Override
+					protected void updateItem(Region.Name item, boolean empty) {
+						super.updateItem(item, empty);
+						String imageUrl;
+						if (item == null || empty) {
+							imageUrl = context.getConfiguration().themeProperty().getValue()
+									.getEffectImage(24, Off.class).toExternalForm();
+							setText(bundle.getString("noRegion"));
+						} else {
+							imageUrl = context.getConfiguration().themeProperty().getValue().getRegionImage(24, item)
+									.toExternalForm();
+							setText(bundle.getString("region." + item.name()));
+						}
+						ImageView iv = new ImageView(imageUrl);
+						iv.setFitHeight(22);
+						iv.setFitWidth(22);
+						iv.setSmooth(true);
+						iv.setPreserveRatio(true);
+						iv.getStyleClass().add("cell");
+						setGraphic(iv);
+					}
+				};
+			}
+		};
+		region.setCellFactory(factory);
+		region.setButtonCell(factory.call(null));
+
+		Device device = getDevice();
+		deviceViewer = new TabbedViewer(context, device);
 		stack.getChildren().add(deviceViewer);
 		DeviceLayoutManager layouts = context.getLayouts();
 		deviceViewer.setSelectionMode(SelectionMode.MULTIPLE);
-		boolean hasLayout = layouts.hasLayout(getDevice());
+		boolean hasLayout = layouts.hasLayout(device);
 		if (!hasLayout) {
-			layout = new DeviceLayout(getDevice());
+			layout = new DeviceLayout(device);
 			DeviceView view = new DeviceView();
 			view.setPosition(ViewPosition.TOP);
 			layout.addView(view);
 			layouts.addLayout(layout);
 		} else {
-			layout = layouts.getLayout(getDevice());
+			layout = layouts.getLayout(device);
 		}
 
 		if (layout.getViews().get(ViewPosition.MATRIX) == null
-				&& getDevice().getCapabilities().contains(Capability.MATRIX)) {
-			layout.addView(DeviceLayouts.createMatrixView(getDevice()));
+				&& device.getCapabilities().contains(Capability.MATRIX)) {
+			layout.addView(DeviceLayouts.createMatrixView(device));
 		}
 
 		width.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 1024, 0, 10));
 		deviceViewer.setLayout(layout);
-		configureForView(deviceViewer.getSelectedView());
+		configureForView();
 		updateTemplateStatus();
 
-		region.itemsProperty().get().addAll(getDevice().getRegionNames());
+		accessory.getItems().addAll(Accessory.AccessoryType.values());
+
+		keyMapping.getItems().add(null);
+		keyMapping.getItems().addAll(device.getSupportedInputEvents());
+		legacyKeyMapping.getItems().add(null);
+		legacyKeyMapping.getItems().addAll(device.getSupportedLegacyKeys());
 
 		/* Setup listeners */
-		enabled.selectedProperty().addListener((e, o, n) -> {
-			if (!adjusting) {
-				((Key) deviceViewer.getSelectedElement()).setDisabled(!n);
-			}
-		});
-		width.valueProperty().addListener((e, o, n) -> {
-			if (!adjusting) {
-				((Key) deviceViewer.getSelectedElement()).setWidth(n);
-			}
-		});
 		imageSource.selectedToggleProperty().addListener((e, o, n) -> {
 			if (!adjusting)
 				backgroundChangeTimer.reset();
@@ -285,7 +351,8 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 		enabled.selectedProperty().addListener((e, o, n) -> {
 			if (!adjusting) {
 				for (IO el : deviceViewer.getSelectedElements()) {
-					((Key) el).setDisabled(!n);
+					if (el instanceof MatrixCell)
+						((MatrixCell) el).setDisabled(!n);
 				}
 			}
 		});
@@ -295,58 +362,104 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 					width.getValueFactory().setValue(178);
 				} else {
 					for (IO el : deviceViewer.getSelectedElements()) {
-						((Key) el).setWidth(n);
+						if (el instanceof MatrixCell)
+							((MatrixCell) el).setWidth(n);
 					}
 				}
 			}
 		});
-		label.textProperty().addListener((e) -> {
+		label.textProperty().addListener((e, o, n) -> {
 			if (!adjusting) {
 				IO el = deviceViewer.getSelectedElement();
 				if (el != null) {
-					el.setLabel(label.textProperty().get());
-				}
-
-				/*
-				 * Check the label for all elements on other views that are at the same matrix
-				 * position
-				 */
-				if (el instanceof MatrixIO) {
-					visitRelatedCells((MatrixIO) el, (other) -> other.setLabel(el.getLabel()));
+					el.setLabel(n.equals("") ? null : n);
 				}
 			}
 		});
-		matrixX.getSelectionModel().selectedItemProperty().addListener((e, oldVal, newVal) -> {
-			if (!adjusting)
-				((MatrixIO) deviceViewer.getSelectedElement())
-						.setMatrixX(matrixX.getSelectionModel().getSelectedItem());
+		matrixX.valueProperty().addListener((e, oldVal, newVal) -> {
+			if (!adjusting) {
+				List<IO> selectedElements = deviceViewer.getSelectedElements();
+				if (!selectedElements.isEmpty()) {
+					Integer mx = matrixX.getValue();
+					for (IO el : selectedElements) {
+						if (el instanceof MatrixIO) {
+							MatrixIO m = (MatrixIO) el;
+							m.setMatrixX(mx);
+							MatrixCell cell = (MatrixCell) layout.getViews().get(ViewPosition.MATRIX)
+									.getElement(ComponentType.MATRIX_CELL, m.getMatrixX(), m.getMatrixY());
+							if (cell != null) {
+								cell.setMatrixX(mx);
+							}
+						}
+					}
+				}
+			}
 		});
-		matrixY.getSelectionModel().selectedItemProperty().addListener((e, oldVal, newVal) -> {
-			if (!adjusting)
-				((MatrixIO) deviceViewer.getSelectedElement())
-						.setMatrixY(matrixY.getSelectionModel().getSelectedItem());
+		matrixY.valueProperty().addListener((e, oldVal, newVal) -> {
+			if (!adjusting) {
+				List<IO> selectedElements = deviceViewer.getSelectedElements();
+				if (!selectedElements.isEmpty()) {
+					Integer my = matrixY.getValue();
+					for (IO el : selectedElements) {
+						if (el instanceof MatrixIO) {
+							MatrixIO m = (MatrixIO) el;
+							m.setMatrixY(my);
+							MatrixCell cell = (MatrixCell) layout.getViews().get(ViewPosition.MATRIX)
+									.getElement(ComponentType.MATRIX_CELL, m.getMatrixX(), m.getMatrixY());
+							if (cell != null) {
+								cell.setMatrixY(my);
+							}
+						}
+					}
+				}
+			}
 		});
-		deviceViewer.getSelectionModel().selectedIndexProperty().addListener((c, o, n) -> updateAvailability());
+		keyMapping.getSelectionModel().selectedItemProperty().addListener((e, oldVal, newVal) -> {
+			if (!adjusting) {
+				IO selectedElement = deviceViewer.getSelectedElement();
+				if (selectedElement != null) {
+					if (selectedElement instanceof Key) {
+						Key m = (Key) selectedElement;
+						m.setEventCode(newVal);
+					}
+				}
+			}
+		});
+		legacyKeyMapping.getSelectionModel().selectedItemProperty().addListener((e, oldVal, newVal) -> {
+			if (!adjusting) {
+				IO selectedElement = deviceViewer.getSelectedElement();
+				if (selectedElement != null) {
+					if (selectedElement instanceof Key) {
+						Key m = (Key) selectedElement;
+						m.setLegacyKey(newVal);
+					}
+				}
+			}
+		});
+		deviceViewer.getSelectionModel().selectedIndexProperty().addListener((c, o, n) -> {
+			configureForView();
+			updateAvailability();
+		});
 		deviceViewer.getKeySelectionModel().selectedIndexProperty().addListener((e, oldVal, newVal) -> {
-			configureForView(deviceViewer.getSelectedView());
+			configureForView();
 		});
 		region.getSelectionModel().selectedItemProperty().addListener((e, oldVal, newVal) -> {
 			if (!adjusting) {
 				List<IO> selectedElements = deviceViewer.getSelectedElements();
 				if (!selectedElements.isEmpty()) {
 					IO selectedElement = deviceViewer.getSelectedElement();
-					if (selectedElements.size() == 1 && selectedElement instanceof Area) {
-						/*
-						 * If we are currently on the AREA view, and the current label appears to be the
-						 * old region name, the update the label to the new region name
-						 */
-						String oldLabel = LayoutEditor.getBestRegionName(deviceViewer.getSelectedView(), oldVal);
-						if (Objects.equals(oldLabel, selectedElement.getLabel())) {
-							String newLabel = LayoutEditor.getBestRegionName(deviceViewer.getSelectedView(), newVal);
-							label.textProperty().set(newLabel);
-							selectedElement.setLabel(newLabel);
-						}
-					}
+//					if (selectedElements.size() == 1 && selectedElement instanceof Area) {
+//						/*
+//						 * If we are currently on the AREA view, and the current label appears to be the
+//						 * old region name, the update the label to the new region name
+//						 */
+//						String oldLabel = LayoutEditor.getBestRegionName(deviceViewer.getSelectedView(), oldVal);
+//						if (Objects.equals(oldLabel, selectedElement.getLabel())) {
+//							String newLabel = LayoutEditor.getBestRegionName(deviceViewer.getSelectedView(), newVal);
+//							label.textProperty().set(newLabel);
+//							selectedElement.setLabel(newLabel);
+//						}
+//					}
 
 					for (IO el : selectedElements) {
 						if (el instanceof RegionIO) {
@@ -358,11 +471,15 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 							 * that matrix cell element it is associated with.
 							 */
 							MatrixIO m = (MatrixIO) el;
-							MatrixCell cell = (MatrixCell) layout.getViews().get(ViewPosition.MATRIX)
-									.getElement(ComponentType.MATRIX_CELL, m.getMatrixX(), m.getMatrixY());
+							MatrixCell cell = m.isMatrixLED()
+									? (MatrixCell) layout.getViews().get(ViewPosition.MATRIX)
+											.getElement(ComponentType.MATRIX_CELL, m.getMatrixX(), m.getMatrixY())
+									: null;
 							if (cell != null) {
 								cell.setRegion(newVal);
-							}
+							} 
+							if(newVal == null)
+								m.setMatrixXY(null);
 						}
 					}
 				}
@@ -377,8 +494,8 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 		 * shutdown the current effect. We then highlight individual LED lights as they
 		 * are selected
 		 */
-		if (getDevice().getCapabilities().contains(Capability.MATRIX)) {
-			acq = context.getEffectManager().acquire(getDevice());
+		if (device.getCapabilities().contains(Capability.MATRIX)) {
+			acq = context.getEffectManager().acquire(device);
 			blink = new BlinkEffectHandler() {
 				@Override
 				public void update(Lit component) {
@@ -386,8 +503,8 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 					deviceViewer.updateFromMatrix(getEffect().getCells());
 				}
 			};
-			blink.open(context, getDevice());
-			acq.activate(getDevice(), blink);
+			blink.open(context, device);
+			acq.activate(device, blink);
 		}
 	}
 
@@ -451,23 +568,21 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 		deviceViewer.refresh();
 	}
 
-	void configureForView(DeviceView view) {
+	void configureForView() {
 		adjusting = true;
+		DeviceView view = deviceViewer.getSelectedView();
 		try {
-			matrixX.itemsProperty().get().clear();
-			matrixY.itemsProperty().get().clear();
-			position.itemsProperty().get().clear();
+			position.getItems().clear();
 			if (view != null) {
 
 				DeviceLayout deviceLayout = view.getLayout();
-				for (int i = 0; i < deviceLayout.getMatrixHeight(); i++)
-					matrixY.itemsProperty().get().add(i);
-
-				for (int i = 0; i < deviceLayout.getMatrixWidth(); i++)
-					matrixX.itemsProperty().get().add(i);
+				matrixX.setValueFactory(
+						new SpinnerValueFactory.IntegerSpinnerValueFactory(0, deviceLayout.getMatrixWidth(), 1, 1));
+				matrixY.setValueFactory(
+						new SpinnerValueFactory.IntegerSpinnerValueFactory(0, deviceLayout.getMatrixHeight(), 1, 1));
 
 				ViewPosition selectedPosition = view.getPosition();
-				position.itemsProperty().get().add(selectedPosition);
+				position.getItems().add(selectedPosition);
 
 //				XX
 //				XX Here! Got a progblem when removing a view.addElement(The POSITION list doesnt change);
@@ -475,7 +590,7 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 				for (ViewPosition viewPosition : ViewPosition.values()) {
 					if (viewPosition != ViewPosition.MATRIX && viewPosition != selectedPosition
 							&& !deviceLayout.getViews().containsKey(viewPosition)) {
-						position.itemsProperty().get().add(viewPosition);
+						position.getItems().add(viewPosition);
 					}
 				}
 
@@ -483,34 +598,68 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 				imageScale.valueProperty().set(view.getImageScale() * 100.0);
 				opacity.valueProperty().set(view.getImageOpacity() * 100.0);
 				desaturate.selectedProperty().set(view.isDesaturateImage());
-
 				List<IO> elements = deviceViewer.getSelectedElements();
 				boolean viewingMatrix = deviceViewer.getSelectedView().getPosition().equals(ViewPosition.MATRIX);
 
-				int areMatrixIO = 0;
-				for (IO io : elements) {
-					if (io instanceof MatrixIO)
-						areMatrixIO++;
+				region.getItems().clear();
+				region.getItems().addAll(getDevice().getRegionNames());
+				Region.Name selectedRegion = null;
+
+				int cells = 0;
+				int areas = 0;
+				int matrixEls = 0;
+				int noLighting = 0;
+				int keys = 0;
+				int accessories = 0;
+				for (IO el : elements) {
+					if (el instanceof MatrixIO) {
+						matrixEls++;
+						if (!((MatrixIO) el).isMatrixLED())
+							noLighting++;
+						else {
+							MatrixCell cell = ((MatrixIO) el).getMatrixCell();
+							if (cell != null)
+								selectedRegion = cell.getRegion();
+						}
+
+						region.getSelectionModel().select(selectedRegion);
+					}
+					if (el instanceof MatrixCell)
+						cells++;
+					if (el instanceof Area)
+						areas++;
+					if (el instanceof Key)
+						keys++;
+					if (el instanceof Accessory) {
+						noLighting++;
+						accessories++;
+					}
+					if (el instanceof RegionIO && selectedRegion == null)
+						selectedRegion = ((RegionIO) el).getRegion();
 				}
 
-				matrixX.setVisible(
-						matrixX.itemsProperty().get().size() > 1 && areMatrixIO == elements.size() && areMatrixIO > 0);
-				matrixY.setVisible(
-						matrixY.itemsProperty().get().size() > 1 && areMatrixIO == elements.size() && areMatrixIO > 0);
-				enabled.setVisible(viewingMatrix);
-				width.setVisible(viewingMatrix);
+				matrixX.setVisible(noLighting ==0 && deviceLayout.getMatrixWidth() > 1 && matrixEls == elements.size() && matrixEls > 0);
+				matrixY.setVisible(noLighting ==0 && deviceLayout.getMatrixHeight() > 1 && matrixEls == elements.size() && matrixEls > 0);
 				position.setVisible(!viewingMatrix);
+				noSelection.textProperty().set(bundle.getString(viewingMatrix ? "noMatrixSelection" : "noSelection"));
+
+				if (areas > 0 || keys > 0) {
+					region.getItems().add(null);
+				}
 
 				if (elements.size() == 1) {
 					IO element = elements.get(0);
+
 					if (!Objects.equals(element.getLabel(), label.textProperty().get()))
 						label.textProperty().set(element.getLabel());
-					componentType.textProperty()
-							.set(bundle.getString("componentType." + ComponentType.fromClass(element.getClass())));
 					region.setDisable(false);
-					region.setVisible(
-							element instanceof Area || getDevice().getCapabilities().contains(Capability.MATRIX));
+					region.setVisible(accessories == 0
+							&& (areas > 0 || getDevice().getCapabilities().contains(Capability.MATRIX)));
 					removeElement.setVisible(false);
+
+					enabled.setVisible(viewingMatrix);
+					width.setVisible(viewingMatrix);
+					label.promptTextProperty().set(element.getDefaultLabel());
 
 					/*
 					 * When dealing with an area or a matrix cell, the region is as specified in the
@@ -518,64 +667,97 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 					 */
 					if (element instanceof RegionIO) {
 						RegionIO r = (RegionIO) element;
-						region.getSelectionModel().select(r.getRegion());
+						accessory.setVisible(false);
+						accessory.setDisable(true);
+					} else {
+						/*
+						 * Otherwise it is either the override region (if there is one), or the region
+						 * the associated matix cell is in.
+						 */
+						if (element instanceof MatrixIO) {
+							accessory.setVisible(false);
+							accessory.setDisable(true);
+							MatrixCell cell = ((MatrixIO) element).getMatrixCell();
+							if (cell != null)
+								selectedRegion = cell.getRegion();
+						} else if (element instanceof Accessory) {
+							accessory.setVisible(true);
+							accessory.setDisable(false);
+						}
+					}
+
+					if (element instanceof Key) {
+						keyMapping.getSelectionModel().select(((Key) element).getEventCode());
+						legacyKeyMapping.getSelectionModel().select(((Key) element).getLegacyKey());
+					}
+					else {
+						keyMapping.getSelectionModel().clearSelection();
+						legacyKeyMapping.getSelectionModel().clearSelection();
 					}
 
 					if (element instanceof MatrixIO && getDevice().getCapabilities().contains(Capability.MATRIX)) {
 						MatrixIO m = (MatrixIO) element;
-
-						/*
-						 * For other types, the region is the region of the matrix cell the element is
-						 * associated with
-						 */
-						MatrixCell cell = (MatrixCell) deviceLayout.getViews().get(ViewPosition.MATRIX)
-								.getElement(ComponentType.MATRIX_CELL, m.getMatrixX(), m.getMatrixY());
-						if (cell != null) {
-							region.getSelectionModel().select(cell.getRegion());
-						}
-
-						matrixX.setDisable(viewingMatrix);
-						matrixY.setDisable(viewingMatrix);
-						matrixX.selectionModelProperty().get().select(m.getMatrixX());
-						matrixY.selectionModelProperty().get().select(m.getMatrixY());
+						matrixX.setDisable(viewingMatrix || !m.isMatrixLED());
+						matrixY.setDisable(viewingMatrix || !m.isMatrixLED());
+						matrixX.getValueFactory().setValue(m.getMatrixX());
+						matrixY.getValueFactory().setValue(m.getMatrixY());
 						if (blink != null)
 							blink.highlight(getDevice(), m.getMatrixX(), m.getMatrixY());
 					} else {
 						matrixX.setDisable(true);
 						matrixY.setDisable(true);
 					}
-					enabled.selectedProperty().set(!(element instanceof Key) || !((Key) element).isDisabled());
-					width.getValueFactory().setValue(!(element instanceof Key) ? 0 : ((Key) element).getWidth());
+					enabled.selectedProperty()
+							.set(!(element instanceof MatrixCell) || !((MatrixCell) element).isDisabled());
+					width.getValueFactory()
+							.setValue(!(element instanceof MatrixCell) ? 0 : ((MatrixCell) element).getWidth());
 					enabled.setDisable(!viewingMatrix);
 					width.setDisable(!viewingMatrix);
+					keyMapping.setVisible(element instanceof Key);
+					legacyKeyMapping.setVisible(element instanceof Key);
+					label.setVisible(true);
+					noSelection.setVisible(false);
 				} else if (elements.isEmpty()) {
 					if (blink != null)
 						blink.clear(getDevice());
 					matrixX.setDisable(true);
 					matrixY.setDisable(true);
 					region.setDisable(true);
-					region.setVisible(getDevice().getCapabilities().contains(Capability.MATRIX));
+					region.setVisible(false);
+					label.setVisible(false);
 					enabled.setDisable(true);
+					enabled.setVisible(false);
+					label.promptTextProperty().set("");
+					width.setVisible(false);
 					width.setDisable(true);
-					region.setVisible(true);
+					keyMapping.setVisible(false);
+					legacyKeyMapping.setVisible(false);
+					accessory.setVisible(false);
+					accessory.setDisable(true);
+					noSelection.setVisible(true);
 				} else {
-					matrixX.setDisable(true);
-					matrixY.setDisable(true);
+					label.setVisible(true);
 					region.setDisable(false);
-					int keys = 0;
-					int areas = 0;
-					for (IO el : elements) {
-						if (el instanceof Key)
-							keys++;
-						if (el instanceof Area)
-							areas++;
-					}
-					region.setVisible(
-							areas == elements.size() || getDevice().getCapabilities().contains(Capability.MATRIX));
-					enabled.setDisable(keys != elements.size());
-					width.setDisable(keys != elements.size());
+					noSelection.setVisible(false);
+					accessory.setDisable(true);
+
+					boolean noMatrix = matrixEls != elements.size()
+							|| !getDevice().getCapabilities().contains(Capability.MATRIX);
+					matrixX.setDisable(viewingMatrix || noMatrix || noLighting > 0);
+					matrixY.setDisable(viewingMatrix || noMatrix || noLighting > 0);
+					enabled.setVisible(viewingMatrix && cells == elements.size());
+					label.setVisible(false);
+					width.setVisible(viewingMatrix && cells == elements.size());
+					region.setVisible(accessories == 0
+							&& (areas == elements.size() || getDevice().getCapabilities().contains(Capability.MATRIX)));
+					enabled.setDisable(cells != elements.size());
+					width.setDisable(cells != elements.size());
+					keyMapping.setVisible(false);
+					legacyKeyMapping.setVisible(false);
+					accessory.setVisible(false);
 				}
 
+				region.getSelectionModel().select(selectedRegion);
 				label.setDisable(elements.size() != 1);
 				removeElement.setVisible(!elements.isEmpty() && !viewingMatrix);
 
@@ -583,7 +765,7 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 					Set<Cell> highlightCells = new HashSet<>();
 					DeviceView matrixView = deviceLayout.getViews().get(ViewPosition.MATRIX);
 					for (IO element : elements) {
-						if (element instanceof MatrixIO)
+						if (element instanceof MatrixIO && ((MatrixIO)element).isMatrixLED())
 							highlightCells.add(((MatrixIO) element).getMatrixXY());
 						else if (element instanceof Area) {
 							/* Add all of the cells in this area to highlight */
@@ -637,12 +819,12 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 	@FXML
 	void evtExport() {
 		Layout addOn = new Layout(Strings.toId(getDevice().getName()));
-		DeviceLayout sequence = deviceViewer.getLayout();
+		DeviceLayout layout = deviceViewer.getLayout();
 		addOn.setName(getDevice().getName());
 		addOn.setDescription(MessageFormat.format(bundle.getString("addOnTemplate.description"), getDevice().getName(),
 				getDevice().getDriverVersion(), getDevice().getFirmware(), context.getBackend().getName(),
 				context.getBackend().getVersion(), PlatformService.get().getInstalledVersion()));
-		addOn.setLayout(sequence);
+		addOn.setLayout(new DeviceLayout(layout));
 		Export confirm = context.push(Export.class, Direction.FADE);
 		confirm.export(addOn, bundle, "exportLayout", getDevice().getName());
 	}
@@ -739,6 +921,6 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 
 	@Override
 	public void viewerSelected(ViewerView view) {
-		configureForView(view.getView());
+		configureForView();
 	}
 }

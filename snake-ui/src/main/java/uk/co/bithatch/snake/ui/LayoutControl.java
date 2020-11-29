@@ -1,10 +1,12 @@
 package uk.co.bithatch.snake.ui;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -31,6 +33,8 @@ import uk.co.bithatch.snake.lib.KeyFrame;
 import uk.co.bithatch.snake.lib.Lit;
 import uk.co.bithatch.snake.lib.Region;
 import uk.co.bithatch.snake.lib.Sequence;
+import uk.co.bithatch.snake.lib.layouts.Accessory;
+import uk.co.bithatch.snake.lib.layouts.Accessory.AccessoryType;
 import uk.co.bithatch.snake.lib.layouts.Area;
 import uk.co.bithatch.snake.lib.layouts.ComponentType;
 import uk.co.bithatch.snake.lib.layouts.DeviceLayout;
@@ -75,15 +79,20 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 	private SimpleBooleanProperty readOnly = new SimpleBooleanProperty(true);
 	private SimpleBooleanProperty selectableElements = new SimpleBooleanProperty(false);
 	private ObjectProperty<List<ComponentType>> enabledTypes = new SimpleObjectProperty<>(this, "enabledTypes");
-	private Map<Region.Name, RegionControl> regions = new HashMap<>();
+	private Map<Region.Name, Node> regions = new HashMap<>();
 	private AnimPane stack;
 	private CustomEffectHandler currentEffect;
 	private List<DeviceView> views = new ArrayList<>();
+
+	private VBox legacyProfileAccessory;
+
+	private ProfileControl profileAccessory;
 
 	@Override
 	protected void onSetEffectsControlDevice() {
 		enabledTypes.set(new BasicList<>());
 		enabledTypes.get().add(ComponentType.AREA);
+		enabledTypes.get().add(ComponentType.ACCESSORY);
 		stack.setContent(Direction.FADE, createEditor(views.get(0)));
 		layoutContainer.getChildren().add(stack);
 		overallEffect.effect.addListener((e, o, n) -> {
@@ -100,18 +109,53 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 	protected LayoutEditor createEditor(DeviceView view) {
 		LayoutEditor layoutEditor = new LayoutEditor(context);
 		layoutEditor.setShowElementGraphics(false);
+		layoutEditor.setSelectableComponentType(false);
 		layoutEditor.setComponentType(ComponentType.AREA);
 		layoutEditor.setLabelFactory((el) -> {
 			if (el instanceof Area) {
 				Area area = (Area) el;
 				Region.Name regionName = area.getRegion();
 				return regions.get(regionName);
+			} else if (el instanceof Accessory) {
+				Accessory accessory = (Accessory) el;
+				if (accessory.getAccessory() == AccessoryType.PROFILES
+						&& getDevice().getCapabilities().contains(Capability.MACROS)) {
+					if (getDevice().getCapabilities().contains(Capability.MACRO_PROFILES))
+						return createProfileAccessory(accessory);
+					else
+						return createLegacyProfileAccessory(accessory);
+				}
 			}
 			return null;
 		});
 		layoutEditor.open(getDevice(), view, this);
 		return layoutEditor;
 
+	}
+
+	protected Node createProfileAccessory(Accessory accessory) {
+		if (profileAccessory == null) {
+			try {
+				profileAccessory = context.openScene(ProfileControl.class);
+			} catch (IOException e) {
+				throw new IllegalStateException("Failed to load control.", e);
+			}
+			profileAccessory.setDevice(getDevice());
+		}
+		return profileAccessory.getScene().getRoot();
+	}
+
+	protected VBox createLegacyProfileAccessory(Accessory accessory) {
+		if (legacyProfileAccessory == null) {
+			legacyProfileAccessory = new VBox();
+			Label l = new Label(accessory.getDisplayLabel());
+			l.getStyleClass().add("subtitle");
+			Hyperlink link = new Hyperlink(bundle.getString("macros"));
+			link.setOnAction((e) -> context.editMacros(LayoutControl.this));
+			legacyProfileAccessory.getChildren().add(l);
+			legacyProfileAccessory.getChildren().add(link);
+		}
+		return legacyProfileAccessory;
 	}
 
 	@Override
@@ -175,9 +219,10 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 	}
 
 	@Override
-	protected void onChanged(Device device, uk.co.bithatch.snake.lib.Region region) {
-		for (RegionControl other : regions.values()) {
-			other.update();
+	protected void onEffectChanged(Device device, uk.co.bithatch.snake.lib.Region region) {
+		for (Node other : regions.values()) {
+			if (other instanceof RegionControl)
+				((RegionControl) other).update();
 		}
 		getCurrentEditor().reset();
 		removeCustomEffectListener();
@@ -186,6 +231,8 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 
 	@Override
 	protected void onEffectsControlCleanUp() {
+		if (profileAccessory != null)
+			profileAccessory.cleanUp();
 		deviceLayout.removeListener(this);
 		removeCustomEffectListener();
 	}
@@ -216,12 +263,18 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 			this.region = r;
 			this.context = context;
 
+			Label l = new Label(LayoutEditor.getBestRegionName(view, r.getName()));
+			l.getStyleClass().add("subtitle");
+			HBox t = new HBox();
+			t.getChildren().add(l);
+			getChildren().add(t);
+
 			EffectManager fx = context.getEffectManager();
 			Set<EffectHandler<?, ?>> supported = fx.getEffects(r);
 
 			Set<EffectHandler<?, ?>> allEffects = new LinkedHashSet<>(supported);
 			Device device = r.getDevice();
-			allEffects.addAll(fx.getEffects(device));
+			allEffects.addAll(fx.getEffects(r));
 			EffectHandler<?, ?> selectedRegionEffect = acq.getEffect(r);
 
 			if (!supported.isEmpty() && supported.contains(selectedRegionEffect)) {
@@ -243,13 +296,7 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 				customise.setOnMouseClicked((e) -> layoutControl.customise(r, effectBar.effect.get()));
 				customise.getStyleClass().add("small");
 				setCustomiseState(customise, r, effectBar.effect.get());
-
-				Label l = new Label(LayoutEditor.getBestRegionName(view, r.getName()));
-				l.getStyleClass().add("subtitle");
-				HBox t = new HBox();
-				t.getChildren().add(l);
 				t.getChildren().add(customise);
-				getChildren().add(t);
 				getChildren().add(effectBar);
 
 				if (device.getCapabilities().contains(Capability.BRIGHTNESS_PER_REGION)) {
@@ -272,8 +319,8 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 						getChildren().add(hbox);
 					}
 				}
-
 			}
+
 		}
 
 		public void update() {
@@ -296,7 +343,8 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 		if (layoutEditor != null) {
 			if (regionList.size() > 1) {
 				EffectHandler<?, ?> selectedDeviceEffect = acq.getEffect(device);
-				if (selectedDeviceEffect != null && !selectedDeviceEffect.isMatrixBased()) {
+				if (selectedDeviceEffect == null
+						|| (selectedDeviceEffect != null && !selectedDeviceEffect.isMatrixBased())) {
 					for (Region r : regionList) {
 						regions.put(r.getName(),
 								new RegionControl(layoutEditor.getView(), r, context, acq, LayoutControl.this));
@@ -317,6 +365,10 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 
 	protected LayoutEditor getCurrentEditor() {
 		return (LayoutEditor) stack.getContent();
+	}
+
+	protected void setSelectedOverallEffect() {
+		selectOverallEffect(currentEffect);
 	}
 
 	@Override
@@ -352,7 +404,7 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 			effect.addListener((e, o, n) -> {
 				for (Node node : getChildren()) {
 					EffectHandler<?, ?> effect = (EffectHandler<?, ?>) node.getUserData();
-					if (n.equals(effect)) {
+					if (Objects.equals(n, effect)) {
 						select((Hyperlink) node);
 					} else {
 						deselect((Hyperlink) node);
@@ -391,7 +443,7 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 		}
 
 		protected void deselect(Hyperlink activate) {
-			if(!activate.getStyleClass().contains("deemphasis"))
+			if (!activate.getStyleClass().contains("deemphasis"))
 				activate.getStyleClass().add("deemphasis");
 			activate.setEffect(null);
 		}
@@ -452,11 +504,15 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 
 	protected void viewChanged() {
 		views = deviceLayout.getViewsThatHave(ComponentType.AREA);
-		DeviceView view = views.get(0);
-		LayoutEditor viewer = createEditor(view);
 		stack.getChildren().clear();
-		stack.setContent(Direction.FADE, viewer);
-		fireViewChanged(viewer);
+		if (views.isEmpty()) {
+			fireViewChanged(null);
+		} else {
+			DeviceView view = views.get(0);
+			LayoutEditor viewer = createEditor(view);
+			stack.setContent(Direction.FADE, viewer);
+			fireViewChanged(viewer);
+		}
 		rebuildRegions();
 	}
 

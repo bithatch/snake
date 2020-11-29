@@ -9,6 +9,7 @@ import javafx.scene.control.Hyperlink;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.Lit;
 import uk.co.bithatch.snake.ui.effects.CustomEffectHandler;
+import uk.co.bithatch.snake.ui.effects.EffectAcquisition;
 import uk.co.bithatch.snake.ui.effects.EffectAcquisition.EffectChangeListener;
 import uk.co.bithatch.snake.ui.effects.EffectManager;
 import uk.co.bithatch.snake.ui.effects.EffectManager.Listener;
@@ -143,13 +144,41 @@ public abstract class AbstractEffectsControl extends ControlController implement
 			Platform.runLater(() -> effectChanged(component, effect));
 		else {
 			if (component instanceof Device) {
-				if (component instanceof Device)
-					selectOverallEffect(effect);
-				setCustomiseState(customise, getDevice(), getOverallEffect());
-				removeCustom.visibleProperty().set(effect instanceof CustomEffectHandler);
-				rebuildRegions();
+				selectEffect(effect);
 			}
 		}
+
+	}
+
+	protected void selectEffect(EffectHandler<?, ?> effect) {
+		selectOverallEffect(effect);
+		setCustomiseState(customise, getDevice(), getOverallEffect());
+		removeCustom.visibleProperty().set(effect instanceof CustomEffectHandler);
+		rebuildRegions();
+	}
+
+	@Override
+	protected final void onChanged(Device device, uk.co.bithatch.snake.lib.Region region) {
+		if (region != null) {
+			/*
+			 * If the region is changing, check if the overal effect is now either null
+			 * (different effects selected), or an effect handler (all regions have same
+			 * effect)
+			 */
+			EffectAcquisition aq = context.getEffectManager().getRootAcquisition(getDevice());
+			EffectHandler<?, ?> handler = aq.getEffect(device);
+			adjustingOverall = true;
+			try {
+				selectEffect(handler);
+			} finally {
+				adjustingOverall = false;
+			}
+		}
+
+		onEffectChanged(device, region);
+	}
+
+	protected void onEffectChanged(Device device, uk.co.bithatch.snake.lib.Region region) {
 
 	}
 

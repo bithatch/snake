@@ -17,6 +17,8 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.ButtonBase;
 import javafx.scene.control.ListView;
+import javafx.scene.control.Tooltip;
+import javafx.scene.effect.Glow;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
@@ -29,29 +31,29 @@ import uk.co.bithatch.snake.ui.App;
 
 public class JavaFX {
 
-
 	static Text helper = new Text();
+
 	/**
-	 * Clips the children of the specified {@link Region} to its current size.
-	 * This requires attaching a change listener to the region’s layout bounds,
-	 * as JavaFX does not currently provide any built-in way to clip children.
+	 * Clips the children of the specified {@link Region} to its current size. This
+	 * requires attaching a change listener to the region’s layout bounds, as JavaFX
+	 * does not currently provide any built-in way to clip children.
 	 * 
 	 * @param region the {@link Region} whose children to clip
-	 * @param arc the {@link Rectangle#arcWidth} and {@link Rectangle#arcHeight}
-	 *            of the clipping {@link Rectangle}
+	 * @param arc    the {@link Rectangle#arcWidth} and {@link Rectangle#arcHeight}
+	 *               of the clipping {@link Rectangle}
 	 * @throws NullPointerException if {@code region} is {@code null}
 	 */
 	public static void clipChildren(Region region, double arc) {
 
-	    final Rectangle outputClip = new Rectangle();
-	    outputClip.setArcWidth(arc);
-	    outputClip.setArcHeight(arc);
-	    region.setClip(outputClip);
+		final Rectangle outputClip = new Rectangle();
+		outputClip.setArcWidth(arc);
+		outputClip.setArcHeight(arc);
+		region.setClip(outputClip);
 
-	    region.layoutBoundsProperty().addListener((ov, oldValue, newValue) -> {
-	        outputClip.setWidth(newValue.getWidth());
-	        outputClip.setHeight(newValue.getHeight());
-	    });        
+		region.layoutBoundsProperty().addListener((ov, oldValue, newValue) -> {
+			outputClip.setWidth(newValue.getWidth());
+			outputClip.setHeight(newValue.getHeight());
+		});
 	}
 
 	public static void bindManagedToVisible(Node... node) {
@@ -205,7 +207,25 @@ public class JavaFX {
 	}
 
 	public static int encode(Color color) {
-		return encodeRGB((int)(color.getRed() * 255.0), (int)(color.getGreen() * 255.0), (int)(color.getBlue() * 255.0));
+		return encodeRGB((int) (color.getRed() * 255.0), (int) (color.getGreen() * 255.0),
+				(int) (color.getBlue() * 255.0));
+	}
+
+	public static void glowOrDeemphasis(Node node, boolean highlight) {
+		if (highlight) {
+			node.getStyleClass().remove("deemphasis");
+			node.setEffect(new Glow(0.9));
+		} else {
+			if (!node.getStyleClass().contains("deemphasis"))
+				node.getStyleClass().add("deemphasis");
+			node.setEffect(null);
+		}
+	}
+
+	public static Tooltip quickTooltip(String text) {
+		Tooltip tt = new Tooltip(text);
+		tt.setShowDelay(Duration.millis(250));
+		return tt;
 	}
 
 }

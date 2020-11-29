@@ -53,7 +53,6 @@ import uk.co.bithatch.snake.lib.MacroSequence;
 import uk.co.bithatch.snake.lib.MacroURL;
 import uk.co.bithatch.snake.lib.ValidationException;
 import uk.co.bithatch.snake.ui.util.JavaFX;
-import uk.co.bithatch.snake.ui.widgets.Direction;
 
 public class Macros extends AbstractDetailsController {
 
@@ -158,7 +157,6 @@ public class Macros extends AbstractDetailsController {
 
 	@FXML
 	private Hyperlink add;
-	private boolean adjusting = false;
 	@FXML
 	private Hyperlink delete;
 	@FXML
@@ -175,7 +173,6 @@ public class Macros extends AbstractDetailsController {
 	private ComboBox<Key> macroKey;
 	@FXML
 	private TreeView<Object> macros;
-	private Set<MacroSequence> macrosToSave = new LinkedHashSet<>();
 	@FXML
 	private ToggleGroup macroType;
 	@FXML
@@ -199,8 +196,6 @@ public class Macros extends AbstractDetailsController {
 	@FXML
 	private ComboBox<State> state;
 
-	private ScheduledFuture<?> task;
-
 	@FXML
 	private TextField urlLocation;
 	@FXML
@@ -211,10 +206,10 @@ public class Macros extends AbstractDetailsController {
 	@FXML
 	private Button urlOpen;
 
-	@FXML
-	private Hyperlink recordMacro;
-
 	private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+	private ScheduledFuture<?> task;
+	private Set<MacroSequence> macrosToSave = new LinkedHashSet<>();
+	private boolean adjusting = false;
 
 	protected void error(String key) {
 		error.visibleProperty().set(key != null);
@@ -276,9 +271,12 @@ public class Macros extends AbstractDetailsController {
 		scriptMacroSection.visibleProperty().bind(scriptMacro.selectedProperty());
 		keyMacroSection.managedProperty().bind(keyMacroSection.visibleProperty());
 		keyMacroSection.visibleProperty().bind(keyMacro.selectedProperty());
-		var keyList = new ArrayList<>(Arrays.asList(Key.values()));
-		Collections.sort(keyList, (k1, k2) -> k1.name().compareTo(k2.name()));
-		macroKey.itemsProperty().get().addAll(keyList);
+		
+		if(context.getLayouts().hasLayout(getDevice()))
+			macroKey.itemsProperty().get().addAll(context.getLayouts().getLayout(getDevice()).getSupportedLegacyKeys());
+		else
+			macroKey.itemsProperty().get().addAll(getDevice().getSupportedLegacyKeys());
+		
 		state.itemsProperty().get().addAll(Arrays.asList(State.values()));
 		UnaryOperator<Change> integerFilter = change -> {
 			String newText = change.getControlNewText();
@@ -288,49 +286,74 @@ public class Macros extends AbstractDetailsController {
 			return null;
 		};
 		pause.setTextFormatter(new TextFormatter<Integer>(new IntegerStringConverter(), 0, integerFilter));
-		simulateKey.itemsProperty().get().addAll(keyList);
+		
+		// TODO this is wrong, should be 'xte' events
+		simulateKey.itemsProperty().get().addAll(getDevice().getSupportedLegacyKeys());
+		
 		editor.managedProperty().bind(editor.visibleProperty());
 		urlOpen.disableProperty().bind(Bindings.isEmpty(urlLocation.textProperty()));
-		scriptLocation.textProperty().addListener((e) -> {
-			var macro = (MacroScript) getSelectedMacro();
-			macro.setScript(scriptLocation.textProperty().get());
-			saveMacroSequence(getSelectedSequence());
-		});
-		state.getSelectionModel().selectedItemProperty().addListener((e) -> {
-			var macro = (MacroKey) getSelectedMacro();
-			if (macro != null) {
-				macro.setState(state.getSelectionModel().getSelectedItem());
+		scriptLocation.textProperty().addListener((e, o, n) -> {
+			if (!adjusting) {
+				var macro = (MacroScript) getSelectedMacro();
+				macro.setScript(scriptLocation.textProperty().get());
 				saveMacroSequence(getSelectedSequence());
 			}
 		});
-		pause.textProperty().addListener((e) -> {
-			var macro = (MacroKey) getSelectedMacro();
-			try {
-				macro.setPrePause(Long.parseLong(pause.textProperty().get()));
+		state.getSelectionModel().selectedItemProperty().addListener((e, o, n) -> {
+			if (!adjusting) {
+				var macro = (MacroKey) getSelectedMacro();
+				if (macro != null) {
+					macro.setState(state.getSelectionModel().getSelectedItem());
+					saveMacroSequence(getSelectedSequence());
+				}
+			}
+		});
+		simulateKey.getSelectionModel().selectedItemProperty().addListener((e, o, n) -> {
+			if (!adjusting) {
+				var macro = (MacroKey) getSelectedMacro();
+				if (macro != null) {
+					macro.setKey(simulateKey.getSelectionModel().getSelectedItem());
+					saveMacroSequence(getSelectedSequence());
+				}
+			}
+		});
+		pause.textProperty().addListener((e, o, n) -> {
+			if (!adjusting) {
+				var macro = (MacroKey) getSelectedMacro();
+				try {
+					macro.setPrePause(Long.parseLong(pause.textProperty().get()));
+					saveMacroSequence(getSelectedSequence());
+				} catch (NumberFormatException nfe) {
+					error("invalidPause");
+				}
+			}
+		});
+		urlLocation.textProperty().addListener((e, o, n) -> {
+			if (!adjusting) {
+				var macro = (MacroURL) getSelectedMacro();
+				macro.setUrl(urlLocation.textProperty().get());
 				saveMacroSequence(getSelectedSequence());
-			} catch (NumberFormatException nfe) {
-				error("invalidPause");
 			}
 		});
-		urlLocation.textProperty().addListener((e) -> {
-			var macro = (MacroURL) getSelectedMacro();
-			macro.setUrl(urlLocation.textProperty().get());
-			saveMacroSequence(getSelectedSequence());
-		});
-		scriptArgs.textProperty().addListener((e) -> {
-			var macro = (MacroScript) getSelectedMacro();
-			macro.setArgs(parseQuotedString(urlLocation.textProperty().get()));
-			saveMacroSequence(getSelectedSequence());
-		});
-		macroKey.getSelectionModel().selectedItemProperty().addListener((e) -> {
-			var macro = getSelectedSequence();
-			if (macro != null) {
-				macro.setMacroKey(macroKey.getSelectionModel().getSelectedItem());
-				saveMacroSequence(macro);
-				macros.refresh();
+		scriptArgs.textProperty().addListener((e, o, n) -> {
+			if (!adjusting) {
+				var macro = (MacroScript) getSelectedMacro();
+				macro.setArgs(parseQuotedString(urlLocation.textProperty().get()));
+				saveMacroSequence(getSelectedSequence());
 			}
 		});
-		macros.getSelectionModel().selectedItemProperty().addListener((e) -> {
+		macroKey.getSelectionModel().selectedItemProperty().addListener((e, o, n) -> {
+			if (!adjusting) {
+				var macro = getSelectedSequence();
+				if (macro != null) {
+					getDevice().deleteMacro(macro.getMacroKey());
+					macro.setMacroKey(macroKey.getSelectionModel().getSelectedItem());
+					saveMacroSequence(macro);
+					macros.refresh();
+				}
+			}
+		});
+		macros.getSelectionModel().selectedItemProperty().addListener((e, o, n) -> {
 			if (!adjusting) {
 				var macro = getSelectedMacro();
 				editor.visibleProperty().set(macro != null);
@@ -360,63 +383,69 @@ public class Macros extends AbstractDetailsController {
 		macros.rootProperty().set(root);
 		buildTree();
 		macros.setShowRoot(false);
-		urlMacro.selectedProperty().addListener((e) -> {
-			if (urlMacro.selectedProperty().get()) {
-				adjusting = true;
-				try {
-					TreeItem<Object> seqItem = macros.getSelectionModel().getSelectedItem().getParent();
-					MacroSequence seq = getSelectedSequence();
-					Macro macro = getSelectedMacro();
-					MacroURL murl = new MacroURL();
-					var idx = seq.indexOf(macro);
-					seq.set(idx, murl);
-					TreeItem<Object> newMacroItem = new TreeItem<>(murl);
-					seqItem.getChildren().set(idx, newMacroItem);
-					saveMacroSequence(seq);
-					macros.getSelectionModel().select(newMacroItem);
-				} finally {
-					adjusting = false;
-				}
-			}
-		});
-		scriptMacro.selectedProperty().addListener((e) -> {
-			if (scriptMacro.selectedProperty().get()) {
-				adjusting = true;
-				try {
-					TreeItem<Object> seqItem = macros.getSelectionModel().getSelectedItem().getParent();
-					MacroSequence seq = getSelectedSequence();
-
-					Macro macro = getSelectedMacro();
-					MacroScript murl = new MacroScript();
-					var idx = seq.indexOf(macro);
-					seq.set(idx, murl);
-					TreeItem<Object> newMacroItem = new TreeItem<>(murl);
-					seqItem.getChildren().set(idx, newMacroItem);
-					saveMacroSequence(seq);
-					macros.getSelectionModel().select(newMacroItem);
-				} finally {
-					adjusting = false;
-				}
-			}
-		});
-		keyMacro.selectedProperty().addListener((e) -> {
-			if (keyMacro.selectedProperty().get()) {
-				adjusting = true;
-				try {
-					TreeItem<Object> seqItem = macros.getSelectionModel().getSelectedItem().getParent();
-					MacroSequence seq = getSelectedSequence();
-					Macro macro = getSelectedMacro();
-					if (macro != null) {
-						MacroKey murl = new MacroKey();
+		urlMacro.selectedProperty().addListener((e, o, n) -> {
+			if (!adjusting) {
+				if (urlMacro.selectedProperty().get()) {
+					adjusting = true;
+					try {
+						TreeItem<Object> seqItem = macros.getSelectionModel().getSelectedItem().getParent();
+						MacroSequence seq = getSelectedSequence();
+						Macro macro = getSelectedMacro();
+						MacroURL murl = new MacroURL();
 						var idx = seq.indexOf(macro);
 						seq.set(idx, murl);
 						TreeItem<Object> newMacroItem = new TreeItem<>(murl);
 						seqItem.getChildren().set(idx, newMacroItem);
 						saveMacroSequence(seq);
 						macros.getSelectionModel().select(newMacroItem);
+					} finally {
+						adjusting = false;
 					}
-				} finally {
-					adjusting = false;
+				}
+			}
+		});
+		scriptMacro.selectedProperty().addListener((e, o, n) -> {
+			if (!adjusting) {
+				if (scriptMacro.selectedProperty().get()) {
+					adjusting = true;
+					try {
+						TreeItem<Object> seqItem = macros.getSelectionModel().getSelectedItem().getParent();
+						MacroSequence seq = getSelectedSequence();
+
+						Macro macro = getSelectedMacro();
+						MacroScript murl = new MacroScript();
+						var idx = seq.indexOf(macro);
+						seq.set(idx, murl);
+						TreeItem<Object> newMacroItem = new TreeItem<>(murl);
+						seqItem.getChildren().set(idx, newMacroItem);
+						saveMacroSequence(seq);
+						macros.getSelectionModel().select(newMacroItem);
+					} finally {
+						adjusting = false;
+					}
+				}
+			}
+		});
+		keyMacro.selectedProperty().addListener((e, o, n) -> {
+			if (!adjusting) {
+				if (keyMacro.selectedProperty().get()) {
+					adjusting = true;
+					try {
+						TreeItem<Object> seqItem = macros.getSelectionModel().getSelectedItem().getParent();
+						MacroSequence seq = getSelectedSequence();
+						Macro macro = getSelectedMacro();
+						if (macro != null) {
+							MacroKey murl = new MacroKey();
+							var idx = seq.indexOf(macro);
+							seq.set(idx, murl);
+							TreeItem<Object> newMacroItem = new TreeItem<>(murl);
+							seqItem.getChildren().set(idx, newMacroItem);
+							saveMacroSequence(seq);
+							macros.getSelectionModel().select(newMacroItem);
+						}
+					} finally {
+						adjusting = false;
+					}
 				}
 			}
 		});
@@ -461,11 +490,6 @@ public class Macros extends AbstractDetailsController {
 		seqItem.getChildren().add(t);
 		saveMacroSequence(seq);
 		macros.getSelectionModel().select(t);
-	}
-
-	@FXML
-	void evtRecordMacro() {
-		context.push(Record.class, Direction.FROM_LEFT).setMacroSequence(getSelectedSequence());
 	}
 
 	@FXML
@@ -568,6 +592,7 @@ public class Macros extends AbstractDetailsController {
 						e.printStackTrace();
 					} finally {
 						macrosToSave.clear();
+						context.getLegacyMacroStorage().save();
 					}
 				}
 			}, 1000, TimeUnit.MILLISECONDS);
@@ -587,26 +612,36 @@ public class Macros extends AbstractDetailsController {
 
 	private void setMacro(Macro macro) {
 		if (macro != null) {
-			if (macro instanceof MacroKey) {
-				MacroKey macroKey = (MacroKey) macro;
-				simulateKey.getSelectionModel().select(macroKey.getKey());
-				pause.textProperty().set(String.valueOf(macroKey.getPrePause()));
-				state.getSelectionModel().select(macroKey.getState());
-			} else if (macro instanceof MacroURL) {
-				MacroURL macroURL = (MacroURL) macro;
-				urlLocation.textProperty().set(macroURL.getUrl());
-			} else if (macro instanceof MacroScript) {
-				MacroScript macroScript = (MacroScript) macro;
-				scriptLocation.textProperty().set(macroScript.getScript());
-				if (macroScript.getArgs() == null || macroScript.getArgs().isEmpty())
-					scriptArgs.textProperty().set("");
-				else
-					scriptArgs.textProperty().set(String.join("\n", macroScript.getArgs()));
+			adjusting = true;
+			try {
+				if (macro instanceof MacroKey) {
+					MacroKey macroKey = (MacroKey) macro;
+					simulateKey.getSelectionModel().select(macroKey.getKey());
+					pause.textProperty().set(String.valueOf(macroKey.getPrePause()));
+					state.getSelectionModel().select(macroKey.getState());
+				} else if (macro instanceof MacroURL) {
+					MacroURL macroURL = (MacroURL) macro;
+					urlLocation.textProperty().set(macroURL.getUrl());
+				} else if (macro instanceof MacroScript) {
+					MacroScript macroScript = (MacroScript) macro;
+					scriptLocation.textProperty().set(macroScript.getScript());
+					if (macroScript.getArgs() == null || macroScript.getArgs().isEmpty())
+						scriptArgs.textProperty().set("");
+					else
+						scriptArgs.textProperty().set(String.join("\n", macroScript.getArgs()));
+				}
+			} finally {
+				adjusting = false;
 			}
 		}
 	}
 
 	private void setSequence(MacroSequence seq) {
-		macroKey.getSelectionModel().select(seq == null ? null : seq.getMacroKey());
+		adjusting = true;
+		try {
+			macroKey.getSelectionModel().select(seq == null ? null : seq.getMacroKey());
+		} finally {
+			adjusting = false;
+		}
 	}
 }

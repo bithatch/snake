@@ -6,14 +6,31 @@ import java.util.Map;
 import java.util.Set;
 
 import uk.co.bithatch.snake.lib.Region.Name;
-import uk.co.bithatch.snake.lib.effects.Effect;
+import uk.co.bithatch.snake.lib.binding.Profile;
+import uk.co.bithatch.snake.lib.binding.ProfileMap;
 import uk.co.bithatch.snake.lib.layouts.ComponentType;
 
 public interface Device extends AutoCloseable, Grouping, Lit {
 
 	public interface Listener {
 		void changed(Device device, Region region);
+
+		void activeMapChanged(ProfileMap map);
+
+		void profileAdded(Profile profile);
+
+		void profileRemoved(Profile profile);
+
+		void mapAdded(ProfileMap profile);
+
+		void mapChanged(ProfileMap profile);
+
+		void mapRemoved(ProfileMap profile);
 	}
+
+	Set<InputEventCode> getSupportedInputEvents();
+
+	Set<Key> getSupportedLegacyKeys();
 
 	void addListener(Listener listener);
 
@@ -42,8 +59,6 @@ public interface Device extends AutoCloseable, Grouping, Lit {
 	int[] getDPI();
 
 	String getDriverVersion();
-
-	Effect getEffect();
 
 	String getFirmware();
 
@@ -91,8 +106,6 @@ public interface Device extends AutoCloseable, Grouping, Lit {
 
 	void setDPI(short x, short y);
 
-	void setEffect(Effect effect);
-
 	void setGameMode(boolean gameMode);
 
 	void setIdleTime(int idleTime);
@@ -120,6 +133,24 @@ public interface Device extends AutoCloseable, Grouping, Lit {
 			l.add(ComponentType.LED);
 		if (getCapabilities().contains(Capability.DEDICATED_MACRO_KEYS))
 			l.add(ComponentType.KEY);
+		if (getCapabilities().contains(Capability.MACRO_PROFILE_LEDS) || getCapabilities().contains(Capability.MACROS))
+			l.add(ComponentType.ACCESSORY);
 		return l;
+	}
+
+	List<Profile> getProfiles();
+
+	Profile getActiveProfile();
+
+	Profile getProfile(String name);
+
+	Profile addProfile(String name);
+
+	default Region getRegion(Name region) {
+		for (Region r : getRegions()) {
+			if (r.getName().equals(region))
+				return r;
+		}
+		return null;
 	}
 }

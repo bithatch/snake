@@ -37,6 +37,7 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import uk.co.bithatch.snake.lib.Backend;
+import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.DeviceType;
 import uk.co.bithatch.snake.lib.Region;
@@ -151,7 +152,7 @@ public class App extends Application {
 	private DeviceLayoutManager layouts;
 	private Cache cache;
 	private boolean backendInited;
-
+	private LegacyMacroStorage legacyMacroStorage;
 	private EffectManager effectManager;
 
 	public void clearLoadQueue() {
@@ -218,8 +219,24 @@ public class App extends Application {
 		}
 	}
 
+	public void editMacros(AbstractDeviceController from) {
+		Device device = from.getDevice();
+		if (!device.getCapabilities().contains(Capability.MACROS))
+			throw new IllegalStateException("Does not support macros.");
+		if (device.getCapabilities().contains(Capability.MACRO_PROFILES)) {
+			push(MacroMap.class, from, Direction.FROM_BOTTOM);
+		} else {
+			/* Legacy method */
+			push(Macros.class, from, Direction.FROM_BOTTOM);
+		}
+	}
+
 	public EffectManager getEffectManager() {
 		return effectManager;
+	}
+
+	public LegacyMacroStorage getLegacyMacroStorage() {
+		return legacyMacroStorage;
 	}
 
 	public Backend getBackend() {
@@ -388,6 +405,7 @@ public class App extends Application {
 
 		scheduler = Executors.newScheduledThreadPool(1);
 		cache = new Cache(this);
+		legacyMacroStorage = new LegacyMacroStorage(this);
 		layouts = new DeviceLayoutManager(this);
 		effectManager = new EffectManager(this);
 		addOnManager = new AddOnManager(this);
@@ -412,7 +430,6 @@ public class App extends Application {
 		}
 		if (backend == null && !backends.isEmpty())
 			backend = backends.get(0);
-		
 
 		// Setup the window
 		this.primaryStage = primaryStage;
@@ -445,6 +462,8 @@ public class App extends Application {
 		}
 
 		addOnManager.start();
+
+		new DesktopNotifications(this);
 	}
 
 	private void clearControllers() {
@@ -564,10 +583,13 @@ public class App extends Application {
 		try {
 			for (Device dev : backend.getDevices()) {
 				try {
-					
+					if (dev.getCapabilities().contains(Capability.MACROS)
+							&& !dev.getCapabilities().contains(Capability.MACRO_PROFILES))
+						legacyMacroStorage.addDevice(dev);
+
 					/* Acquire an effects controller for this device */
 					EffectAcquisition acq = effectManager.acquire(dev);
-					
+
 					EffectHandler<?, ?> deviceEffect = acq.getEffect(dev);
 					boolean activated = false;
 					if (deviceEffect != null && deviceEffect.isMatrixBased()) {
@@ -640,8 +662,9 @@ public class App extends Application {
 	}
 
 	public String getDefaultImage(DeviceType type, String uri) {
-		if(uri == null || uri.equals("")) {
-			uri = configuration.themeProperty().getValue().getResource("devices/" + type.name().toLowerCase() + "512.png").toExternalForm();
+		if (uri == null || uri.equals("")) {
+			uri = configuration.themeProperty().getValue()
+					.getResource("devices/" + type.name().toLowerCase() + "512.png").toExternalForm();
 		}
 		return uri;
 	}

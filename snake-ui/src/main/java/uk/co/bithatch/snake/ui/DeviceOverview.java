@@ -1,6 +1,5 @@
 package uk.co.bithatch.snake.ui;
 
-import java.net.URL;
 import java.util.Objects;
 
 import javafx.animation.FadeTransition;
@@ -9,11 +8,11 @@ import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.Device.Listener;
 import uk.co.bithatch.snake.lib.Region;
-import uk.co.bithatch.snake.lib.effects.Effect;
 import uk.co.bithatch.snake.ui.widgets.Direction;
 
 public class DeviceOverview extends AbstractDeviceController implements Listener {
@@ -29,7 +28,7 @@ public class DeviceOverview extends AbstractDeviceController implements Listener
 	@FXML
 	private ImageView deviceImage;
 	@FXML
-	private ImageView effect;
+	private HBox effect;
 	@FXML
 	private Label charging;
 	@FXML
@@ -39,7 +38,7 @@ public class DeviceOverview extends AbstractDeviceController implements Listener
 	@FXML
 	private Label brightnessAmount;
 
-	private Effect lastEffect;
+	private EffectHandler<?, ?> lastEffect;
 	private FadeTransition chargingAnim;
 	private FadeTransition lowAnim;
 
@@ -53,7 +52,8 @@ public class DeviceOverview extends AbstractDeviceController implements Listener
 		Device dev = getDevice();
 		dev.addListener(this);
 		deviceName.textProperty().set(dev.getName());
-		deviceImage.setImage(new Image(context.getCache().getCachedImage(context.getDefaultImage(dev.getType(), dev.getImage())), true));
+		deviceImage.setImage(new Image(
+				context.getCache().getCachedImage(context.getDefaultImage(dev.getType(), dev.getImage())), true));
 		deviceSerial.textProperty().set(dev.getSerial());
 		deviceFirmware.textProperty().set(dev.getFirmware());
 		macros.managedProperty().bind(macros.visibleProperty());
@@ -65,11 +65,12 @@ public class DeviceOverview extends AbstractDeviceController implements Listener
 	}
 
 	private void updateFromDevice(Device dev) {
-		if (!Objects.equals(lastEffect, dev.getEffect())) {
-			lastEffect = dev.getEffect();
-			URL effectImage = App.class.getResource("effects/" + getClass().getSimpleName().toLowerCase() + ".png");
-			if (effectImage != null)
-				effect.setImage(new Image(effectImage.toExternalForm()));
+		EffectHandler<?, ?> thisEffect = context.getEffectManager().getRootAcquisition(dev).getEffect(dev);
+		if (!Objects.equals(lastEffect, thisEffect)) {
+			lastEffect = thisEffect;
+			effect.getChildren().clear();
+			if (thisEffect != null)
+				effect.getChildren().add(thisEffect.getEffectImageNode(16, 16));
 		}
 		if (dev.getCapabilities().contains(Capability.BRIGHTNESS)) {
 			brightnessAmount.textProperty().set(dev.getBrightness() + "%");
@@ -95,7 +96,7 @@ public class DeviceOverview extends AbstractDeviceController implements Listener
 
 	@FXML
 	void evtMacros() {
-		context.push(Macros.class, this, Direction.FROM_BOTTOM);
+		context.editMacros(this);
 	}
 
 	@Override

@@ -152,7 +152,7 @@ GeneratedIcon {
 	-icon-border-width: 2.5;
 	-icon-text-color: -fx-accent;
 	-icon-color: -fx-accent;
-	-icon-shape: ROUND;
+	-icon-shape: 'ROUND';
 	-icon-opacity: 0; 
     -icon-text-font-family: 'Roboto Light';
     -icon-text-font-size: 12pt;
@@ -161,6 +161,14 @@ GeneratedIcon {
 GeneratedIcon.cell {
 	-icon-border-width: 2;
     -icon-text-font-size: 8pt;
+}
+
+GeneratedIcon.mapSequenceKey {
+	-icon-shape: 'ROUNDED';
+}
+
+GeneratedIcon.mapSequenceButton {
+	-icon-shape: 'ROUND';
 }
 
 .control {
@@ -365,8 +373,12 @@ GeneratedIcon.cell {
 	-fx-row-valignment: top;
 }
 
-.controls-nolayout .control {
+.control {
 	-fx-pref-width: 256px;
+}
+
+.controls-layout .control {
+    -fx-padding: 0em 0em 2em 0em;	
 }
 
 .control-layoutcontrol {
@@ -443,10 +455,14 @@ LayoutEditor .layout-label {
 	-snake-outline-color: -fx-accent; 
 }
 
-LEDGraphic, AreaGraphic, KeyGraphic {
+LEDGraphic, AreaGraphic, KeyGraphic, AccessoryGraphic {
 	-snake-outline-color: -fx-light-text-color;
 }
 
 LEDGraphic:selected, AreaGraphic:selected, KeyGraphic:selected {
 	-snake-outline-color: -fx-accent;
+}
+
+ToggleSwitch:selected .thumb-area {
+    -fx-background-color: -fx-accent;
 }

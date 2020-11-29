@@ -7,6 +7,8 @@ import javafx.scene.control.Slider;
 import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.Device.Listener;
+import uk.co.bithatch.snake.lib.binding.Profile;
+import uk.co.bithatch.snake.lib.binding.ProfileMap;
 import uk.co.bithatch.snake.ui.util.JavaFX;
 
 public abstract class AbstractDeviceController extends AbstractController implements Listener {
@@ -101,4 +103,29 @@ public abstract class AbstractDeviceController extends AbstractController implem
 
 	protected void onChanged(Device device, uk.co.bithatch.snake.lib.Region region) {
 	}
+
+	@Override
+	public void activeMapChanged(ProfileMap map) {
+	}
+
+	@Override
+	public void profileAdded(Profile profile) {
+	}
+
+	@Override
+	public void profileRemoved(Profile profile) {
+	}
+
+	@Override
+	public void mapAdded(ProfileMap profile) {
+	}
+
+	@Override
+	public void mapChanged(ProfileMap profile) {
+	}
+
+	@Override
+	public void mapRemoved(ProfileMap profile) {
+	}
+
 }

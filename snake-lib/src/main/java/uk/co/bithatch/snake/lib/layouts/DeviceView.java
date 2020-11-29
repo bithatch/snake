@@ -37,6 +37,26 @@ public class DeviceView implements IOListener {
 	private float imageOpacity = 1;
 	private DeviceLayout layout;
 
+	public DeviceView() {
+
+	}
+
+	public DeviceView(DeviceView view, DeviceLayout layout) {
+		this.imageUri = view.imageUri;
+		this.position = view.position;
+		this.desaturateImage = view.desaturateImage;
+		this.imageScale = view.imageScale;
+		this.imageOpacity = view.imageOpacity;
+		this.layout = layout;
+		for (IO el : view.elements) {
+			try {
+				addElement((IO) el.clone());
+			} catch (CloneNotSupportedException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+	}
+
 	public void addListener(Listener listener) {
 		listeners.add(listener);
 	}
@@ -57,6 +77,16 @@ public class DeviceView implements IOListener {
 		return Collections.unmodifiableList(elements);
 	}
 
+	public List<IO> getElements(ComponentType type) {
+		List<IO> elementsOfType = new ArrayList<>();
+		for (IO el : getElements()) {
+			if (ComponentType.fromClass(el.getClass()).equals(type)) {
+				elementsOfType.add(el);
+			}
+		}
+		return elementsOfType;
+	}
+
 	public float getImageOpacity() {
 		return imageOpacity;
 	}
@@ -68,24 +98,31 @@ public class DeviceView implements IOListener {
 
 	public Cell getNextFreeCell(ComponentType type) {
 		int y = 0;
-		int x = 0;
-		Cell cellPosition = new Cell(x, y);
+		int x = -1;
+		Cell cellPosition = new Cell(0, 0);
 		Map<Cell, IO> elementMap = getMapForType(type);
-		while (elementMap.containsKey(cellPosition)) {
-			x++;
-			if (x == layout.getMatrixWidth()) {
-				x = 0;
-				y++;
-				if (y == layout.getMatrixHeight()) {
-					y = x = -1;
-					break;
+		while (true) {
+			do {
+				x++;
+				if (x == layout.getMatrixWidth()) {
+					x = 0;
+					y++;
+					if (y == layout.getMatrixHeight()) {
+						y = x = -1;
+						break;
+					}
 				}
-			}
-			cellPosition = new Cell(x, y);
+				cellPosition = new Cell(x, y);
+			} while (elementMap.containsKey(cellPosition));
+			if (x == -1)
+				/* No more free spaces, will have to give up and leave to user to sort out */
+				throw new IllegalStateException("No more free cells.");
+
+			/* Only return elements whose matrix cells are not disabled */
+			MatrixCell cell = layout.getViews().get(ViewPosition.MATRIX).getElement(ComponentType.MATRIX_CELL, x, y);
+			if (cell == null || !cell.isDisabled())
+				break;
 		}
-		if (x == -1)
-			/* No more free spaces, will have to give up and leave to user to sort out */
-			throw new IllegalStateException("No more free cells.");
 
 		return cellPosition;
 	}
@@ -106,6 +143,9 @@ public class DeviceView implements IOListener {
 		if (!elements.contains(element)) {
 			element.addListener(this);
 			elements.add(element);
+			if (element instanceof AbstractIO) {
+				((AbstractIO) element).setView(this);
+			}
 			if (element instanceof MatrixIO) {
 				getMapForType(element)
 						.put(new Cell(((MatrixIO) element).getMatrixX(), ((MatrixIO) element).getMatrixY()), element);
@@ -143,7 +183,7 @@ public class DeviceView implements IOListener {
 
 	public void setPosition(ViewPosition position) {
 		this.position = position;
-		if(layout != null)
+		if (layout != null)
 			layout.updatePosition(this);
 		fireChanged();
 	}
@@ -223,7 +263,7 @@ public class DeviceView implements IOListener {
 
 	public IO getAreaElement(Name name) {
 		for (IO el : elements) {
-			if (el instanceof Area && ((Area) el).getRegion().equals(name))
+			if (el instanceof Area && name != null && name.equals(((Area) el).getRegion()))
 				return el;
 		}
 		return null;

@@ -28,6 +28,8 @@ import javafx.scene.layout.HBox;
 import javafx.util.Duration;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.Device.Listener;
+import uk.co.bithatch.snake.lib.binding.Profile;
+import uk.co.bithatch.snake.lib.binding.ProfileMap;
 import uk.co.bithatch.snake.lib.DeviceType;
 import uk.co.bithatch.snake.lib.Region;
 import uk.co.bithatch.snake.ui.util.JavaFX;
@@ -76,6 +78,18 @@ public class Overview extends AbstractController implements Listener {
 
 	final static ResourceBundle bundle = ResourceBundle.getBundle(Overview.class.getName());
 
+	@Override
+	public void activeMapChanged(ProfileMap map) {
+	}
+
+	@Override
+	public void profileAdded(Profile profile) {
+	}
+
+	@Override
+	public void profileRemoved(Profile profile) {
+	}
+	
 	@Override
 	protected void onConfigure() throws Exception {
 		super.onConfigure();
@@ -325,5 +339,17 @@ public class Overview extends AbstractController implements Listener {
 	@FXML
 	void evtUpdate() {
 		context.push(Options.class, Direction.FROM_BOTTOM);
+	}
+
+	@Override
+	public void mapAdded(ProfileMap profile) {
+	}
+
+	@Override
+	public void mapChanged(ProfileMap profile) {
+	}
+
+	@Override
+	public void mapRemoved(ProfileMap profile) {
 	}
 }

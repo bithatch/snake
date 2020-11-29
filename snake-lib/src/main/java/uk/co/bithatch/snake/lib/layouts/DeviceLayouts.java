@@ -130,8 +130,7 @@ public class DeviceLayouts implements uk.co.bithatch.snake.lib.layouts.DeviceLay
 			int number = 1;
 			for (int y = 0; y < h; y++) {
 				for (int x = 0; x < w; x++) {
-					MatrixCell k = new MatrixCell();
-					k.setLabel(String.valueOf(number++));
+					MatrixCell k = new MatrixCell(v);
 					k.setMatrixX(x);
 					k.setMatrixY(y);
 					v.addElement(k);
@@ -140,7 +139,8 @@ public class DeviceLayouts implements uk.co.bithatch.snake.lib.layouts.DeviceLay
 		} else {
 			for (MatrixCell[] row : legacyLayout.getKeys()) {
 				for (MatrixCell col : row) {
-					v.addElement(col);
+					if(col != null)
+						v.addElement(col);
 				}
 			}
 		}

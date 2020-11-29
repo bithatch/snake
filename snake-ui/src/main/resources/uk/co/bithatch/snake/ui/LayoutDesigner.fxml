@@ -23,6 +23,8 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import org.controlsfx.control.SearchableComboBox?>
+<?import org.controlsfx.control.ToggleSwitch?>
 
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.LayoutDesigner">
    <children>
@@ -90,35 +92,53 @@
                   <content>
                     <AnchorPane minHeight="0.0" minWidth="0.0">
                            <children>
-                              <VBox styleClass="column">
+                              <VBox>
                                  <children>
-                                    <Label fx:id="componentType" styleClass="subtitle" text="Type" />
-                                    <CheckBox fx:id="enabled" mnemonicParsing="false" text="%enabled" />
+                                    <Label fx:id="noSelection" prefWidth="200.0" text="%noSelection" wrapText="true" />
+                                    <ToggleSwitch fx:id="enabled" mnemonicParsing="false" />
                                     <Label fx:id="widthLabel" styleClass="emphasis" text="%width" />
-                                    <Spinner fx:id="width" editable="true" />
-                                    <Label styleClass="emphasis" text="%label" />
+                                    <Spinner fx:id="width" editable="true" styleClass="split-arrows-horizontal" />
+                                    <Label fx:id="labelLabel" styleClass="emphasis" text="%label" />
                                     <TextArea fx:id="label" prefColumnCount="10" prefRowCount="2" />
-                                    <Label styleClass="emphasis" text="%matrix" />
+                                    <Label fx:id="accessoryLabel" styleClass="subtitle" text="%accessory" />
+                                    <ComboBox fx:id="accessory" prefWidth="150.0" />
+                                    <Label fx:id="matrixLabel" styleClass="emphasis" text="%matrix" />
                                     <HBox alignment="CENTER_LEFT">
                                        <children>
-                                          <Label fx:id="matrixXLabel" prefWidth="96.0" styleClass="gapLeft" text="%matrixX" />
-                                          <ComboBox fx:id="matrixX" />
-                                       </children>
-                                    </HBox>
-                                    <HBox alignment="CENTER_LEFT">
-                                       <children>
-                                          <Label fx:id="matrixYLabel" prefWidth="96.0" styleClass="gapLeft" text="%matrixY" />
-                                          <ComboBox fx:id="matrixY" />
+                                          <Label fx:id="keyMappingLabel" prefWidth="96.0" styleClass="gapLeft" text="%keyMapping" />
+                                          <SearchableComboBox fx:id="keyMapping" prefWidth="150.0" />
                                        </children>
                                     </HBox>
                                     <HBox>
+                                       <children>
+                                          <Label fx:id="legacyKeyMappingLabel" prefWidth="96.0" text="%legacyKeyMapping" />
+                                          <SearchableComboBox fx:id="legacyKeyMapping" prefWidth="150.0" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER_LEFT">
                                        <children>
                                           <Label fx:id="regionLabel" prefWidth="96.0" styleClass="gapLeft" text="%region" />
                                           <ComboBox fx:id="region" />
                                        </children>
                                     </HBox>
+                                    <HBox alignment="CENTER_LEFT">
+                                       <children>
+                                          <Label fx:id="matrixXLabel" prefWidth="96.0" styleClass="gapLeft" text="%matrixX" />
+                                          <Spinner fx:id="matrixX" editable="true" prefWidth="100.0" styleClass="split-arrows-horizontal" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER_LEFT">
+                                       <children>
+                                          <Label fx:id="matrixYLabel" prefWidth="96.0" styleClass="gapLeft" text="%matrixY" />
+                                          <Spinner fx:id="matrixY" editable="true" prefWidth="100.0" styleClass="split-arrows-horizontal" />
+                                       </children>
+                                    </HBox>
                                     <Hyperlink fx:id="removeElement" onAction="#evtRemoveElement" text="%removeElement" />
                                  </children>
+                                 <styleClass>
+                                    <String fx:value="column" />
+                                    <String fx:value="gapTop" />
+                                 </styleClass>
                               </VBox>
                            </children>
                         </AnchorPane>

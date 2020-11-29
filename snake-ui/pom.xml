@@ -58,6 +58,11 @@
 			<version>1.7-SNAPSHOT</version>
 		</dependency>
 		<dependency>
+			<groupId>com.sshtools</groupId>
+			<artifactId>two-slices</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
 			<groupId>com.atlassian.commonmark</groupId>
 			<artifactId>commonmark</artifactId>
 			<version>0.15.2</version>
@@ -72,6 +77,12 @@
 			<artifactId>groovy</artifactId>
 			<version>3.0.6</version>
 		</dependency>
+		<dependency>
+			<groupId>org.controlsfx</groupId>
+			<artifactId>controlsfx</artifactId>
+			<version>11.0.3</version>
+		</dependency>
+
 	</dependencies>
 	<profiles>
 		<profile>

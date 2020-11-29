@@ -2,10 +2,13 @@ package uk.co.bithatch.snake.ui.widgets;
 
 import java.util.List;
 
+import com.sshtools.icongenerator.AwesomeIcon;
 import com.sshtools.icongenerator.IconBuilder;
 import com.sshtools.icongenerator.IconBuilder.IconShape;
 import com.sshtools.icongenerator.IconBuilder.TextContent;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ObservableValue;
@@ -27,11 +30,11 @@ public class GeneratedIcon extends Pane {
 			Pane.getClassCssMetaData());
 
 	private static final CssMetaData<GeneratedIcon, Color> BORDER_COLOR = FACTORY
-			.createColorCssMetaData("-icon-border-color", s -> s.borderColorProperty, null, true);
+			.createColorCssMetaData("-icon-border-color", s -> s.borderColorProperty, null, false);
 
 	private static final CssMetaData<GeneratedIcon, Number> BORDER_WIDTH = FACTORY
-			.createSizeCssMetaData("-icon-border-width", s -> s.borderWidthProperty, -1, true);
-	
+			.createSizeCssMetaData("-icon-border-width", s -> s.borderWidthProperty, -1, false);
+
 	private static final CssMetaData<GeneratedIcon, Number> OPACITY = FACTORY.createSizeCssMetaData("-icon-opacity",
 			s -> s.opacityProperty, -1, true);
 
@@ -44,8 +47,8 @@ public class GeneratedIcon extends Pane {
 	private static final CssMetaData<GeneratedIcon, Font> FONT = FACTORY.createFontCssMetaData("-icon-text-font",
 			s -> s.fontProperty, null, true);
 
-	private static final CssMetaData<GeneratedIcon, String> SHAPE = FACTORY.createStringCssMetaData("-icon-shape",
-			s -> s.iconShapeProperty, null, true);
+	private static final CssMetaData<GeneratedIcon, String> ICON_SHAPE = FACTORY.createStringCssMetaData("-icon-shape",
+			s -> s.iconShapeProperty, null, false);
 
 	private static final CssMetaData<GeneratedIcon, String> TEXT_CONTENT = FACTORY
 			.createStringCssMetaData("-icon-text-content", s -> s.textContentProperty, null, true);
@@ -61,11 +64,12 @@ public class GeneratedIcon extends Pane {
 			"textColor");
 	private final StyleableProperty<Color> colorProperty = new SimpleStyleableObjectProperty<>(ICON_COLOR, this,
 			"color");
-	private final StyleableProperty<String> iconShapeProperty = new SimpleStyleableObjectProperty<>(SHAPE, this,
-			"shape");
+	private final StyleableProperty<String> iconShapeProperty = new SimpleStyleableObjectProperty<>(ICON_SHAPE, this,
+			"iconShape");
 	private final StyleableProperty<String> textContentProperty = new SimpleStyleableObjectProperty<>(TEXT_CONTENT,
 			this, "textContent");
 	private final StringProperty textProperty = new SimpleStringProperty();
+	private final ObjectProperty<AwesomeIcon> iconProperty = new SimpleObjectProperty<AwesomeIcon>(this, "icon", null);
 
 	public static List<CssMetaData<? extends Styleable, ?>> getClassCssMetaData() {
 		return FACTORY.getCssMetaData();
@@ -83,6 +87,7 @@ public class GeneratedIcon extends Pane {
 		iconShapeProperty().addListener((c, o, n) -> buildIcon());
 		textContentProperty().addListener((c, o, n) -> buildIcon());
 		textProperty().addListener((c, o, n) -> buildIcon());
+		iconProperty().addListener((c, o, n) -> buildIcon());
 		buildIcon();
 	}
 
@@ -100,19 +105,23 @@ public class GeneratedIcon extends Pane {
 		if (getIconShape() != null)
 			ib.shape(getIconShape());
 		if (getBorderWidth() != -1)
-			ib.border((float)getBorderWidth());
+			ib.border((float) getBorderWidth());
 		if (getBorderColor() != null)
 			ib.borderColor(JavaFX.encode(getBorderColor()));
 		if (getOpacity() != -1)
 			ib.backgroundOpacity(0);
-		if(getFont() != null) {
+		if (getFont() != null) {
 			ib.fontName(getFont().getFamily());
-			ib.fontSize((int)Math.round(getFont().getSize()));
+			ib.fontSize((int) Math.round(getFont().getSize()));
 		}
+		if (getIcon() != null)
+			ib.icon(getIcon());
 		ib.bold(true);
-		getChildren().clear();
 		Canvas build = ib.build(Canvas.class);
-		getChildren().add(build);
+		if(getChildren().isEmpty())
+			getChildren().add(build);
+		else
+			getChildren().set(0, build);
 	}
 
 	@Override
@@ -221,5 +230,17 @@ public class GeneratedIcon extends Pane {
 
 	public final void setText(String text) {
 		textProperty.setValue(text);
+	}
+
+	public final AwesomeIcon getIcon() {
+		return iconProperty.getValue();
+	}
+
+	public ObservableValue<AwesomeIcon> iconProperty() {
+		return (ObservableValue<AwesomeIcon>) iconProperty;
+	}
+
+	public final void setIcon(AwesomeIcon icon) {
+		iconProperty.setValue(icon);
 	}
 }

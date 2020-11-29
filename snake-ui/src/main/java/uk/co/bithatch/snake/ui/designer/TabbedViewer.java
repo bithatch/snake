@@ -73,7 +73,7 @@ public class TabbedViewer extends TabPane implements Viewer {
 			 * selected view
 			 */
 
-			MultipleSelectionModel<IO> newKsv = viewerViews.get(n.intValue()).getKeySelectionModel();
+			MultipleSelectionModel<IO> newKsv = viewerViews.get(n.intValue()).getElementSelectionModel();
 			MultipleSelectionModel<IO> parentKsv = getKeySelectionModel();
 
 			parentKsv.clearSelection();
@@ -100,6 +100,10 @@ public class TabbedViewer extends TabPane implements Viewer {
 						ViewerView view = tabMap.get(tab);
 						newViews.add(view.getView());
 					}
+
+					/* TODO: make this better. What if views are being hidden? */
+					TabbedViewer.this.views.clear();
+					TabbedViewer.this.views.addAll(newViews);
 					layout.setViews(newViews);
 				}
 			}
@@ -174,19 +178,19 @@ public class TabbedViewer extends TabPane implements Viewer {
 	public void setSelectionMode(SelectionMode selectionMode) {
 		getKeySelectionModel().setSelectionMode(selectionMode);
 		for (ViewerView viewerView : viewerViews) {
-			viewerView.getKeySelectionModel().setSelectionMode(selectionMode);
+			viewerView.getElementSelectionModel().setSelectionMode(selectionMode);
 		}
 	}
 
 	public IO getSelectedElement() {
-		int selIdx = getSelectedViewerView().getKeySelectionModel().getSelectedIndex();
+		int selIdx = getSelectedViewerView().getElementSelectionModel().getSelectedIndex();
 		return selIdx == -1 ? null : getSelectedViewerView().getElements().get(selIdx);
 	}
 
 	public List<IO> getSelectedElements() {
 		List<IO> sel = new ArrayList<>();
 		List<IO> elements = getSelectedViewerView().getElements();
-		for (int idx : getSelectedViewerView().getKeySelectionModel().getSelectedIndices()) {
+		for (int idx : getSelectedViewerView().getElementSelectionModel().getSelectedIndices()) {
 			sel.add(elements.get(idx));
 		}
 		return sel;
@@ -220,7 +224,7 @@ public class TabbedViewer extends TabPane implements Viewer {
 			inc = exclude.isEmpty() || !exclude.contains(view.getPosition());
 		if (inc) {
 			ViewerView viewerView = createViewerView(view);
-			viewerView.getKeySelectionModel().selectionModeProperty().set(keySelectionModel.get().getSelectionMode());
+			viewerView.getElementSelectionModel().selectionModeProperty().set(keySelectionModel.get().getSelectionMode());
 			addTab(viewerView, view);
 			onAddView(view, viewerView);
 		}
@@ -275,7 +279,7 @@ public class TabbedViewer extends TabPane implements Viewer {
 				tab.setText(bundle.getString("viewPosition." + view.getPosition().name()));
 			});
 
-			MultipleSelectionModel<IO> ksv = viewerView.getKeySelectionModel();
+			MultipleSelectionModel<IO> ksv = viewerView.getElementSelectionModel();
 			MultipleSelectionModel<IO> parentKsv = getKeySelectionModel();
 			ksv.selectedIndexProperty().addListener((e, oldVal, newVal) -> {
 				if (ksv.getSelectedIndex() == -1) {
@@ -296,11 +300,11 @@ public class TabbedViewer extends TabPane implements Viewer {
 	}
 
 	public void deselectAll() {
-		getSelectedViewerView().getKeySelectionModel().clearSelection();
+		getSelectedViewerView().getElementSelectionModel().clearSelection();
 	}
 
 	public void selectAll() {
-		getSelectedViewerView().getKeySelectionModel().selectAll();
+		getSelectedViewerView().getElementSelectionModel().selectAll();
 	}
 
 	public ViewerView getSelectedViewerView() {

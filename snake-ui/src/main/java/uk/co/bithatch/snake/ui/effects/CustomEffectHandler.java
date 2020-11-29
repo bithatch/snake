@@ -14,6 +14,7 @@ import uk.co.bithatch.snake.lib.Interpolation;
 import uk.co.bithatch.snake.lib.KeyFrame;
 import uk.co.bithatch.snake.lib.Lit;
 import uk.co.bithatch.snake.lib.Sequence;
+import uk.co.bithatch.snake.lib.effects.Effect;
 import uk.co.bithatch.snake.lib.effects.Matrix;
 import uk.co.bithatch.snake.ui.CustomOptions;
 import uk.co.bithatch.snake.ui.util.Prefs;
@@ -53,6 +54,11 @@ public class CustomEffectHandler extends AbstractEffectHandler<Sequence, CustomO
 			sequence.add(new KeyFrame());
 		}
 		this.sequence = sequence;
+	}
+
+	@Override
+	public Class<? extends Effect> getBackendEffectClass() {
+		return Matrix.class;
 	}
 
 	public boolean isReadOnly() {
@@ -127,11 +133,6 @@ public class CustomEffectHandler extends AbstractEffectHandler<Sequence, CustomO
 	}
 
 	@Override
-	public boolean isMatrixBased() {
-		return true;
-	}
-
-	@Override
 	public boolean isSupported(Lit component) {
 		return component == null ? false : component.getSupportedEffects().contains(Matrix.class);
 	}
@@ -173,7 +174,7 @@ public class CustomEffectHandler extends AbstractEffectHandler<Sequence, CustomO
 	}
 
 	@Override
-	protected void onActivate(Lit component) {
+	protected Sequence onActivate(Lit component) {
 		if (!player.isReady()) {
 			player.setDevice(Lit.getDevice(component));
 			player.setSequence(getSequence());
@@ -186,6 +187,7 @@ public class CustomEffectHandler extends AbstractEffectHandler<Sequence, CustomO
 		else if (!player.isPlaying())
 			player.play();
 
+		return getSequence();
 	}
 
 	protected void onLoad(Lit component, Preferences matrix, Matrix effect) {

@@ -37,14 +37,14 @@ public abstract class AbstractEffectHandler<E, C extends AbstractEffectControlle
 	}
 
 	@Override
-	public final void activate(Lit component) {
+	public final E activate(Lit component) {
 		select(component);
 		if (component instanceof Device && !isMatrixBased()) {
 			/* If device, select the same effect on all of the regions as well */
 			for (Region r : ((Device) component).getRegions())
 				select(r);
 		}
-		onActivate(component);
+		return onActivate(component);
 	}
 
 	@Override
@@ -66,7 +66,7 @@ public abstract class AbstractEffectHandler<E, C extends AbstractEffectControlle
 	public void update(Lit component) {
 	}
 
-	protected abstract void onActivate(Lit component);
+	protected abstract E onActivate(Lit component);
 
 	protected abstract void onStore(Lit component, C controller) throws Exception;
 

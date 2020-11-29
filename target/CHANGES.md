@@ -1,3 +1,11 @@
+# 1.0.0-SNAPSHOT-23
+
+ * Better support for Tartarus V2. 
+ 
+ * Partial implementation of new macro system (https://github.com/openrazer/openrazer/pull/1124).
+   More to come.
+   
+
 # 1.0.0-SNAPSHOT-20
 
  * Layout Editor. Can be used to create graphical layouts of Razer devices for a more 

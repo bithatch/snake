@@ -14,7 +14,10 @@ import java.util.stream.Collectors;
 import javafx.util.Duration;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.DeviceType;
+import uk.co.bithatch.snake.lib.InputEventCode;
 import uk.co.bithatch.snake.lib.Region;
+import uk.co.bithatch.snake.lib.layouts.Accessory;
+import uk.co.bithatch.snake.lib.layouts.Accessory.AccessoryType;
 import uk.co.bithatch.snake.lib.layouts.Area;
 import uk.co.bithatch.snake.lib.layouts.ComponentType;
 import uk.co.bithatch.snake.lib.layouts.DeviceLayout;
@@ -95,17 +98,37 @@ public class DeviceLayoutManager implements Listener {
 				for (IO element : view.getElements()) {
 					Preferences elementNode = elementsNode.node(String.valueOf(idx++));
 					elementNode.put("type", ComponentType.fromClass(element.getClass()).name());
-					if (element instanceof MatrixIO) {
+					if (element instanceof MatrixIO && ((MatrixIO) element).isMatrixLED()) {
 						elementNode.putInt("matrixX", ((MatrixIO) element).getMatrixX());
 						elementNode.putInt("matrixY", ((MatrixIO) element).getMatrixY());
+					} else {
+						elementNode.remove("matrixX");
+						elementNode.remove("matrixY");
+					}
+					if (element instanceof Key && ((Key) element).getEventCode() != null) {
+						elementNode.put("eventCode", ((Key) element).getEventCode().name());
+					} else {
+						elementNode.remove("eventCode");
+					}
+					if (element instanceof Key && ((Key) element).getLegacyKey() != null) {
+						elementNode.put("legacyKey", ((Key) element).getLegacyKey().name());
+					} else {
+						elementNode.remove("legacyKey");
 					}
 					if (element instanceof MatrixCell) {
 						if (((MatrixCell) element).getRegion() != null)
 							elementNode.put("region", ((MatrixCell) element).getRegion().name());
+						else
+							elementNode.remove("region");
+						elementNode.putBoolean("disabled", ((MatrixCell) element).isDisabled());
+						elementNode.putInt("width", ((MatrixCell) element).getWidth());
 					}
 					if (element instanceof Area) {
 						if (((Area) element).getRegion() != null)
 							elementNode.put("region", ((Area) element).getRegion().name());
+					}
+					if (element instanceof Accessory) {
+						elementNode.put("accessory", ((Accessory) element).getAccessory().name());
 					}
 					elementNode.putFloat("x", element.getX());
 					elementNode.putFloat("y", element.getY());
@@ -153,47 +176,61 @@ public class DeviceLayoutManager implements Listener {
 					Collections.sort(elementNodeNames);
 					for (String elementNodeName : elementNodeNames) {
 						Preferences elementNode = elementsNode.node(elementNodeName);
-						ComponentType type = ComponentType.valueOf(elementNode.get("type", ComponentType.LED.name()));
-						IO element;
-						switch (type) {
-						case LED:
-							LED led = new LED();
-							led.setMatrixX(elementNode.getInt("matrixX", 0));
-							led.setMatrixY(elementNode.getInt("matrixY", 0));
-							String regionName = elementNode.get("region", null);
-							element = led;
-							break;
-						case KEY:
-							Key key = new Key();
-							key.setMatrixX(elementNode.getInt("matrixX", 0));
-							key.setMatrixY(elementNode.getInt("matrixY", 0));
-							regionName = elementNode.get("region", null);
-							element = key;
-							break;
-						case MATRIX_CELL:
-							MatrixCell matrixCell = new MatrixCell();
-							matrixCell.setMatrixX(elementNode.getInt("matrixX", 0));
-							matrixCell.setMatrixY(elementNode.getInt("matrixY", 0));
-							regionName = elementNode.get("region", null);
-							if (regionName != null)
-								matrixCell.setRegion(Region.Name.valueOf(regionName));
-							element = matrixCell;
-							break;
-						case AREA:
-							Area area = new Area();
-							regionName = elementNode.get("region", null);
-							if (regionName != null)
-								area.setRegion(Region.Name.valueOf(regionName));
-							element = area;
-							break;
-						default:
-							throw new UnsupportedOperationException();
-						}
+						try {
+							ComponentType type = ComponentType
+									.valueOf(elementNode.get("type", ComponentType.LED.name()));
+							IO element;
+							switch (type) {
+							case LED:
+								LED led = new LED(view);
+								setMatrixPositionFromPreferences(elementNode, led);
+								String regionName = elementNode.get("region", null);
+								element = led;
+								break;
+							case KEY:
+								Key key = new Key(view);
+								setMatrixPositionFromPreferences(elementNode, key);
+								String name = elementNode.get("eventCode", "");
+								key.setEventCode(name.equals("") ? null : InputEventCode.valueOf(name));
+								name = elementNode.get("legacyKey", "");
+								key.setLegacyKey(name.equals("") ? null : uk.co.bithatch.snake.lib.Key.valueOf(name));
+								regionName = elementNode.get("region", null);
+								element = key;
+								break;
+							case MATRIX_CELL:
+								MatrixCell matrixCell = new MatrixCell(view);
+								setMatrixPositionFromPreferences(elementNode, matrixCell);
+								matrixCell.setDisabled(elementNode.getBoolean("disabled", false));
+								matrixCell.setWidth(elementNode.getInt("width", 0));
+								regionName = elementNode.get("region", null);
+								if (regionName != null)
+									matrixCell.setRegion(Region.Name.valueOf(regionName));
+								element = matrixCell;
+								break;
+							case AREA:
+								Area area = new Area(view);
+								regionName = elementNode.get("region", null);
+								if (regionName != null)
+									area.setRegion(Region.Name.valueOf(regionName));
+								element = area;
+								break;
+							case ACCESSORY:
+								Accessory accessory = new Accessory(view);
+								accessory.setAccessory(AccessoryType.valueOf(elementNode.get("accessory", null)));
+								element = accessory;
+								break;
+							default:
+								throw new UnsupportedOperationException();
+							}
 
-						element.setLabel(elementNode.get("label", null));
-						element.setX(elementNode.getFloat("x", 0));
-						element.setY(elementNode.getFloat("y", 0));
-						view.addElement(element);
+							element.setLabel(elementNode.get("label", null));
+							element.setX(elementNode.getFloat("x", 0));
+							element.setY(elementNode.getFloat("y", 0));
+							view.addElement(element);
+
+						} catch (IllegalArgumentException iae) {
+							LOG.log(Level.WARNING, "Failed to load layout element. ", iae);
+						}
 					}
 					dl.addView(view);
 				}
@@ -205,6 +242,24 @@ public class DeviceLayoutManager implements Listener {
 		}
 
 		return backend.getLayout(device);
+	}
+
+	protected void setMatrixPositionFromPreferences(Preferences elementNode, MatrixIO led) {
+		int mx = elementNode.getInt("matrixX", -1);
+		try {
+			led.setMatrixX(mx);
+		} catch (IllegalArgumentException iae) {
+			LOG.log(Level.WARNING, String.format("Ignored based Matrix X %d, reset to zero", mx));
+			led.setMatrixX(0);
+		}
+		int my = elementNode.getInt("matrixY", -1);
+		try {
+			led.setMatrixY(my);
+		} catch (IllegalArgumentException iae) {
+			LOG.log(Level.WARNING, String.format("Ignored based Matrix Y %d, reset to zero", my));
+			led.setMatrixY(0);
+		}
+		led.setMatrixY(my);
 	}
 
 	public void addListener(Listener listener) {

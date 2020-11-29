@@ -1,28 +1,25 @@
 package uk.co.bithatch.snake.ui;
 
-import java.text.MessageFormat;
 import java.util.ResourceBundle;
-
-import com.sshtools.icongenerator.IconBuilder;
-import com.sshtools.icongenerator.IconBuilder.AwesomeIconMode;
 
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
-import uk.co.bithatch.snake.lib.Macro;
-import uk.co.bithatch.snake.lib.MacroKey;
-import uk.co.bithatch.snake.lib.MacroSequence;
+import uk.co.bithatch.snake.lib.binding.MapAction;
+import uk.co.bithatch.snake.lib.binding.MapSequence;
 
 public class Record extends AbstractDetailsController {
 
-	public enum State {
-		IDLE, RECORDING, PAUSED
+	public enum State
+	{
+		IDLE,
+		RECORDING,
+		PAUSED
 	}
 
 	final static ResourceBundle bundle = ResourceBundle.getBundle(Record.class.getName());
@@ -45,8 +42,10 @@ public class Record extends AbstractDetailsController {
 	private Group headerImageGroup;
 
 	private EventHandler<KeyEvent> handler;
+	private MapSequence sequence;
 
-	public void setMacroSequence(MacroSequence seq) {
+	public void setMacroSequence(MapSequence sequence) {
+		this.sequence = sequence;
 
 		empty.managedProperty().bind(empty.visibleProperty());
 
@@ -58,48 +57,22 @@ public class Record extends AbstractDetailsController {
 			}
 		};
 
-		var builder = Macros.builderForMacroSequence(seq);
-		builder.width(32);
-		builder.height(32);
-		var icon = builder.build(Canvas.class);
-		headerImageGroup.getChildren().add(icon);
+		headerImageGroup.getChildren().add(MacroMap.iconForMapSequence(sequence));
 
-		updateState(State.IDLE);
-		rebuildSeq(seq);
+		if (sequence.isRecording())
+			updateState(State.RECORDING);
+		else
+			updateState(State.IDLE);
+
+		rebuildSeq(sequence);
 	}
 
-	private void rebuildSeq(MacroSequence seq) {
+	private void rebuildSeq(MapSequence seq) {
 		keys.getChildren().clear();
-		for (Macro m : seq) {
-			if (m instanceof MacroKey) {
-				MacroKey mk = (MacroKey) m;
-				if (mk.getPrePause() > 0) {
-					IconBuilder builder = new IconBuilder();
-					builder.width(80);
-					builder.height(24);
-					builder.rect();
-					builder.color(Integer.parseInt("00ffff", 16));
-					builder.textColor(0);
-					builder.bold(true);
-					builder.text(String.format("%dms", mk.getPrePause()));
-					keys.getChildren().add(builder.build(Canvas.class));
-				}
-			}
-			IconBuilder b = Macros.builderForMacro(m);
-			b.width(48);
-			b.height(48);
-			VBox vb = new VBox();
-			vb.getStyleClass().add("column");
-			if (m instanceof MacroKey) {
-				b.icon(null);
-				b.awesomeIconMode(AwesomeIconMode.NONE);
-				MacroKey mk = (MacroKey) m;
-				if (mk.getState() == uk.co.bithatch.snake.lib.MacroKey.State.DOWN)
-					b.text(MessageFormat.format(bundle.getString("down"), mk.getKey().name()));
-				else
-					b.text(MessageFormat.format(bundle.getString("up"), mk.getKey().name()));
-			}
-			keys.getChildren().add(b.build(Canvas.class));
+		for (MapAction m : seq) {
+			Label l = new Label(MacroMap.textForMapAction(m));
+			l.setGraphic(MacroMap.iconForMacro(m));
+			keys.getChildren().add(l);
 		}
 		empty.visibleProperty().set(keys.getChildren().isEmpty());
 	}
@@ -142,21 +115,27 @@ public class Record extends AbstractDetailsController {
 	@FXML
 	void evtBack() {
 		context.pop();
+		if (sequence.isRecording())
+			sequence.stopRecording();
 	}
 
 	@FXML
 	void evtStartRecord() {
 		updateState(State.RECORDING);
+		sequence.record();
 	}
 
 	@FXML
 	void evtPause() {
 		updateState(State.PAUSED);
+		sequence.stopRecording();
 	}
 
 	@FXML
 	void evtStop() {
 		updateState(State.IDLE);
+		sequence.stopRecording();
+		context.pop();
 	}
 
 }

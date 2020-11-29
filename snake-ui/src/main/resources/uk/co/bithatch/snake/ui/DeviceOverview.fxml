@@ -21,7 +21,7 @@
             <Label fx:id="deviceFirmware" styleClass="deviceFirmware" text="Device Firmware" />
             <HBox alignment="CENTER_LEFT" styleClass="status">
                <children>
-                  <ImageView fx:id="effect" fitHeight="22.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true" styleClass="statusImage" />
+                  <HBox fx:id="effect" alignment="CENTER_LEFT" />
                   <Label fx:id="brightnessLabel" text="%brightness">
                      <graphic>
                         <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">

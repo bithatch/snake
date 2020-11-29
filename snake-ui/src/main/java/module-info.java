@@ -22,6 +22,9 @@ module uk.co.bithatch.snake.ui {
 	requires transitive com.sshtools.icongenerator.common;
 	requires javafx.base;
 	requires transitive org.codehaus.groovy;
+	requires transitive uk.co.bithatch.linuxio;
+	requires com.sshtools.twoslices;
+	requires org.controlsfx.controls;
     uses uk.co.bithatch.snake.lib.Backend; 
     uses uk.co.bithatch.snake.ui.PlatformService; 
     uses uk.co.bithatch.snake.ui.EffectHandler;

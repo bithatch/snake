@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.Stack;
@@ -16,11 +17,173 @@ import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.Lit;
 import uk.co.bithatch.snake.lib.Region;
+import uk.co.bithatch.snake.lib.effects.Effect;
 import uk.co.bithatch.snake.ui.App;
 import uk.co.bithatch.snake.ui.EffectHandler;
 import uk.co.bithatch.snake.ui.util.Prefs;
 
 public class EffectManager {
+
+	private final class EffectAcquisitionImpl implements EffectAcquisition {
+		private final Device device;
+		private final Stack<EffectAcquisitionImpl> stack;
+		private Map<Region, EffectHandler<?, ?>> effects = new HashMap<>();
+		private List<EffectChangeListener> listeners = new ArrayList<>();
+		private Map<Region, EffectHandler<?, ?>> active = Collections.synchronizedMap(new HashMap<>());
+		private Map<Region, Object> activations = Collections.synchronizedMap(new HashMap<>());
+
+		private EffectAcquisitionImpl(Device device, Stack<EffectAcquisitionImpl> stack) {
+			this.device = device;
+			this.stack = stack;
+		}
+
+		@SuppressWarnings("unchecked")
+		public <E extends Effect> E getEffectInstance(Lit component) {
+			return (E) activations.get(component);
+		}
+
+		@Override
+		public void activate(Lit lit, EffectHandler<?, ?> effect) {
+			if (lit instanceof Device) {
+				for (Region r : ((Device) lit).getRegions())
+					effects.put(r, effect);
+			} else
+				effects.put((Region) lit, effect);
+			doActivate(lit, effect);
+			for (int i = listeners.size() - 1; i >= 0; i--)
+				listeners.get(i).effectChanged(lit, effect);
+		}
+
+		public void addListener(EffectChangeListener listener) {
+			this.listeners.add(listener);
+		}
+
+		@Override
+		public void close() throws Exception {
+			synchronized (acquisitions) {
+				stack.remove(this);
+
+				/* If no acquisitions left, turn off effects */
+				if (acquisitions.isEmpty()) {
+					activate(device, EffectManager.this.getEffect(device, OffEffectHandler.class));
+				} else {
+					/* Return to the previous acquisitions effect */
+					Stack<EffectAcquisitionImpl> deviceStack = acquisitions.get(device);
+					if (deviceStack != null) {
+						EffectAcquisition iface = deviceStack.peek();
+						for (Lit subLit : iface.getLitAreas()) {
+							EffectHandler<?, ?> litEffect = iface.getEffect(subLit);
+							if (litEffect != null)
+								activate(subLit, litEffect);
+						}
+					}
+				}
+			}
+		}
+
+		@Override
+		public Device getDevice() {
+			return device;
+		}
+
+		@SuppressWarnings("resource")
+		@Override
+		public EffectHandler<?, ?> getEffect(Lit lit) {
+			if (lit instanceof Device) {
+				EffectHandler<?, ?> leffect = null;
+				for (Region r : Lit.getDevice(lit).getRegions()) {
+					EffectHandler<?, ?> reffect = getEffect(r);
+					if (leffect != null && !Objects.equals(reffect, leffect)) {
+						/* Different effects on different regions */
+						return null;
+					}
+					leffect = reffect;
+				}
+
+				/* Same effect on same regions */
+				return leffect;
+			} else {
+				if (effects.containsKey(lit)) {
+					return effects.get(lit);
+				} else {
+					String effectName = getPreferences(lit).get(EffectManager.PREF_EFFECT, "");
+					return EffectManager.this.getEffect(Lit.getDevice(lit), effectName);
+				}
+			}
+		}
+
+		@Override
+		public Set<Region> getLitAreas() {
+			return effects.keySet();
+		}
+
+		public void removeListener(EffectChangeListener listener) {
+			this.listeners.remove(listener);
+		}
+
+		@Override
+		public void update(Lit lit) {
+			/*
+			 * Only update if this is actually the head aquisition. We will update the
+			 * current effect when all acquisitions are released and this becomes the head.
+			 */
+			synchronized (acquisitions) {
+				if (this == stack.peek()) {
+					if (lit instanceof Device) {
+						for (Region r : Lit.getDevice(lit).getRegions()) {
+							EffectHandler<?, ?> litEffect = effects.get(r);
+							if (litEffect != null)
+								litEffect.update(r);
+						}
+					} else {
+						EffectHandler<?, ?> litEffect = effects.get(lit);
+						if (litEffect != null)
+							litEffect.update(lit);
+					}
+				}
+			}
+		}
+
+		@Override
+		public <E extends EffectHandler<?, ?>> E activate(Lit region, Class<E> class1) {
+			E fx = findEffect(region, class1);
+			if (fx != null)
+				activate(region, fx);
+			return fx;
+		}
+
+		protected void deactivateComponent(Lit component) {
+			EffectHandler<?, ?> deviceEffect = active.get(component);
+			if (deviceEffect != null) {
+				deviceEffect.deactivate(component);
+				active.remove(component);
+				activations.remove(component);
+			}
+		}
+
+		private void doActivate(Lit component, EffectHandler<?, ?> effect) {
+			synchronized (active) {
+				deactivateComponent(component);
+				if (effect != null) {
+					effect.activate(component);
+					if (component instanceof Device) {
+						for (Region r : ((Device) component).getRegions()) {
+							activateRegion(r, effect);
+						}
+					} else {
+						activateRegion((Region) component, effect);
+					}
+				}
+			}
+		}
+
+		private void activateRegion(Region component, EffectHandler<?, ?> effect) {
+			if (component.getSupportedEffects().contains(effect.getBackendEffectClass())) {
+				activations.put(component, effect.activate(component));
+				active.put((Region) component, effect);
+			}
+		}
+	}
 
 	public interface Listener {
 		void effectAdded(Device component, EffectHandler<?, ?> effect);
@@ -34,135 +197,21 @@ public class EffectManager {
 
 	static final String PREF_CUSTOM_EFFECTS = "customEffects";
 
-	private Map<Lit, EffectHandler<?, ?>> active = Collections.synchronizedMap(new HashMap<>());
+	private Map<Device, Stack<EffectAcquisitionImpl>> acquisitions = new HashMap<>();
 	private App context;
-	private Map<Device, Map<String, EffectHandler<?, ?>>> effectHandlers = new LinkedHashMap<>();
+	private Map<Device, Map<String, EffectHandler<?, ?>>> effectHandlers = Collections
+			.synchronizedMap(new LinkedHashMap<>());
 	private List<Listener> listeners = new ArrayList<>();
-	private Map<Device, Stack<EffectAcquisition>> acquisitions = new HashMap<>();
 
 	public EffectManager(App context) {
 		this.context = context;
 	}
 
-	public EffectAcquisition getRootAcquisition(Device device) {
-		synchronized (acquisitions) {
-			return acquisitions.get(device).firstElement();
-		}
-	}
-
-	public EffectAcquisition getHeadAcquisition(Device device) {
-		synchronized (acquisitions) {
-			return acquisitions.get(device).peek();
-		}
-	}
-
 	public EffectAcquisition acquire(Device device) {
-		Stack<EffectAcquisition> stack = getStack(device);
-		EffectAcquisition iface = new EffectAcquisition() {
-
-			private Map<Lit, EffectHandler<?, ?>> effects = new HashMap<>();
-
-			private List<EffectChangeListener> listeners = new ArrayList<>();
-
-			@Override
-			public void close() throws Exception {
-				synchronized (acquisitions) {
-					stack.remove(this);
-
-					/* If no acquisitions left, turn off effects */
-					if (acquisitions.isEmpty()) {
-						activate(device, EffectManager.this.getEffect(device, OffEffectHandler.class));
-					} else {
-						/* Return to the previous acquisitions effect */
-						Stack<EffectAcquisition> deviceStack = acquisitions.get(device);
-						if (deviceStack != null) {
-							EffectAcquisition iface = deviceStack.peek();
-							for (Lit subLit : iface.getLitAreas()) {
-								EffectHandler<?, ?> litEffect = iface.getEffect(subLit);
-								if (litEffect != null)
-									activate(subLit, litEffect);
-							}
-						}
-					}
-				}
-			}
-
-			public void addListener(EffectChangeListener listener) {
-				this.listeners.add(listener);
-			}
-
-			public void removeListener(EffectChangeListener listener) {
-				this.listeners.remove(listener);
-			}
-
-			@Override
-			public EffectHandler<?, ?> getEffect(Lit lit) {
-				if (effects.containsKey(lit)) {
-					return effects.get(lit);
-				} else {
-					String effectName = getPreferences(lit).get(EffectManager.PREF_EFFECT, "");
-					return EffectManager.this.getEffect(Lit.getDevice(lit), effectName);
-				}
-			}
-
-			@Override
-			public void activate(Lit lit, EffectHandler<?, ?> effect) {
-				effects.put(lit, effect);
-				if (lit instanceof Device) {
-					for (Region r : ((Device) lit).getRegions())
-						effects.put(r, effect);
-				}
-				EffectManager.this.activate(lit, effect);
-				for (int i = listeners.size() - 1; i >= 0; i--)
-					listeners.get(i).effectChanged(lit, effect);
-			}
-
-			@Override
-			public void update(Lit lit) {
-				/*
-				 * Only update if this is actually the head aquisition. We will update the
-				 * current effect when all acquisitions are released and this becomes the head.
-				 */
-				synchronized (acquisitions) {
-					if (this == stack.peek()) {
-						EffectHandler<?, ?> litEffect = effects.get(lit);
-						if (litEffect != null)
-							litEffect.update(lit);
-					}
-				}
-			}
-
-			@Override
-			public Set<Lit> getLitAreas() {
-				return effects.keySet();
-			}
-
-			@Override
-			public Device getDevice() {
-				return device;
-			}
-		};
+		Stack<EffectAcquisitionImpl> stack = getStack(device);
+		EffectAcquisitionImpl iface = new EffectAcquisitionImpl(device, stack);
 		stack.add(iface);
 		return iface;
-	}
-
-	protected Stack<EffectAcquisition> getStack(Device device) {
-		Stack<EffectAcquisition> stack = acquisitions.get(device);
-		if (stack == null) {
-			stack = new Stack<>();
-			acquisitions.put(device, stack);
-		}
-		return stack;
-	}
-
-	private void activate(Lit component, EffectHandler<?, ?> effect) {
-		synchronized (active) {
-			deactivateComponent(component);
-			if (effect != null) {
-				effect.activate(component);
-				active.put(component, effect);
-			}
-		}
 	}
 
 	public void add(Device device, EffectHandler<?, ?> handler) {
@@ -219,15 +268,6 @@ public class EffectManager {
 		return (H) getDeviceEffectHandlers(device).get(name);
 	}
 
-	@SuppressWarnings("unchecked")
-	private <H extends EffectHandler<?, ?>> H getEffect(Lit component, Class<H> clazz) {
-		for (EffectHandler<?, ?> eh : getEffects(component)) {
-			if (eh.getClass().equals(clazz))
-				return (H) eh;
-		}
-		return null;
-	}
-
 	public Set<EffectHandler<?, ?>> getEffects(Lit component) {
 		Set<EffectHandler<?, ?>> filteredHandlers = new LinkedHashSet<>();
 		Map<String, EffectHandler<?, ?>> deviceEffectHandlers = getDeviceEffectHandlers(Lit.getDevice(component));
@@ -237,6 +277,12 @@ public class EffectManager {
 			}
 		}
 		return filteredHandlers;
+	}
+
+	public EffectAcquisition getHeadAcquisition(Device device) {
+		synchronized (acquisitions) {
+			return acquisitions.get(device).peek();
+		}
 	}
 
 	public Preferences getPreferences(Lit component) {
@@ -250,8 +296,14 @@ public class EffectManager {
 					String.format("Unsuported %s type %s", Lit.class.getName(), component.getClass().getName()));
 	}
 
+	public EffectAcquisition getRootAcquisition(Device device) {
+		synchronized (acquisitions) {
+			return acquisitions.get(device).firstElement();
+		}
+	}
+
 	public boolean isSupported(Lit component, Class<? extends EffectHandler<?, ?>> clazz) {
-		return getEffect(component, clazz) != null || (clazz.equals(CustomEffectHandler.class)
+		return findEffect(component, clazz) != null || (clazz.equals(CustomEffectHandler.class)
 				&& Lit.getDevice(component).getCapabilities().contains(Capability.MATRIX));
 	}
 
@@ -259,23 +311,36 @@ public class EffectManager {
 
 		Map<String, EffectHandler<?, ?>> deviceEffectHandlers = getDeviceEffectHandlers(handler.getDevice());
 		if (deviceEffectHandlers.containsKey(handler.getName())) {
-			synchronized (active) {
-				/* Deactivate the effect on any device or region that is using it */
-				for (Lit r : new ArrayList<>(active.keySet())) {
-					if (active.get(r).equals(handler)) {
-						deactivateComponent(r);
+			/* Deactivate the effect on any device or region that is using it */
+			synchronized (acquisitions) {
+				for (Map.Entry<Device, Stack<EffectAcquisitionImpl>> en : acquisitions.entrySet()) {
+					for (EffectAcquisitionImpl acq : en.getValue()) {
+						for (Lit r : new ArrayList<>(acq.active.keySet())) {
+							if (acq.active.get(r).equals(handler)) {
+								acq.deactivateComponent(r);
+							}
+						}
 					}
 				}
 			}
 
 			deviceEffectHandlers.remove(handler.getName());
 			handler.removed(handler.getDevice());
-			if (handler.equals(active.get(handler.getDevice()))) {
-				/* We are removing the currently selected device effect */
-				Set<EffectHandler<?, ?>> effectsNow = getEffects(handler.getDevice());
-				if (!effectsNow.isEmpty())
-					activate(handler.getDevice(), effectsNow.iterator().next());
+
+			/*
+			 * Set the first available effect back on every region on every device in the
+			 * stack
+			 */
+			synchronized (acquisitions) {
+				for (Map.Entry<Device, Stack<EffectAcquisitionImpl>> en : acquisitions.entrySet()) {
+					for (EffectAcquisitionImpl acq : en.getValue()) {
+						Set<EffectHandler<?, ?>> effectsNow = getEffects(handler.getDevice());
+						if (!effectsNow.isEmpty())
+							acq.activate(handler.getDevice(), effectsNow.iterator().next());
+					}
+				}
 			}
+
 			for (int i = listeners.size() - 1; i >= 0; i--)
 				listeners.get(i).effectRemoved(handler.getDevice(), handler);
 		}
@@ -304,12 +369,22 @@ public class EffectManager {
 		}
 	}
 
-	protected void deactivateComponent(Lit component) {
-		EffectHandler<?, ?> deviceEffect = active.get(component);
-		if (deviceEffect != null) {
-			deviceEffect.deactivate(component);
-			active.remove(component);
+	protected Stack<EffectAcquisitionImpl> getStack(Device device) {
+		Stack<EffectAcquisitionImpl> stack = acquisitions.get(device);
+		if (stack == null) {
+			stack = new Stack<>();
+			acquisitions.put(device, stack);
 		}
+		return stack;
+	}
+
+	@SuppressWarnings("unchecked")
+	private <H extends EffectHandler<?, ?>> H findEffect(Lit component, Class<H> clazz) {
+		for (EffectHandler<?, ?> eh : getEffects(component)) {
+			if (eh.getClass().equals(clazz))
+				return (H) eh;
+		}
+		return null;
 	}
 
 }

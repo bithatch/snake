@@ -219,7 +219,7 @@ public class LinuxPlatformService implements PlatformService {
 			pw.println("Comment=" + comment);
 			pw.println("Categories=Utility;Core;");
 			pw.println("StartupNotify=false");
-			pw.println("Type=Application");
+			pw.println("AccessoryType=Application");
 			pw.println("Keywords=razer;snake;mamba;chroma;deathadder");
 			if (autoStart != null) {
 				pw.println("X-GNOME-Autostart-enabled=" + autoStart);

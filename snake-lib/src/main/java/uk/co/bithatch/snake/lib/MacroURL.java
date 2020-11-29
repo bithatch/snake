@@ -3,6 +3,7 @@ package uk.co.bithatch.snake.lib;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+@Deprecated
 public class MacroURL implements Macro {
 
 	private String url;

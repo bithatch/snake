@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.MacroMap">
+   <children>
+      <VBox fx:id="popupMessages" styleClass="popupMessages" />
+      <BorderPane fx:id="header" styleClass="nav">
+         <center>
+            <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
+               <children>
+                  <Group>
+                     <children>
+                        <ImageView fx:id="deviceImage" fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true" styleClass="titleImage" />
+                        <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true" styleClass="titleImage" x="60.0" y="6.0">
+                           <image>
+                              <Image url="@icons/macros32.png" />
+                           </image>
+                        </ImageView>
+                     </children>
+                  </Group>
+                  <VBox>
+                     <children>
+                        <Label styleClass="title" text="%macros" />
+                        <Label fx:id="deviceName" text="Device Name" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+         </center>
+         <right>
+            <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
+               <children>
+                  <Hyperlink fx:id="back" onAction="#evtBack" styleClass="iconButton" text="%back" />
+               </children>
+            </HBox>
+         </right>
+      </BorderPane>
+      <StackPane VBox.vgrow="ALWAYS">
+         <children>
+            <Region fx:id="background" prefHeight="200.0" prefWidth="200.0" />
+            <BorderPane>
+               <left>
+                  <BorderPane BorderPane.alignment="CENTER">
+                     <center>
+                        <BorderPane fx:id="macrosContainer" BorderPane.alignment="CENTER">
+                           <bottom>
+                              <HBox styleClass="compactTools" BorderPane.alignment="CENTER">
+                                 <children>
+                                    <Hyperlink onAction="#evtImport" text="%import" />
+                                    <Hyperlink fx:id="export" onAction="#evtExport" text="%export" />
+                                 </children>
+                              </HBox>
+                           </bottom>
+                        </BorderPane>
+                     </center>
+                     <top>
+                        <VBox styleClass="tools" BorderPane.alignment="CENTER">
+                           <children>
+                              <Label styleClass="subtitle" text="%sequences" />
+                              <HBox alignment="CENTER_LEFT" styleClass="row">
+                                 <children>
+                                    <Hyperlink fx:id="add" onAction="#evtAdd" text="%add" />
+                                 </children>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </top>
+                  </BorderPane>
+               </left>
+               <center>
+                  <VBox styleClass="tools" BorderPane.alignment="CENTER">
+                     <children>
+                        <VBox fx:id="sequenceEditor" styleClass="column">
+                           <children>
+                              <BorderPane>
+                                 <center>
+                                    <Label styleClass="subtitle" text="%macroKeySubtitle" BorderPane.alignment="CENTER_LEFT" />
+                                 </center>
+                              </BorderPane>
+                              <ComboBox fx:id="macroKey" prefWidth="150.0" />
+                           </children>
+                        </VBox>
+                        <VBox fx:id="editor" prefWidth="360.0">
+                           <children>
+                              <GridPane VBox.vgrow="NEVER">
+                                <columnConstraints>
+                                  <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
+                                  <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
+                                    <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
+                                    <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
+                                    <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
+                                    <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
+                                    <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
+                                </columnConstraints>
+                                <rowConstraints>
+                                  <RowConstraints minHeight="-Infinity" prefHeight="30.0" vgrow="NEVER" />
+                                  <RowConstraints maxHeight="-Infinity" minHeight="-Infinity" prefHeight="30.0" vgrow="NEVER" />
+                                </rowConstraints>
+                                 <children>
+                                    <RadioButton fx:id="keyMapAction" mnemonicParsing="false" GridPane.rowIndex="1">
+                                       <opaqueInsets>
+                                          <Insets />
+                                       </opaqueInsets>
+                                       <toggleGroup>
+                                          <ToggleGroup fx:id="macroType" />
+                                       </toggleGroup>
+                                    </RadioButton>
+                                    <RadioButton fx:id="releaseMapAction" mnemonicParsing="false" toggleGroup="$macroType" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                    <RadioButton fx:id="sleepMapAction" mnemonicParsing="false" toggleGroup="$macroType" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                                    <Label text="%key" textAlignment="CENTER" />
+                                    <Label text="%release" textAlignment="CENTER" GridPane.columnIndex="1" />
+                                    <Label text="%sleep" textAlignment="CENTER" GridPane.columnIndex="2" />
+                                    <Label alignment="CENTER" text="%execute" textAlignment="CENTER" GridPane.columnIndex="3" />
+                                    <Label fx:id="profileMapActionLabel" alignment="CENTER" text="%profile" textAlignment="CENTER" GridPane.columnIndex="4" />
+                                    <Label fx:id="mapMapActionLabel" alignment="CENTER" text="%map" textAlignment="CENTER" GridPane.columnIndex="5" />
+                                    <Label fx:id="shiftMapActionLabel" alignment="CENTER" text="%shift" textAlignment="CENTER" GridPane.columnIndex="6" />
+                                    <RadioButton fx:id="executeMapAction" mnemonicParsing="false" toggleGroup="$macroType" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                                    <RadioButton fx:id="profileMapAction" mnemonicParsing="false" toggleGroup="$macroType" GridPane.columnIndex="4" GridPane.rowIndex="1" />
+                                    <RadioButton fx:id="mapMapAction" mnemonicParsing="false" toggleGroup="$macroType" GridPane.columnIndex="5" GridPane.rowIndex="1" />
+                                    <RadioButton fx:id="shiftMapAction" mnemonicParsing="false" toggleGroup="$macroType" GridPane.columnIndex="6" GridPane.rowIndex="1" />
+                                 </children>
+                              </GridPane>
+                              <VBox fx:id="keySection" styleClass="column">
+                                 <children>
+                                    <Label styleClass="subtitle" text="%keySubtitle" />
+                                    <ComboBox fx:id="keyCode" prefWidth="150.0" />
+                                 </children>
+                              </VBox>
+                              <VBox fx:id="profileSection" styleClass="column">
+                                 <children>
+                                    <Label styleClass="subtitle" text="%targetProfile" />
+                                    <ComboBox fx:id="targetProfile" prefWidth="150.0" />
+                                 </children>
+                              </VBox>
+                              <VBox fx:id="mapSection" styleClass="column">
+                                 <children>
+                                    <Label styleClass="subtitle" text="%targetMap" />
+                                    <ComboBox fx:id="targetMap" prefWidth="150.0" />
+                                 </children>
+                              </VBox>
+                              <VBox fx:id="sleepSection" styleClass="column">
+                                 <children>
+                                    <Label styleClass="emphasis" text="%seconds" />
+                                    <TextField fx:id="seconds" />
+                                 </children>
+                              </VBox>
+                              <VBox fx:id="commandSection" styleClass="column">
+                                 <children>
+                                    <Label styleClass="subtitle" text="%commandSubtitle" />
+                                    <HBox styleClass="row">
+                                       <children>
+                                          <TextField fx:id="commandLocation" />
+                                          <Button mnemonicParsing="false" onAction="#evtCommandBrowse" text="%commandBrowse" />
+                                       </children>
+                                    </HBox>
+                                    <Label styleClass="emphasis" text="%arguments" />
+                                    <Label styleClass="small" text="%argumentsDescription" wrapText="true" />
+                                    <TextArea fx:id="commandArgs" maxWidth="-Infinity" prefWidth="300.0" VBox.vgrow="ALWAYS" />
+                                 </children>
+                              </VBox>
+                           </children>
+                        </VBox>
+                        <HBox alignment="CENTER_LEFT" styleClass="tools">
+                           <children>
+                              <Hyperlink fx:id="delete" onAction="#evtDelete" text="%delete" />
+                              <Hyperlink fx:id="addMapAction" onAction="#evtAddMapAction" text="%addMapAction" />
+                              <Hyperlink fx:id="recordMacro" onAction="#evtRecordMacro" text="%recordMacro" />
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+               </center>
+            </BorderPane>
+         </children>
+      </StackPane>
+   </children>
+</VBox>

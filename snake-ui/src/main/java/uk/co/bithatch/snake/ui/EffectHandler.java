@@ -6,6 +6,8 @@ import javafx.scene.Node;
 import javafx.scene.image.ImageView;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.Lit;
+import uk.co.bithatch.snake.lib.effects.Effect;
+import uk.co.bithatch.snake.lib.effects.Matrix;
 
 public interface EffectHandler<E, C extends AbstractEffectController<E, ?>> {
 
@@ -14,8 +16,10 @@ public interface EffectHandler<E, C extends AbstractEffectController<E, ?>> {
 	}
 
 	default boolean isMatrixBased() {
-		return false;
+		return Matrix.class.equals(getBackendEffectClass());
 	}
+
+	Class<? extends Effect> getBackendEffectClass();
 
 	Device getDevice();
 
@@ -52,7 +56,7 @@ public interface EffectHandler<E, C extends AbstractEffectController<E, ?>> {
 
 	String getDisplayName();
 
-	void activate(Lit component);
+	E activate(Lit component);
 
 	default void deactivate(Lit component) {
 	}

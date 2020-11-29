@@ -23,6 +23,7 @@ import uk.co.bithatch.snake.lib.layouts.MatrixCell;
 import uk.co.bithatch.snake.lib.layouts.MatrixIO;
 import uk.co.bithatch.snake.lib.layouts.ViewPosition;
 import uk.co.bithatch.snake.ui.graphics.AbstractGraphic;
+import uk.co.bithatch.snake.ui.graphics.AccessoryGraphic;
 import uk.co.bithatch.snake.ui.graphics.AreaGraphic;
 import uk.co.bithatch.snake.ui.graphics.KeyGraphic;
 import uk.co.bithatch.snake.ui.graphics.LEDGraphic;
@@ -51,6 +52,8 @@ public class Tool extends StackPane {
 				graphic = new KeyGraphic();
 			else if (elementView.getType() == ComponentType.AREA)
 				graphic = new AreaGraphic();
+			else if (elementView.getType() == ComponentType.ACCESSORY)
+				graphic = new AccessoryGraphic();
 			else
 				throw new UnsupportedOperationException();
 		} else {
@@ -86,7 +89,7 @@ public class Tool extends StackPane {
 		if (deviceViewerPane.isLayoutSelectableElements()) {
 			selectedAtDragStart.clear();
 			for (ElementView ev : deviceViewerPane.elements.get()) {
-				if (deviceViewerPane.getKeySelectionModel().getSelectedItems().contains(ev.getElement())) {
+				if (deviceViewerPane.getElementSelectionModel().getSelectedItems().contains(ev.getElement())) {
 					selectedAtDragStart.put(ev,
 							new Point2D(ev.getElementTool().getLayoutX(), ev.getElementTool().getLayoutY()));
 				}
@@ -105,8 +108,8 @@ public class Tool extends StackPane {
 			 * (i.e. shift or ctrl modifier), then select the new element now
 			 */
 			if (deviceViewerPane.isLayoutSelectableElements() && !mouseEvent.isControlDown()
-					&& !mouseEvent.isShiftDown()
-					&& !deviceViewerPane.getKeySelectionModel().getSelectedItems().contains(elementView.getElement())) {
+					&& !mouseEvent.isShiftDown() && !deviceViewerPane.getElementSelectionModel().getSelectedItems()
+							.contains(elementView.getElement())) {
 				selectedAtDragStart.clear();
 				deviceViewerPane.selectSingle(elementView.getElement());
 			}
@@ -134,41 +137,44 @@ public class Tool extends StackPane {
 				 * Attach a label to this element view. Look for a label and region from the
 				 * matrix view if there is one.
 				 */
-				String label = deviceViewerPane.findBestDefaultLabelText(elementView.getType());
-
-				if (elementView.getElement() instanceof Area) {
-					Area area = (Area) elementView.getElement();
-					Set<Region.Name> available = new LinkedHashSet<>(deviceViewerPane.device.getRegionNames());
-					for (IO el : deviceViewerPane.view.getElements()) {
-						if (el instanceof Area) {
-							Area a = (Area) el;
-							if (a.getRegion() != null)
-								available.remove(a.getRegion());
-						}
-					}
-					if (!available.isEmpty()) {
-						Name a = available.iterator().next();
-						area.setRegion(a);
-						label = Strings.toName(a.name());
-					}
-				}
+//				String label = deviceViewerPane.findBestDefaultLabelText(elementView.getType());
+//
+//				if (elementView.getElement() instanceof Area) {
+//					Area area = (Area) elementView.getElement();
+//					Set<Region.Name> available = new LinkedHashSet<>(deviceViewerPane.device.getRegionNames());
+//					for (IO el : deviceViewerPane.view.getElements()) {
+//						if (el instanceof Area) {
+//							Area a = (Area) el;
+//							if (a.getRegion() != null)
+//								available.remove(a.getRegion());
+//						}
+//					}
+//					if (!available.isEmpty()) {
+//						Name a = available.iterator().next();
+//						area.setRegion(a);
+//						label = Strings.toName(a.name());
+//					}
+//				}
 
 				if (elementView.getElement() instanceof MatrixIO) {
 					MatrixIO mio = (MatrixIO) elementView.getElement();
 
-					((MatrixIO) mio)
-							.setMatrixXY(deviceViewerPane.view.getNextFreeCell(deviceViewerPane.componentType().get()));
-
-					DeviceView matrixView = deviceViewerPane.view.getLayout().getViews().get(ViewPosition.MATRIX);
-					if (matrixView != null) {
-						MatrixCell otherElement = matrixView.getElement(ComponentType.MATRIX_CELL, mio.getMatrixX(),
-								mio.getMatrixY());
-						if (otherElement != null && otherElement.getLabel() != null) {
-							label = otherElement.getLabel();
-						}
+					try {
+						((MatrixIO) mio).setMatrixXY(
+								deviceViewerPane.view.getNextFreeCell(deviceViewerPane.componentType().get()));
+					} catch (IllegalStateException ise) {
 					}
+
+//					DeviceView matrixView = deviceViewerPane.view.getLayout().getViews().get(ViewPosition.MATRIX);
+//					if (matrixView != null) {
+//						MatrixCell otherElement = matrixView.getElement(ComponentType.MATRIX_CELL, mio.getMatrixX(),
+//								mio.getMatrixY());
+//						if (otherElement != null && otherElement.getLabel() != null) {
+//							label = otherElement.getLabel();
+//						}
+//					}
 				}
-				elementView.getElement().setLabel(label);
+//				elementView.getElement().setLabel(label);
 				elementView.setLabel(deviceViewerPane.createLabel(elementView.getElement()));
 				deviceViewerPane.pane.getChildren().add(elementView.getLabel());
 				deviceViewerPane.elements.get().add(elementView);

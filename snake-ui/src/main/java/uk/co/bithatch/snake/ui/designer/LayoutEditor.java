@@ -46,6 +46,9 @@ import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.Device.Listener;
 import uk.co.bithatch.snake.lib.Region;
 import uk.co.bithatch.snake.lib.Region.Name;
+import uk.co.bithatch.snake.lib.binding.Profile;
+import uk.co.bithatch.snake.lib.binding.ProfileMap;
+import uk.co.bithatch.snake.lib.layouts.Accessory;
 import uk.co.bithatch.snake.lib.layouts.Area;
 import uk.co.bithatch.snake.lib.layouts.ComponentType;
 import uk.co.bithatch.snake.lib.layouts.DeviceView;
@@ -372,12 +375,14 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 	}
 
 	private final BooleanProperty showElementGraphics = new SimpleBooleanProperty(this, "showElementGraphics", true);
+	private final BooleanProperty selectableComponentType = new SimpleBooleanProperty(this, "selectableComponentType",
+			true);
 	private final ObjectProperty<ComponentType> componentType = new SimpleObjectProperty<>(this, "componentType");
 	private final ObjectProperty<LabelFactory> labelFactory = new SimpleObjectProperty<>(this, "labelFactory");
 	private final ObjectProperty<List<ComponentType>> enabledTypes = new SimpleObjectProperty<>(this, "enabledTypes");
 	private final Slider gridSizeSlider = new Slider(0.01, 0.1, 0.025);
-	private final ObjectProperty<MultipleSelectionModel<IO>> keySelectionModel = new SimpleObjectProperty<MultipleSelectionModel<IO>>(
-			this, "keySelectionModel");
+	private final ObjectProperty<MultipleSelectionModel<IO>> elementSelectionModel = new SimpleObjectProperty<MultipleSelectionModel<IO>>(
+			this, "elementSelectionModel");
 	private final StyleableProperty<Color> lineColorProperty = new SimpleStyleableObjectProperty<>(LINE_COLOR, this,
 			"lineColor");
 	private final CheckBox snapToGridCheckBox = new CheckBox();
@@ -428,12 +433,12 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 				return in.getElement();
 			}
 		};
-		setKeySelectionModel(new ListMultipleSelectionModel<>(items));
+		setElementSelectionModel(new ListMultipleSelectionModel<>(items));
 
 		setFocusTraversable(true);
 		setOnKeyReleased((e) -> {
 			if (e.isControlDown() && e.getCode() == KeyCode.A) {
-				getKeySelectionModel().selectAll();
+				getElementSelectionModel().selectAll();
 				e.consume();
 			}
 			if (e.getCode() == KeyCode.DELETE) {
@@ -456,8 +461,16 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 				e.consume();
 			}
 		});
+		selectableComponentType.addListener((e, o, n) -> {
+			if (pane != null) {
+				rebuildComponentTypesPanel();
+				rebuildElements();
+			}
+		});
 		showElementGraphics.addListener((e, o, n) -> {
-			rebuildElements();
+			if (pane != null) {
+				rebuildElements();
+			}
 		});
 		snapToGridCheckBox.selectedProperty().addListener((e, o, n) -> {
 			if (n)
@@ -482,7 +495,7 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 			}
 		});
 
-		keySelectionModel().get().getSelectedItems().addListener(new ListChangeListener<IO>() {
+		elementSelectionModel().get().getSelectedItems().addListener(new ListChangeListener<IO>() {
 			@Override
 			public void onChanged(Change<? extends IO> c) {
 				while (c.next()) {
@@ -500,6 +513,8 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 						}
 					}
 				}
+				layoutLabels();
+				canvas.draw();
 			}
 		});
 	}
@@ -514,6 +529,18 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 
 	public boolean isShowElementGraphics() {
 		return showElementGraphics.get();
+	}
+
+	public BooleanProperty selectableComponentType() {
+		return selectableComponentType;
+	}
+
+	public void setSelectableComponentType(boolean selectableComponentType) {
+		this.selectableComponentType.set(selectableComponentType);
+	}
+
+	public boolean isSelectableComponentType() {
+		return selectableComponentType.get();
 	}
 
 	public void setEnabledTypes(List<ComponentType> enabledTypes) {
@@ -567,8 +594,9 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 		return graphicTextGap == null ? DEFAULT_GRAPHICS_TEXT_GAP : graphicTextGap.getValue();
 	}
 
-	public final MultipleSelectionModel<IO> getKeySelectionModel() {
-		return keySelectionModel == null ? null : keySelectionModel.get();
+	@Override
+	public final MultipleSelectionModel<IO> getElementSelectionModel() {
+		return elementSelectionModel == null ? null : elementSelectionModel.get();
 	}
 
 	public final Color getLineColor() {
@@ -607,8 +635,8 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 		return graphicTextGap;
 	}
 
-	public final ObjectProperty<MultipleSelectionModel<IO>> keySelectionModel() {
-		return keySelectionModel;
+	public final ObjectProperty<MultipleSelectionModel<IO>> elementSelectionModel() {
+		return elementSelectionModel;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -676,9 +704,9 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 		/* pane.getStyleClass().add("layout"); */
 		setContent(pane);
 
-		pane.getChildren().add(canvas);
 		pane.getChildren().add(snapToGridCheckBox);
 		pane.getChildren().add(gridSizeSlider);
+		pane.getChildren().add(canvas);
 
 		widthProperty().addListener((e, o, n) -> layoutDiagram());
 		heightProperty().addListener((e, o, n) -> layoutDiagram());
@@ -691,7 +719,7 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 					ElementView ev = forElement(element);
 					if (ev != null) {
 						int indexOf = elements.get().indexOf(ev);
-						getKeySelectionModel().clearSelection(indexOf);
+						getElementSelectionModel().clearSelection(indexOf);
 						elements.get().remove(ev);
 						JavaFX.fadeHide(ev.getElementTool(), 0.25f, (e) -> {
 							pane.getChildren().remove(ev.getElementTool());
@@ -764,8 +792,8 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 		graphicTextGapProperty().setValue(value);
 	}
 
-	public final void setKeySelectionModel(MultipleSelectionModel<IO> value) {
-		keySelectionModel().set(value);
+	public final void setElementSelectionModel(MultipleSelectionModel<IO> value) {
+		elementSelectionModel().set(value);
 	}
 
 	public final void setLineColor(Color lineColor) {
@@ -777,7 +805,7 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 	}
 
 	public final void setSelectionModel(MultipleSelectionModel<IO> value) {
-		keySelectionModel().set(value);
+		elementSelectionModel().set(value);
 	}
 
 	@Override
@@ -786,8 +814,11 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 			DeviceView matrixView = null;
 			for (ElementView elementView : elements.get()) {
 				if (elementView.getElement() instanceof Area) {
-					if (matrixView == null)
+					if (matrixView == null) {
 						matrixView = view.getLayout().getViews().get(ViewPosition.MATRIX);
+						if (matrixView == null)
+							return;
+					}
 					Area area = (Area) elementView.getElement();
 					int[] rgb = new int[3];
 					int r = 0;
@@ -809,14 +840,28 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 					}
 				} else if (elementView.getElement() instanceof MatrixIO) {
 					MatrixIO matrixIO = (MatrixIO) elementView.getElement();
-					int[] rgb = frame[matrixIO.getMatrixY()][matrixIO.getMatrixX()];
-					if (rgb != null) {
-						elementView.getElementTool().setRGB(rgb);
+					if (matrixIO.isMatrixLED()) {
+						int[] rgb = frame[matrixIO.getMatrixY()][matrixIO.getMatrixX()];
+						if (rgb != null) {
+							elementView.getElementTool().setRGB(rgb);
+						}
 					}
 				}
 			}
 		} else
 			Platform.runLater(() -> updateFromMatrix(frame));
+	}
+
+	@Override
+	public void activeMapChanged(ProfileMap map) {
+	}
+
+	@Override
+	public void profileAdded(Profile profile) {
+	}
+
+	@Override
+	public void profileRemoved(Profile profile) {
 	}
 
 	protected void moveSelection(double mx, double my) {
@@ -827,7 +872,7 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 			mx *= gw;
 			my *= gh;
 		}
-		for (IO el : getKeySelectionModel().getSelectedItems()) {
+		for (IO el : getElementSelectionModel().getSelectedItems()) {
 			el.setX((float) (el.getX() + ((1 / imgSize.getX()) * mx)));
 			el.setY((float) (el.getY() + ((1 / imgSize.getY()) * my)));
 		}
@@ -839,14 +884,14 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 	protected void addToSelection(IO led) {
 		setFocused(true);
 		int idx = items.indexOf(led);
-		MultipleSelectionModel<IO> model = keySelectionModel().get();
+		MultipleSelectionModel<IO> model = elementSelectionModel().get();
 		if (!model.getSelectedIndices().contains(idx)) {
 			model.select(idx);
 		}
 	}
 
 	protected void clearSelection() {
-		getKeySelectionModel().clearSelection();
+		getElementSelectionModel().clearSelection();
 	}
 
 	protected ElementView createElementView(ComponentType type) {
@@ -863,7 +908,7 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 			if (node != null)
 				return node;
 		}
-		Label label = new Label(el.getLabel());
+		Label label = new Label(el.getDisplayLabel());
 		label.setOnMouseClicked((e) -> {
 			if (e.isControlDown())
 				addToSelection(el);
@@ -1041,7 +1086,10 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 		List<ElementView> top = new ArrayList<>();
 		List<ElementView> bottom = new ArrayList<>();
 		List<ElementView> right = new ArrayList<>();
-		separateElements(left, top, bottom, right);
+
+		for (ElementView remain : separateElements(left, top, bottom, right)) {
+			remain.getLabel().setVisible(false);
+		}
 
 		// double y = ((canvasHeight - (rowHeight * left.size())) / 2f);
 		double totalHeight = getTotalHeight(left);
@@ -1049,6 +1097,7 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 
 		/* Left */
 		for (ElementView elementView : left) {
+			elementView.getLabel().setVisible(true);
 			double rowHeight = elementView.getLabel().getLayoutBounds().getHeight();
 			positionLabelForElement(insets.getLeft(), y + insets.getTop(), elementView);
 			y += rowHeight;
@@ -1059,6 +1108,7 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 		totalHeight = getTotalHeight(right);
 		y = ((canvasHeight - (totalHeight)) / 2f);
 		for (ElementView elementView : right) {
+			elementView.getLabel().setVisible(true);
 			double rowHeight = elementView.getLabel().getLayoutBounds().getHeight();
 			positionLabelForElement(
 					insets.getLeft() + canvasWidth - elementView.getLabel().getBoundsInLocal().getWidth(),
@@ -1071,6 +1121,7 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 
 		double x = ((canvasWidth - totalTextWidth) / 2f);
 		for (ElementView elementView : top) {
+			elementView.getLabel().setVisible(true);
 			positionLabelForElement(x + insets.getLeft(), insets.getTop(), elementView);
 			x += elementView.getLabel().getBoundsInLocal().getWidth() + getGraphicTextGap();
 		}
@@ -1079,6 +1130,7 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 		totalTextWidth = getTotalWidth(bottom);
 		x = ((canvasWidth - totalTextWidth) / 2f);
 		for (ElementView elementView : bottom) {
+			elementView.getLabel().setVisible(true);
 			double rowHeight = elementView.getLabel().getLayoutBounds().getHeight();
 			positionLabelForElement(x + insets.getLeft(), insets.getTop() + canvasHeight - rowHeight, elementView);
 			x += elementView.getLabel().getBoundsInLocal().getWidth() + getGraphicTextGap();
@@ -1127,9 +1179,14 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 		for (ElementView elementView : elements.get()) {
 			if (elementView.getLabel() != null)
 				if (elementView.getLabel() instanceof Label)
-					((Label) elementView.getLabel()).textProperty().set(elementView.getElement().getLabel());
+					((Label) elementView.getLabel()).textProperty().set(elementView.getElement().getDisplayLabel());
 				else
 					/* Recreate entirely if its not a label */
+
+					/*
+					 * TODO: Might need some kind of clean up here in here the added component adds
+					 * listeners etc
+					 */
 					elementView.setLabel(createLabel(elementView.getElement()));
 		}
 		pane.applyCss();
@@ -1137,13 +1194,21 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 	}
 
 	protected void selectSingle(IO led) {
-		MultipleSelectionModel<IO> model = keySelectionModel.get();
+		MultipleSelectionModel<IO> model = elementSelectionModel.get();
 		model.clearAndSelect(items.indexOf(led));
 	}
 
-	protected void separateElements(List<ElementView> left, List<ElementView> top, List<ElementView> bottom,
-			List<ElementView> right) {
+	protected List<ElementView> separateElements(List<ElementView> left, List<ElementView> top,
+			List<ElementView> bottom, List<ElementView> right) {
+		List<ElementView> r = new ArrayList<ElementView>();
 		for (ElementView elementView : elements.get()) {
+
+			if (getComponentType().isShowByDefault()
+					&& !elementSelectionModel.get().getSelectedItems().contains(elementView.getElement())) {
+				r.add(elementView);
+				continue;
+			}
+
 			IO el = elementView.getElement();
 			if (el.getY() < 0.4 && el.getX() >= 0.4 && el.getX() < 0.6) {
 				top.add(elementView);
@@ -1167,6 +1232,10 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 		Collections.sort(bottom, (el1, el2) -> {
 			return Float.valueOf(el1.getElement().getX()).compareTo(el2.getElement().getX());
 		});
+		Collections.sort(r, (el1, el2) -> {
+			return Float.valueOf(el1.getElement().getX()).compareTo(el2.getElement().getX());
+		});
+		return r;
 	}
 
 	void rebuildComponentTypesPanel() {
@@ -1178,7 +1247,7 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 		Map<ComponentType, Tool> types = new HashMap<>();
 
 		List<ComponentType> typesToShow = enabledTypes.get();
-		if (typesToShow.size() > 1 || !isLayoutReadOnly()) {
+		if (isSelectableComponentType() && (typesToShow.size() > 1 || !isLayoutReadOnly())) {
 			for (ComponentType type : typesToShow) {
 				ElementView elementView = createElementView(type);
 				RadioButton r = new RadioButton(TabbedViewer.bundle.getString("componentTypeMenu." + type.name()));
@@ -1222,6 +1291,7 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 				pane.getChildren().remove(e.getLabel());
 
 		}
+		getElementSelectionModel().clearSelection();
 		elements.get().clear();
 
 		applyCss();
@@ -1229,12 +1299,14 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 		if (view != null) {
 			for (IO io : view.getElements()) {
 				ElementView ev = null;
-				if (io instanceof LED && getComponentType() == ComponentType.LED) {
+				if (io instanceof LED && isTypeToShow(ComponentType.LED)) {
 					ev = createElementView(ComponentType.LED);
-				} else if (io instanceof Key && getComponentType() == ComponentType.KEY) {
+				} else if (io instanceof Key && isTypeToShow(ComponentType.KEY)) {
 					ev = createElementView(ComponentType.KEY);
-				} else if (io instanceof Area && getComponentType() == ComponentType.AREA) {
+				} else if (io instanceof Area && isTypeToShow(ComponentType.AREA)) {
 					ev = createElementView(ComponentType.AREA);
+				} else if (io instanceof Accessory && isTypeToShow(ComponentType.ACCESSORY)) {
+					ev = createElementView(ComponentType.ACCESSORY);
 				}
 				if (ev != null) {
 					ev.setElement(io);
@@ -1249,6 +1321,11 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 		}
 	}
 
+	protected boolean isTypeToShow(ComponentType type) {
+		boolean c = isSelectableComponentType();
+		return (!c && getEnabledTypes().contains(type)) || (c && getComponentType() == type);
+	}
+
 	@Override
 	public DeviceView getView() {
 		return view;
@@ -1258,13 +1335,25 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 		IO regionEl = view.getAreaElement(name);
 		if (regionEl != null && regionEl.getLabel() != null)
 			return regionEl.getLabel();
-		return Strings.toName(name.toString());
+		return name == null ? null : Strings.toName(name.toString());
 	}
 
 	public void reset() {
-		for(ElementView element : elements.get()) {
+		for (ElementView element : elements.get()) {
 			element.reset();
 		}
+	}
+
+	@Override
+	public void mapAdded(ProfileMap profile) {
+	}
+
+	@Override
+	public void mapChanged(ProfileMap profile) {
+	}
+
+	@Override
+	public void mapRemoved(ProfileMap profile) {
 	}
 
 }

@@ -2,7 +2,6 @@
 
 <?import java.lang.String?>
 <?import javafx.scene.Group?>
-<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
@@ -35,7 +34,7 @@
          <right>
             <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
                <children>
-                  <Hyperlink onAction="#evtBack" styleClass="iconButton" text="%back" />
+                  <Hyperlink fx:id="back" onAction="#evtBack" styleClass="iconButton" text="%back" />
                </children>
             </HBox>
          </right>
@@ -44,7 +43,6 @@
          <top>
             <VBox prefHeight="200.0" prefWidth="100.0" styleClass="tools" BorderPane.alignment="CENTER">
                <children>
-                  <Label styleClass="title" text="%controls" />
                   <HBox alignment="CENTER_LEFT" styleClass="row">
                      <children>
                         <Label styleClass="emphasis" text="%status" />
@@ -58,7 +56,6 @@
                         <Hyperlink fx:id="stop" onAction="#evtStop" styleClass="iconButton" text="%stop" />
                      </children>
                   </HBox>
-                  <CheckBox mnemonicParsing="false" styleClass="gapLeft" text="%recordDelays" />
                   <Label text="%macro">
                      <styleClass>
                         <String fx:value="title" />

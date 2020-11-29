@@ -1,11 +1,14 @@
 package uk.co.bithatch.snake.lib.layouts;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -14,7 +17,9 @@ import com.google.gson.JsonObject;
 import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.DeviceType;
+import uk.co.bithatch.snake.lib.InputEventCode;
 import uk.co.bithatch.snake.lib.Region;
+import uk.co.bithatch.snake.lib.layouts.Accessory.AccessoryType;
 
 public class DeviceLayout implements uk.co.bithatch.snake.lib.layouts.DeviceView.Listener {
 
@@ -46,10 +51,26 @@ public class DeviceLayout implements uk.co.bithatch.snake.lib.layouts.DeviceView
 	public DeviceLayout() {
 	}
 
+	public DeviceLayout(DeviceLayout layout) {
+		this.name = layout.name;
+		this.matrixHeight = layout.matrixHeight;
+		this.matrixWidth = layout.matrixWidth;
+		this.readOnly = layout.readOnly;
+		try {
+			this.base = layout.base == null ? null : new URL(layout.base.toExternalForm());
+		} catch (MalformedURLException e) {
+			throw new IllegalStateException(e);
+		}
+		this.deviceType = layout.deviceType;
+		for (Map.Entry<ViewPosition, DeviceView> en : layout.views.entrySet()) {
+			views.put(en.getKey(), new DeviceView(en.getValue(), this));
+		}
+	}
+
 	public DeviceLayout(Device device) {
 		this.name = device.getName();
 		this.deviceType = device.getType();
-		if(device.getCapabilities().contains(Capability.MATRIX)) {
+		if (device.getCapabilities().contains(Capability.MATRIX)) {
 			this.matrixHeight = device.getMatrixSize()[0];
 			this.matrixWidth = device.getMatrixSize()[1];
 		}
@@ -85,33 +106,42 @@ public class DeviceLayout implements uk.co.bithatch.snake.lib.layouts.DeviceView
 				IO element = null;
 				switch (viewType) {
 				case LED:
-					LED led = new LED();
-					led.setMatrixX(elementObject.has("matrixX") ? elementObject.get("matrixX").getAsInt() : 0);
-					led.setMatrixY(elementObject.has("matrixY") ? elementObject.get("matrixY").getAsInt() : 0);
+					LED led = new LED(view);
+					configureMatrixIO(elementObject, led);
 					element = led;
 					break;
 				case KEY:
-					Key key = new Key();
-					key.setMatrixX(elementObject.has("matrixX") ? elementObject.get("matrixX").getAsInt() : 0);
-					key.setMatrixY(elementObject.has("matrixY") ? elementObject.get("matrixY").getAsInt() : 0);
+					Key key = new Key(view);
+					if (elementObject.has("eventCode")) {
+						key.setEventCode(InputEventCode.valueOf(elementObject.get("eventCode").getAsString()));
+					}
+					if (elementObject.has("legacyKey")) {
+						key.setLegacyKey(uk.co.bithatch.snake.lib.Key.valueOf(elementObject.get("legacyKey").getAsString()));
+					}
+					configureMatrixIO(elementObject, key);
 					element = key;
 					break;
 				case MATRIX_CELL:
-					MatrixCell matrixCell = new MatrixCell();
-					matrixCell.setMatrixX(elementObject.has("matrixX") ? elementObject.get("matrixX").getAsInt() : 0);
-					matrixCell.setMatrixY(elementObject.has("matrixY") ? elementObject.get("matrixY").getAsInt() : 0);
+					MatrixCell matrixCell = new MatrixCell(view);
+					configureMatrixIO(elementObject, matrixCell);
 					matrixCell.setRegion(
 							elementObject.has("region") ? Region.Name.valueOf(elementObject.get("region").getAsString())
 									: null);
 					element = matrixCell;
 					break;
 				case AREA:
-					Area area = new Area();
-					area = new Area();
+					Area area = new Area(view);
 					area.setRegion(
 							elementObject.has("region") ? Region.Name.valueOf(elementObject.get("region").getAsString())
 									: null);
 					element = area;
+					break;
+				case ACCESSORY:
+					Accessory accesory = new Accessory(view);
+					accesory.setAccessory(elementObject.has("accessory")
+							? AccessoryType.valueOf(elementObject.get("accessory").getAsString())
+							: null);
+					element = accesory;
 					break;
 				default:
 					throw new UnsupportedOperationException();
@@ -123,6 +153,15 @@ public class DeviceLayout implements uk.co.bithatch.snake.lib.layouts.DeviceView
 				view.addElement(element);
 			}
 			addView(view);
+		}
+	}
+
+	protected void configureMatrixIO(JsonObject elementObject, MatrixIO led) {
+		if (elementObject.has("matrixX") || elementObject.has("matrixY")) {
+			led.setMatrixX(elementObject.has("matrixX") ? elementObject.get("matrixX").getAsInt() : 0);
+			led.setMatrixY(elementObject.has("matrixY") ? elementObject.get("matrixY").getAsInt() : 0);
+		} else {
+			led.setMatrixXY(null);
 		}
 	}
 
@@ -316,5 +355,37 @@ public class DeviceLayout implements uk.co.bithatch.snake.lib.layouts.DeviceView
 			views.clear();
 			views.putAll(m);
 		}
+	}
+
+	public Set<InputEventCode> getSupportedInputEvents() {
+		Set<InputEventCode> inputEventCodes = new LinkedHashSet<>();
+		synchronized (views) {
+			for (DeviceView v : views.values()) {
+				for (IO el : v.getElements()) {
+					if (el instanceof Key) {
+						Key k = (Key) el;
+						if (k.getEventCode() != null)
+							inputEventCodes.add(k.getEventCode());
+					}
+				}
+			}
+		}
+		return inputEventCodes;
+	}
+
+	public Set<uk.co.bithatch.snake.lib.Key> getSupportedLegacyKeys() {
+		Set<uk.co.bithatch.snake.lib.Key> inputEventCodes = new LinkedHashSet<>();
+		synchronized (views) {
+			for (DeviceView v : views.values()) {
+				for (IO el : v.getElements()) {
+					if (el instanceof Key) {
+						Key k = (Key) el;
+						if (k.getLegacyKey() != null)
+							inputEventCodes.add(k.getLegacyKey());
+					}
+				}
+			}
+		}
+		return inputEventCodes;
 	}
 }

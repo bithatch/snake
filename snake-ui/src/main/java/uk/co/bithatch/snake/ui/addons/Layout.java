@@ -12,12 +12,15 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import uk.co.bithatch.snake.lib.Region.Name;
+import uk.co.bithatch.snake.lib.layouts.Accessory;
 import uk.co.bithatch.snake.lib.layouts.Area;
 import uk.co.bithatch.snake.lib.layouts.DeviceLayout;
 import uk.co.bithatch.snake.lib.layouts.DeviceView;
 import uk.co.bithatch.snake.lib.layouts.IO;
+import uk.co.bithatch.snake.lib.layouts.Key;
 import uk.co.bithatch.snake.lib.layouts.MatrixCell;
 import uk.co.bithatch.snake.lib.layouts.MatrixIO;
+import uk.co.bithatch.snake.lib.layouts.Accessory.AccessoryType;
 import uk.co.bithatch.snake.ui.App;
 import uk.co.bithatch.snake.ui.util.Strings;
 
@@ -158,13 +161,23 @@ public class Layout extends AbstractJsonAddOn {
 					Name region = ((Area) element).getRegion();
 					if (region != null)
 						elementObject.addProperty("region", region.name());
+				}if (element instanceof Accessory) {
+					AccessoryType type = ((Accessory) element).getAccessory();
+					if (type!= null)
+						elementObject.addProperty("accessory", type.name());
 				}
 				if (element instanceof MatrixCell) {
 					Name region = ((MatrixCell) element).getRegion();
 					if (region != null)
 						elementObject.addProperty("region", region.name());
 				}
-				if (element instanceof MatrixIO) {
+				if (element instanceof Key && ((Key) element).getEventCode() != null) {
+					elementObject.addProperty("eventCode", ((Key) element).getEventCode().name());
+				}
+				if (element instanceof Key && ((Key) element).getLegacyKey() != null) {
+					elementObject.addProperty("legacyKey", ((Key) element).getLegacyKey().name());
+				}
+				if (element instanceof MatrixIO && ((MatrixIO) element).isMatrixLED()) {
 					elementObject.addProperty("matrixX", ((MatrixIO) element).getMatrixX());
 					elementObject.addProperty("matrixY", ((MatrixIO) element).getMatrixY());
 				}

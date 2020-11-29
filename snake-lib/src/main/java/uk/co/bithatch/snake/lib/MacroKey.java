@@ -1,5 +1,6 @@
 package uk.co.bithatch.snake.lib;
 
+@Deprecated
 public class MacroKey implements Macro {
 	
 	public enum State {

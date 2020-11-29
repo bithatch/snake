@@ -32,6 +32,8 @@ import uk.co.bithatch.snake.lib.Backend.BackendListener;
 import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.Device.Listener;
+import uk.co.bithatch.snake.lib.binding.Profile;
+import uk.co.bithatch.snake.lib.binding.ProfileMap;
 import uk.co.bithatch.snake.lib.Grouping;
 import uk.co.bithatch.snake.lib.Item;
 import uk.co.bithatch.snake.lib.Lit;
@@ -448,4 +450,27 @@ public class Tray implements AutoCloseable, BackendListener, Listener {
 		});
 	}
 
+	@Override
+	public void activeMapChanged(ProfileMap map) {
+	}
+
+	@Override
+	public void profileAdded(Profile profile) {
+	}
+
+	@Override
+	public void profileRemoved(Profile profile) {
+	}
+
+	@Override
+	public void mapAdded(ProfileMap profile) {
+	}
+
+	@Override
+	public void mapChanged(ProfileMap profile) {
+	}
+
+	@Override
+	public void mapRemoved(ProfileMap profile) {
+	}
 }

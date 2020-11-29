@@ -31,9 +31,13 @@ import uk.co.bithatch.snake.lib.BrandingImage;
 import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.Lit;
+import uk.co.bithatch.snake.lib.layouts.Accessory;
+import uk.co.bithatch.snake.lib.layouts.Accessory.AccessoryType;
 import uk.co.bithatch.snake.lib.layouts.ComponentType;
 import uk.co.bithatch.snake.lib.layouts.DeviceLayout;
 import uk.co.bithatch.snake.lib.layouts.DeviceLayouts.Listener;
+import uk.co.bithatch.snake.lib.layouts.DeviceView;
+import uk.co.bithatch.snake.lib.layouts.IO;
 import uk.co.bithatch.snake.ui.util.JavaFX;
 import uk.co.bithatch.snake.ui.widgets.Direction;
 
@@ -89,7 +93,33 @@ public class DeviceDetails extends AbstractDetailsController implements Listener
 		layoutTools.setVisible(hasLayout());
 		checkLayoutStatus();
 
-		macros.visibleProperty().set(device.getCapabilities().contains(Capability.MACROS));
+		/*
+		 * Show macros link if device has the capability and there is not a layout that
+		 * has a ACCESSORY of type PROFILES
+		 */
+		if (device.getCapabilities().contains(Capability.MACROS)) {
+			if (context.getLayouts().hasLayout(device)) {
+				DeviceView view = context.getLayouts().getLayout(device).getViewThatHas(ComponentType.ACCESSORY);
+				if (view == null) {
+					macros.setVisible(true);
+				} else {
+					List<IO> els = view.getElements(ComponentType.ACCESSORY);
+					boolean hasProfiles = false;
+					for (IO el : els) {
+						Accessory acc = (Accessory) el;
+						if (acc.getAccessory() == AccessoryType.PROFILES) {
+							hasProfiles = true;
+							break;
+						}
+					}
+					macros.setVisible(!hasProfiles);
+				}
+			} else {
+				macros.setVisible(true);
+			}
+		} else {
+			macros.setVisible(false);
+		}
 
 		boolean hasLayout = hasLayout();
 		useLayoutView.set(
@@ -143,6 +173,7 @@ public class DeviceDetails extends AbstractDetailsController implements Listener
 				scroller.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
 
 				FlowPane flow = new FlowPane();
+				flow.getStyleClass().add("spaced");
 				flow.prefWrapLengthProperty().bind(scroller.widthProperty());
 				flow.setOrientation(Orientation.HORIZONTAL);
 
@@ -169,7 +200,8 @@ public class DeviceDetails extends AbstractDetailsController implements Listener
 					controllers.add(brightnessControl);
 				}
 
-				String imageUrl = context.getCache().getCachedImage(context.getDefaultImage(device.getType(), device.getImageUrl(BrandingImage.PERSPECTIVE)));
+				String imageUrl = context.getCache().getCachedImage(
+						context.getDefaultImage(device.getType(), device.getImageUrl(BrandingImage.PERSPECTIVE)));
 				if (imageUrl != null) {
 					Background bg = new Background(new BackgroundImage(new Image(imageUrl, true),
 							BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
@@ -200,6 +232,13 @@ public class DeviceDetails extends AbstractDetailsController implements Listener
 				dpiControl.setDevice(device);
 				controlContainer.getChildren().add(dpiControl.getScene().getRoot());
 				controllers.add(dpiControl);
+			}
+
+			if (!useLayout && device.getCapabilities().contains(Capability.MACRO_PROFILES)) {
+				ProfileControl profileControl = context.openScene(ProfileControl.class);
+				profileControl.setDevice(device);
+				controlContainer.getChildren().add(profileControl.getScene().getRoot());
+				controllers.add(profileControl);
 			}
 
 			if (device.getCapabilities().contains(Capability.POLL_RATE)) {
@@ -276,7 +315,7 @@ public class DeviceDetails extends AbstractDetailsController implements Listener
 
 	@FXML
 	void evtMacros() {
-		context.push(Macros.class, Direction.FROM_BOTTOM);
+		context.editMacros(this);
 	}
 
 	public void configure(Lit lit, EffectHandler<?, ?> configurable) {

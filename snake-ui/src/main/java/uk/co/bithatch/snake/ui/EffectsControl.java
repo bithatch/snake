@@ -1,5 +1,6 @@
 package uk.co.bithatch.snake.ui;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -82,11 +83,20 @@ public class EffectsControl extends AbstractEffectsControl {
 		others.clear();
 		regions.getChildren().clear();
 		Device device = getDevice();
-		List<Region> regionList = device.getRegions();
+		List<Region> originalRegionList = device.getRegions();
+		List<Region> regionList = new ArrayList<>();
+		EffectManager fx = context.getEffectManager();
+		EffectAcquisition acq = fx.getRootAcquisition(device);
+		EffectHandler<?, ?> selectedDeviceEffect = acq.getEffect(device);
+		for (Region r : originalRegionList) {
+			Set<EffectHandler<?, ?>> supported = fx.getEffects(r);
+			EffectHandler<?, ?> selectedRegionEffect = acq.getEffect(r);
+			if (!supported.isEmpty() && supported.contains(selectedRegionEffect)) {
+				regionList.add(r);
+			}
+		}
+
 		if (regionList.size() > 1) {
-			EffectManager fx = context.getEffectManager();
-			EffectAcquisition acq = fx.getRootAcquisition(device);
-			EffectHandler<?, ?> selectedDeviceEffect = acq.getEffect(device);
 			if (selectedDeviceEffect != null && !selectedDeviceEffect.isMatrixBased()) {
 				for (Region r : regionList) {
 					Set<EffectHandler<?, ?>> supported = fx.getEffects(r);
@@ -94,61 +104,58 @@ public class EffectsControl extends AbstractEffectsControl {
 					Set<EffectHandler<?, ?>> allEffects = new LinkedHashSet<>(supported);
 					allEffects.addAll(fx.getEffects(device));
 					EffectHandler<?, ?> selectedRegionEffect = acq.getEffect(r);
+					HBox hbox = new HBox();
 
-					if (!supported.isEmpty() && supported.contains(selectedRegionEffect)) {
-						HBox hbox = new HBox();
+					ImageView iv = new ImageView(context.getConfiguration().themeProperty().getValue()
+							.getRegionImage(24, r.getName()).toExternalForm());
+					iv.setFitHeight(22);
+					iv.setFitWidth(22);
+					iv.setSmooth(true);
+					iv.setPreserveRatio(true);
 
-						ImageView iv = new ImageView(context.getConfiguration().themeProperty().getValue()
-								.getRegionImage(24, r.getName()).toExternalForm());
-						iv.setFitHeight(22);
-						iv.setFitWidth(22);
-						iv.setSmooth(true);
-						iv.setPreserveRatio(true);
+					Hyperlink customise = new Hyperlink(bundle.getString("customise"));
+					ComboBox<EffectHandler<?, ?>> br = new ComboBox<>();
+					Callback<ListView<EffectHandler<?, ?>>, ListCell<EffectHandler<?, ?>>> cellFactory = createEffectCellFactory();
+					br.setButtonCell(cellFactory.call(null));
+					br.setCellFactory(cellFactory);
+					br.maxWidth(80);
+					br.getStyleClass().add("small");
 
-						Hyperlink customise = new Hyperlink(bundle.getString("customise"));
-						ComboBox<EffectHandler<?, ?>> br = new ComboBox<>();
-						Callback<ListView<EffectHandler<?, ?>>, ListCell<EffectHandler<?, ?>>> cellFactory = createEffectCellFactory();
-						br.setButtonCell(cellFactory.call(null));
-						br.setCellFactory(cellFactory);
-						br.maxWidth(80);
-						br.getStyleClass().add("small");
-
-						for (EffectHandler<?, ?> f : allEffects) {
-							if (!f.isMatrixBased()) {
-								br.itemsProperty().get().add(f);
-								if (selectedRegionEffect != null && f == selectedRegionEffect) {
-									br.getSelectionModel().select(f);
-								}
+					for (EffectHandler<?, ?> f : allEffects) {
+						if (!f.isMatrixBased()) {
+							br.itemsProperty().get().add(f);
+							if (selectedRegionEffect != null && f == selectedRegionEffect) {
+								br.getSelectionModel().select(f);
 							}
 						}
-						br.getSelectionModel().selectedItemProperty().addListener((e) -> {
-							var efHandler = br.getSelectionModel().getSelectedItem();
-							if (!adjustingSingle && supported.contains(efHandler)) {
-
-								acq.activate(r, efHandler);
-
-								adjustingOverall = true;
-								try {
-									overallEffect.getSelectionModel().select(acq.getEffect(device));
-									setCustomiseState(customise, r, br.getSelectionModel().getSelectedItem());
-								} finally {
-									adjustingOverall = false;
-								}
-							}
-						});
-						others.put(r, br);
-
-						customise.getStyleClass().add("smallIconButton");
-						customise.onActionProperty().set((e) -> {
-							customise(r, br.getSelectionModel().getSelectedItem());
-						});
-						setCustomiseState(customise, r, br.getSelectionModel().getSelectedItem());
-
-						hbox.getChildren().add(iv);
-						hbox.getChildren().add(br);
-						hbox.getChildren().add(customise);
-						regions.getChildren().add(hbox);
 					}
+					br.getSelectionModel().selectedItemProperty().addListener((e) -> {
+						var efHandler = br.getSelectionModel().getSelectedItem();
+						if (!adjustingSingle && supported.contains(efHandler)) {
+
+							acq.activate(r, efHandler);
+
+							adjustingOverall = true;
+							try {
+								overallEffect.getSelectionModel().select(acq.getEffect(device));
+								setCustomiseState(customise, r, br.getSelectionModel().getSelectedItem());
+							} finally {
+								adjustingOverall = false;
+							}
+						}
+					});
+					others.put(r, br);
+
+					customise.getStyleClass().add("smallIconButton");
+					customise.onActionProperty().set((e) -> {
+						customise(r, br.getSelectionModel().getSelectedItem());
+					});
+					setCustomiseState(customise, r, br.getSelectionModel().getSelectedItem());
+
+					hbox.getChildren().add(iv);
+					hbox.getChildren().add(br);
+					hbox.getChildren().add(customise);
+					regions.getChildren().add(hbox);
 				}
 			}
 		}

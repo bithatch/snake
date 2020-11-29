@@ -23,6 +23,8 @@ import javafx.scene.layout.Pane;
 import uk.co.bithatch.snake.lib.Colors;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.Device.Listener;
+import uk.co.bithatch.snake.lib.binding.Profile;
+import uk.co.bithatch.snake.lib.binding.ProfileMap;
 import uk.co.bithatch.snake.lib.Region;
 import uk.co.bithatch.snake.lib.layouts.Area;
 import uk.co.bithatch.snake.lib.layouts.Cell;
@@ -54,7 +56,7 @@ public class MatrixView extends SelectableArea implements ViewerView, Listener {
 
 			managedProperty().bind(visibleProperty());
 
-			Label butLabel = new Label(element == null || element.getLabel() == null ? "" : element.getLabel());
+			Label butLabel = new Label(element == null || element.getDisplayLabel() == null ? "" : element.getDisplayLabel());
 			butLabel.textOverrunProperty().set(OverrunStyle.CLIP);
 			graphicProperty().set(butLabel);
 
@@ -180,10 +182,10 @@ public class MatrixView extends SelectableArea implements ViewerView, Listener {
 		setFocusTraversable(true);
 		setOnKeyReleased((e) -> {
 			if (e.isControlDown() && e.getCode() == KeyCode.A) {
-				getKeySelectionModel().selectAll();
+				getElementSelectionModel().selectAll();
 			}
 		});
-		getKeySelectionModel().getSelectedIndices().addListener(new ListChangeListener<Integer>() {
+		getElementSelectionModel().getSelectedIndices().addListener(new ListChangeListener<Integer>() {
 			@Override
 			public void onChanged(Change<? extends Integer> c) {
 				while (c.next()) {
@@ -238,7 +240,7 @@ public class MatrixView extends SelectableArea implements ViewerView, Listener {
 		return items;
 	}
 
-	public final MultipleSelectionModel<IO> getKeySelectionModel() {
+	public final MultipleSelectionModel<IO> getElementSelectionModel() {
 		return keySelectionModel == null ? null : keySelectionModel.get();
 	}
 
@@ -440,14 +442,15 @@ public class MatrixView extends SelectableArea implements ViewerView, Listener {
 						expanded.add(mc);
 					}
 				}
-			} else if(element instanceof MatrixIO) {
-				expanded.add((MatrixIO)element);
+			} else if (element instanceof MatrixIO) {
+				if (((MatrixIO) element).isMatrixLED())
+					expanded.add((MatrixIO) element);
 			}
 		}
 		return expanded;
 
 	}
-	
+
 	public final static int[] getRGBAverage(DeviceLayout layout, Collection<IO> elements, int[][][] frame) {
 		DeviceView matrixView = null;
 		int[] rgb = new int[3];
@@ -472,12 +475,14 @@ public class MatrixView extends SelectableArea implements ViewerView, Listener {
 				}
 			} else if (element instanceof MatrixIO) {
 				MatrixIO matrixIO = (MatrixIO) element;
-				int[] rgbe = frame[matrixIO.getMatrixY()][matrixIO.getMatrixX()];
-				if (rgb != null) {
-					rgb[0] += rgbe[0];
-					rgb[1] += rgbe[1];
-					rgb[2] += rgbe[2];
-					r++;
+				if (matrixIO.isMatrixLED()) {
+					int[] rgbe = frame[matrixIO.getMatrixY()][matrixIO.getMatrixX()];
+					if (rgb != null) {
+						rgb[0] += rgbe[0];
+						rgb[1] += rgbe[1];
+						rgb[2] += rgbe[2];
+						r++;
+					}
 				}
 			}
 		}
@@ -490,6 +495,30 @@ public class MatrixView extends SelectableArea implements ViewerView, Listener {
 	@Override
 	public DeviceView getView() {
 		return view;
+	}
+
+	@Override
+	public void activeMapChanged(ProfileMap map) {
+	}
+
+	@Override
+	public void profileAdded(Profile profile) {
+	}
+
+	@Override
+	public void profileRemoved(Profile profile) {
+	}
+
+	@Override
+	public void mapAdded(ProfileMap profile) {
+	}
+
+	@Override
+	public void mapChanged(ProfileMap profile) {
+	}
+
+	@Override
+	public void mapRemoved(ProfileMap profile) {
 	}
 
 }

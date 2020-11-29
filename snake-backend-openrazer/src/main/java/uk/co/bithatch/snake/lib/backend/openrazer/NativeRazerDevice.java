@@ -10,6 +10,7 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,6 +27,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
@@ -51,6 +53,7 @@ import uk.co.bithatch.snake.lib.BrandingImage;
 import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.DeviceType;
+import uk.co.bithatch.snake.lib.InputEventCode;
 import uk.co.bithatch.snake.lib.Key;
 import uk.co.bithatch.snake.lib.Macro;
 import uk.co.bithatch.snake.lib.MacroKey;
@@ -59,7 +62,18 @@ import uk.co.bithatch.snake.lib.MacroScript;
 import uk.co.bithatch.snake.lib.MacroSequence;
 import uk.co.bithatch.snake.lib.MacroURL;
 import uk.co.bithatch.snake.lib.Region;
-import uk.co.bithatch.snake.lib.Region.Name;
+import uk.co.bithatch.snake.lib.ValidationException;
+import uk.co.bithatch.snake.lib.binding.ExecuteMapAction;
+import uk.co.bithatch.snake.lib.binding.KeyMapAction;
+import uk.co.bithatch.snake.lib.binding.MapAction;
+import uk.co.bithatch.snake.lib.binding.MapMapAction;
+import uk.co.bithatch.snake.lib.binding.MapSequence;
+import uk.co.bithatch.snake.lib.binding.Profile;
+import uk.co.bithatch.snake.lib.binding.ProfileMap;
+import uk.co.bithatch.snake.lib.binding.ProfileMapAction;
+import uk.co.bithatch.snake.lib.binding.ReleaseMapAction;
+import uk.co.bithatch.snake.lib.binding.ShiftMapAction;
+import uk.co.bithatch.snake.lib.binding.SleepMapAction;
 import uk.co.bithatch.snake.lib.effects.Breath;
 import uk.co.bithatch.snake.lib.effects.Effect;
 import uk.co.bithatch.snake.lib.effects.Matrix;
@@ -226,12 +240,15 @@ public class NativeRazerDevice implements Device {
 		}
 
 		protected void doSetEffect(Effect effect) {
-
-			doUpdateEffect(effect);
+			doChangeEffect(effect, false);
 			fireChange(this);
 		}
 
 		protected void doUpdateEffect(Effect effect) {
+			doChangeEffect(effect, true);
+		}
+
+		protected void doChangeEffect(Effect effect, boolean update) {
 			try {
 				this.effect = effect;
 				brightness = -1;
@@ -261,7 +278,7 @@ public class NativeRazerDevice implements Device {
 				} else if (effect instanceof Wave) {
 					doSetWave((Wave) effect);
 				} else if (effect instanceof Matrix) {
-					doSetMatrix((Matrix) effect);
+					doSetMatrix((Matrix) effect, update);
 				} else if (effect instanceof Pulsate) {
 					doSetPulsate((Pulsate) effect);
 				} else if (effect instanceof Starlight) {
@@ -295,7 +312,7 @@ public class NativeRazerDevice implements Device {
 			}
 		}
 
-		protected void doSetMatrix(Matrix matrix) {
+		protected void doSetMatrix(Matrix matrix, boolean update) {
 			throw new UnsupportedOperationException();
 		}
 
@@ -506,7 +523,7 @@ public class NativeRazerDevice implements Device {
 		}
 
 		@Override
-		protected void doSetMatrix(Matrix matrix) {
+		protected void doSetMatrix(Matrix matrix, boolean update) {
 			// https://github.com/openrazer/openrazer/wiki/Using-the-keyboard-driver
 			int[][][] cells = matrix.getCells();
 			int[] dim = getDevice().getMatrixSize();
@@ -530,7 +547,8 @@ public class NativeRazerDevice implements Device {
 				}
 			}
 			/* TODO only need to do this once when the matrix is initially selected */
-			underlying.setCustom();
+			if (!update)
+				underlying.setCustom();
 
 			underlying.setKeyRow(b);
 		}
@@ -974,13 +992,31 @@ public class NativeRazerDevice implements Device {
 	private boolean wasCharging;
 	private byte lowBatteryThreshold = 5;
 	private int idleTime = (int) TimeUnit.MINUTES.toSeconds(5);
-
 	private int[] matrix;
+	private RazerBinding binding;
+	private List<Profile> profiles;
+	private RazerBindingLighting bindingLighting;
+	private Set<InputEventCode> supportedInputEvents = new LinkedHashSet<>();
+	private Set<Key> supportedLegacyKeys = new LinkedHashSet<>();
+
+	private DeviceType deviceType;
+
+	private String deviceSerial;
 
 	NativeRazerDevice(String path, DBusConnection conn, OpenRazerBackend backend) throws Exception {
 		this.path = path;
 		this.conn = conn;
 		device = conn.getRemoteObject("org.razer", String.format("/org/razer/device/%s", path), RazerDevice.class);
+
+		// TODO actual supported events will need backend support (or implement our ownt
+		// evdev caps discovery, or dervice from layout)
+
+		var keyList = new ArrayList<>(Arrays.asList(InputEventCode.values()));
+		Collections.sort(keyList, (k1, k2) -> k1.name().compareTo(k2.name()));
+		supportedInputEvents.addAll(keyList);
+		var legacyKeyList = new ArrayList<>(Arrays.asList(Key.values()));
+		Collections.sort(legacyKeyList, (k1, k2) -> k1.name().compareTo(k2.name()));
+		supportedLegacyKeys.addAll(legacyKeyList);
 
 		try {
 			device.getPollRate();
@@ -1060,6 +1096,39 @@ public class NativeRazerDevice implements Device {
 		}
 
 		try {
+			RazerBinding binding = conn.getRemoteObject("org.razer", String.format("/org/razer/device/%s", path),
+					RazerBinding.class);
+
+			this.binding = binding;
+			if (LOG.isLoggable(Level.DEBUG))
+				LOG.log(Level.DEBUG, String.format("%s has macro profiles.", getName()));
+
+			binding.getProfiles();
+			caps.add(Capability.MACROS);
+			caps.add(Capability.MACRO_PROFILES);
+
+			try {
+				RazerBindingLighting bindingLighting = conn.getRemoteObject("org.razer",
+						String.format("/org/razer/device/%s", path), RazerBindingLighting.class);
+				bindingLighting.getProfileLEDs(binding.getActiveProfile(), binding.getActiveMap());
+				this.bindingLighting = bindingLighting;
+				if (LOG.isLoggable(Level.DEBUG))
+					LOG.log(Level.DEBUG, String.format("%s has binding lighting.", getName()));
+				caps.add(Capability.MACRO_PROFILE_LEDS);
+
+			} catch (Exception e) {
+				//
+				if (LOG.isLoggable(Level.DEBUG))
+					LOG.log(Level.DEBUG, String.format("%s has no binding lighting.", getName()));
+			}
+		} catch (Exception e) {
+			//
+
+			if (LOG.isLoggable(Level.DEBUG))
+				LOG.log(Level.DEBUG, String.format("%s has no macro profiles.", getName()));
+		}
+
+		try {
 			device.getKeyboardLayout();
 
 			if (LOG.isLoggable(Level.DEBUG))
@@ -1075,15 +1144,29 @@ public class NativeRazerDevice implements Device {
 		try {
 			RazerMacro macro = conn.getRemoteObject("org.razer", String.format("/org/razer/device/%s", path),
 					RazerMacro.class);
-			macro.getMacros();
-			this.macros = macro;
 
-			if (LOG.isLoggable(Level.DEBUG))
-				LOG.log(Level.DEBUG, String.format("%s has macro control.", getName()));
-			caps.add(Capability.MACROS);
+			try {
+				macro.getMacros();
+				this.macros = macro;
+
+				if (LOG.isLoggable(Level.DEBUG))
+					LOG.log(Level.DEBUG, String.format("%s has legacy macro control.", getName()));
+				caps.add(Capability.MACROS);
+			} catch (Exception e) {
+			}
+
+			try {
+				macro.getMacroRecordingState();
+				this.macros = macro;
+				caps.add(Capability.MACRO_RECORDING);
+				if (LOG.isLoggable(Level.DEBUG))
+					LOG.log(Level.DEBUG, String.format("%s has no macro recording.", getName()));
+			} catch (Exception e) {
+			}
 
 			try {
 				macro.getModeModifier();
+				this.macros = macro;
 				caps.add(Capability.MACRO_MODE_MODIFIER);
 				if (LOG.isLoggable(Level.DEBUG))
 					LOG.log(Level.DEBUG, String.format("%s has no macro mode modifier.", getName()));
@@ -1185,7 +1268,7 @@ public class NativeRazerDevice implements Device {
 			public JsonElement serialize(MacroScript src, Type typeOfSrc, JsonSerializationContext context) {
 				JsonObject root = new JsonObject();
 				root.addProperty("type", "MacroScript");
-				root.addProperty("script", src.getScript());
+				root.addProperty("command", src.getScript());
 				var arr = new JsonArray();
 				if (src.getArgs() != null) {
 					for (String s : src.getArgs())
@@ -1197,7 +1280,7 @@ public class NativeRazerDevice implements Device {
 		});
 		Gson parser = gson.create();
 		var js = parser.toJson(macroSequence);
-		macros.addMacro(macroSequence.getMacroKey().name(), js);
+		macros.addMacro(macroSequence.getMacroKey().nativeKeyName(), js);
 	}
 
 	@Override
@@ -1268,6 +1351,16 @@ public class NativeRazerDevice implements Device {
 	}
 
 	@Override
+	public Set<InputEventCode> getSupportedInputEvents() {
+		return supportedInputEvents;
+	}
+
+	@Override
+	public Set<Key> getSupportedLegacyKeys() {
+		return supportedLegacyKeys;
+	}
+
+	@Override
 	public Effect getEffect() {
 		if (effect == null) {
 			Class<? extends Effect> efClazz = getSupportedEffects().isEmpty() ? null
@@ -1330,7 +1423,7 @@ public class NativeRazerDevice implements Device {
 		JsonObject jsonObject = JsonParser.parseString(macroString).getAsJsonObject();
 		Map<Key, MacroSequence> macroSequences = new LinkedHashMap<>();
 		for (String key : jsonObject.keySet()) {
-			MacroSequence seq = new MacroSequence(Key.valueOf(key));
+			MacroSequence seq = new MacroSequence(Key.fromNativeKeyName(key));
 			JsonArray arr = jsonObject.get(key).getAsJsonArray();
 			for (JsonElement el : arr) {
 				JsonObject obj = el.getAsJsonObject();
@@ -1348,7 +1441,7 @@ public class NativeRazerDevice implements Device {
 					macro = macroURL;
 				} else if (type.equals("MacroScript")) {
 					MacroScript macroScript = new MacroScript();
-					macroScript.setScript(obj.get("script").getAsString());
+					macroScript.setScript(obj.get("command").getAsString());
 					if (obj.has("args")) {
 						List<String> args = new ArrayList<>();
 						for (JsonElement argEl : obj.get("args").getAsJsonArray()) {
@@ -1421,7 +1514,10 @@ public class NativeRazerDevice implements Device {
 
 	@Override
 	public String getSerial() {
-		return device.getSerial();
+		if (deviceSerial == null) {
+			deviceSerial = device.getSerial();
+		}
+		return deviceSerial;
 	}
 
 	@Override
@@ -1431,11 +1527,14 @@ public class NativeRazerDevice implements Device {
 
 	@Override
 	public DeviceType getType() {
-		try {
-			return DeviceType.valueOf(device.getDeviceType().toUpperCase());
-		} catch (Exception e) {
-			return DeviceType.UNRECOGNISED;
+		if (deviceType == null) {
+			try {
+				deviceType = DeviceType.valueOf(device.getDeviceType().toUpperCase());
+			} catch (Exception e) {
+				return DeviceType.UNRECOGNISED;
+			}
 		}
+		return deviceType;
 	}
 
 	@Override
@@ -1606,8 +1705,23 @@ public class NativeRazerDevice implements Device {
 	public String toString() {
 		return "NativeRazerDevice [getImage()=" + getImage() + ", getType()=" + getType() + ", getMode()=" + getMode()
 				+ ", getName()=" + getName() + ", getDriverVersion()=" + getDriverVersion() + ", getFirmware()="
-				+ getFirmware() + ", getPollRate()=" + getPollRate() + ", getSerial()=" + getSerial()
-				+ ", isSuspended()=" + isSuspended() + ", getCapabilties()=" + getCapabilities() + "]";
+				+ getFirmware() + ", getSerial()=" + getSerial() + ", isSuspended()=" + isSuspended()
+				+ ", getCapabilties()=" + getCapabilities() + "]";
+	}
+
+	protected void fireMapAdded(ProfileMap map) {
+		for (int i = listeners.size() - 1; i >= 0; i--)
+			listeners.get(i).mapAdded(map);
+	}
+
+	protected void fireMapRemoved(ProfileMap map) {
+		for (int i = listeners.size() - 1; i >= 0; i--)
+			listeners.get(i).mapRemoved(map);
+	}
+
+	protected void fireMapChanged(ProfileMap map) {
+		for (int i = listeners.size() - 1; i >= 0; i--)
+			listeners.get(i).mapChanged(map);
 	}
 
 	protected void fireChange(Region region) {
@@ -1615,13 +1729,19 @@ public class NativeRazerDevice implements Device {
 			listeners.get(i).changed(this, region);
 	}
 
-	@SuppressWarnings("unchecked")
-	protected <R extends Region> R getRegion(Name name) {
-		for (Region r : regionList) {
-			if (r.getName().equals(name))
-				return (R) r;
-		}
-		return null;
+	protected void fireProfileAdded(Profile profile) {
+		for (int i = listeners.size() - 1; i >= 0; i--)
+			listeners.get(i).profileAdded(profile);
+	}
+
+	protected void fireProfileRemoved(Profile profile) {
+		for (int i = listeners.size() - 1; i >= 0; i--)
+			listeners.get(i).profileRemoved(profile);
+	}
+
+	protected void fireActiveMapChanged(ProfileMap map) {
+		for (int i = listeners.size() - 1; i >= 0; i--)
+			listeners.get(i).activeMapChanged(map);
 	}
 
 	void assertCap(Capability cap) {
@@ -1640,4 +1760,740 @@ public class NativeRazerDevice implements Device {
 		}
 	}
 
+	@Override
+	public List<Profile> getProfiles() {
+		assertCap(Capability.MACRO_PROFILES);
+		if (profiles == null) {
+			profiles = new ArrayList<>();
+			for (JsonElement el : JsonParser.parseString(binding.getProfiles()).getAsJsonArray()) {
+				profiles.add(new RazerMacroProfile(bindingLighting, this, el.getAsString()));
+			}
+		}
+		return profiles;
+	}
+
+	@Override
+	public Profile getActiveProfile() {
+		assertCap(Capability.MACRO_PROFILES);
+		String activeProfile = binding.getActiveProfile();
+		if (StringUtils.isBlank(activeProfile))
+			return null;
+		else
+			return getProfile(activeProfile);
+	}
+
+	@Override
+	public Profile getProfile(String name) {
+		assertCap(Capability.MACRO_PROFILES);
+		for (Profile p : getProfiles()) {
+			if (p.getName().equals(name))
+				return p;
+		}
+		return null;
+	}
+
+	@Override
+	public Profile addProfile(String name) {
+		assertCap(Capability.MACRO_PROFILES);
+		binding.addProfile(name);
+		Profile profile = new RazerMacroProfile(bindingLighting, this, name);
+		if (profiles == null)
+			profiles = new ArrayList<>();
+		getProfiles();
+		profiles.add(profile);
+		fireProfileAdded(profile);
+		profile.getDefaultMap().setLEDs(new boolean[3]);
+		return profile;
+	}
+
+	static class RazerMacroProfile implements Profile {
+
+		private NativeRazerDevice device;
+		private String name;
+
+		private List<uk.co.bithatch.snake.lib.binding.Profile.Listener> listeners = new ArrayList<>();
+		private List<ProfileMap> profileMaps;
+		private RazerBindingLighting bindingLighting;
+
+		RazerMacroProfile(RazerBindingLighting bindingLighting, NativeRazerDevice device, String name) {
+			this.device = device;
+			this.bindingLighting = bindingLighting;
+			this.name = name;
+
+		}
+
+		@Override
+		public void addListener(uk.co.bithatch.snake.lib.binding.Profile.Listener listener) {
+			listeners.add(listener);
+		}
+
+		@Override
+		public void removeListener(uk.co.bithatch.snake.lib.binding.Profile.Listener listener) {
+			listeners.remove(listener);
+		}
+
+		@Override
+		public void activate() {
+			device.binding.setActiveProfile(getName());
+			ProfileMap map = getActiveMap();
+			device.fireActiveMapChanged(map);
+			fireActiveMapChanged(map);
+		}
+
+		@Override
+		public boolean isActive() {
+			return getName().equals(device.binding.getActiveProfile());
+		}
+
+		@Override
+		public String getName() {
+			return name;
+		}
+
+		@Override
+		public ProfileMap getDefaultMap() {
+			return getMap(device.binding.getDefaultMap(getName()));
+		}
+
+		@Override
+		public ProfileMap getActiveMap() {
+			if (isActive())
+				return getMap(device.binding.getActiveMap());
+			else
+				return null;
+		}
+
+		@Override
+		public ProfileMap getMap(String id) {
+			for (ProfileMap map : getMaps())
+				if (map.getId().equals(id))
+					return map;
+			return null;
+		}
+
+		@Override
+		public List<ProfileMap> getMaps() {
+			if (profileMaps == null) {
+				profileMaps = new ArrayList<>();
+				for (JsonElement el : JsonParser.parseString(device.binding.getMaps(getName())).getAsJsonArray()) {
+					profileMaps.add(new RazerMacroProfileMap(device, this, el.getAsString(), bindingLighting));
+				}
+			}
+			return profileMaps;
+		}
+
+		@Override
+		public String toString() {
+			return "RazerMacroProfile [name=" + name + "]";
+		}
+
+		@Override
+		public ProfileMap addMap(String id) {
+			device.binding.addMap(getName(), id);
+			ProfileMap map = new RazerMacroProfileMap(device, this, id, bindingLighting);
+			if (profileMaps == null)
+				profileMaps = new ArrayList<>();
+			profileMaps.add(map);
+			fireMapAdded(map);
+			device.fireMapAdded(map);
+			return map;
+		}
+
+		@Override
+		public void setDefaultMap(ProfileMap map) {
+			device.binding.setDefaultMap(getName(), map.getId());
+			fireChanged();
+		}
+
+		@Override
+		public void remove() {
+			device.binding.removeProfile(getName());
+			device.fireProfileRemoved(this);
+			device.getProfiles();
+			device.profiles.remove(this);
+		}
+
+		protected void fireMapAdded(ProfileMap map) {
+			for (int i = listeners.size() - 1; i >= 0; i--)
+				listeners.get(i).mapAdded(map);
+		}
+
+		protected void fireMapRemoved(ProfileMap map) {
+			for (int i = listeners.size() - 1; i >= 0; i--)
+				listeners.get(i).mapRemoved(map);
+		}
+
+		protected void fireMapChanged(ProfileMap map) {
+			for (int i = listeners.size() - 1; i >= 0; i--)
+				listeners.get(i).mapChanged(map);
+		}
+
+		protected void fireActiveMapChanged(ProfileMap map) {
+			for (int i = listeners.size() - 1; i >= 0; i--)
+				listeners.get(i).activeMapChanged(map);
+		}
+
+		protected void fireChanged() {
+			for (int i = listeners.size() - 1; i >= 0; i--)
+				listeners.get(i).changed(this);
+		}
+
+		@Override
+		public Device getDevice() {
+			return device;
+		}
+	}
+
+	static class RazerMacroProfileMap implements ProfileMap {
+
+		private String id;
+		private RazerMacroProfile profile;
+		private NativeRazerDevice device;
+		private RazerBindingLighting bindingLighting;
+		private Map<InputEventCode, MapSequence> sequences;
+
+		RazerMacroProfileMap(NativeRazerDevice device, RazerMacroProfile profile, String id,
+				RazerBindingLighting bindingLighting) {
+			this.id = id;
+			this.profile = profile;
+			this.device = device;
+			this.bindingLighting = bindingLighting;
+		}
+
+		@Override
+		public boolean[] getLEDs() {
+			device.assertCap(Capability.MACRO_PROFILE_LEDS);
+			ThreeTuple<Boolean, Boolean, Boolean> profileLEDs = bindingLighting.getProfileLEDs(profile.getName(),
+					getId());
+			return new boolean[] { profileLEDs.a, profileLEDs.b, profileLEDs.c };
+		}
+
+		@Override
+		public void setLEDs(boolean red, boolean green, boolean blue) {
+			device.assertCap(Capability.MACRO_PROFILE_LEDS);
+			bindingLighting.setProfileLEDs(profile.getName(), getId(), red, green, blue);
+			((RazerMacroProfile) profile).fireMapChanged(this);
+			device.fireMapChanged(this);
+		}
+
+		@Override
+		public Profile getProfile() {
+			return profile;
+		}
+
+		@Override
+		public String getId() {
+			return id;
+		}
+
+		@Override
+		public boolean isActive() {
+			return profile.isActive() && getId().equals(device.binding.getActiveMap());
+		}
+
+		@Override
+		public void activate() {
+			if (!profile.isActive())
+				profile.activate();
+			device.binding.setActiveMap(getId());
+			device.fireActiveMapChanged(this);
+			((RazerMacroProfile) profile).fireActiveMapChanged(this);
+		}
+
+		@Override
+		public Map<InputEventCode, MapSequence> getSequences() {
+			if (sequences == null) {
+				sequences = new LinkedHashMap<>();
+				JsonObject actions = JsonParser
+						.parseString(device.binding.getActions(getProfile().getName(), getId(), "")).getAsJsonObject();
+				for (String key : actions.keySet()) {
+					RazerMapSequence seq = new RazerMapSequence(this, InputEventCode.fromCode(Integer.parseInt(key)));
+					JsonArray actionsArray = actions.get(key).getAsJsonArray();
+					for (JsonElement actionElement : actionsArray) {
+						JsonObject actionObject = actionElement.getAsJsonObject();
+						seq.add(createMapAction(seq, actionObject));
+					}
+					sequences.put(seq.getMacroKey(), seq);
+				}
+			}
+			return sequences;
+		}
+
+		protected RazerMapAction createMapAction(RazerMapSequence seq, JsonObject actionObject) {
+			String type = actionObject.get("type").getAsString();
+			String value = actionObject.get("value").getAsString();
+			switch (type) {
+			case "release":
+				try {
+					return new RazerReleaseMapAction(this, seq, device.binding, value);
+				} catch (NumberFormatException nfe) {
+					// TODO get last pressed key if available instead of next available
+					return new RazerReleaseMapAction(this, seq, device.binding,
+							String.valueOf(getNextFreeKey().getCode()));
+				}
+			case "execute":
+				return new RazerExecuteMapAction(this, seq, device.binding, value);
+			case "map":
+				return new RazerMapMapAction(this, seq, device.binding, value);
+			case "profile":
+				return new RazerProfileMapAction(this, seq, device.binding, value);
+			case "shift":
+				return new RazerShiftMapAction(this, seq, device.binding, value);
+			case "sleep":
+				try {
+					return new RazerSleepMapAction(this, seq, device.binding, value);
+				} catch (NumberFormatException nfe) {
+					return new RazerSleepMapAction(this, seq, device.binding, "1");
+				}
+			default:
+				try {
+					return new RazerKeyMapAction(this, seq, device.binding, value);
+				} catch (Exception e) {
+					return new RazerKeyMapAction(this, seq, device.binding, String.valueOf(getNextFreeKey().getCode()));
+				}
+			}
+		}
+
+		@Override
+		public void remove() {
+			device.binding.removeMap(profile.getName(), getId());
+			((RazerMacroProfile) profile).profileMaps.remove(this);
+			((RazerMacroProfile) profile).fireMapRemoved(this);
+			device.fireMapRemoved(this);
+		}
+
+		@Override
+		public String toString() {
+			return "RazerMacroProfileMap [id=" + id + "]";
+		}
+
+		@Override
+		public void record(int keyCode) {
+			device.assertCap(Capability.MACRO_RECORDING);
+			device.macros.startMacroRecording(profile.getName(), getId(), keyCode);
+		}
+
+		@Override
+		public int getRecordingMacroKey() {
+			return device.macros.getMacroKey();
+		}
+
+		@Override
+		public boolean isRecording() {
+			device.assertCap(Capability.MACRO_RECORDING);
+			return device.macros.getMacroRecordingState();
+		}
+
+		@Override
+		public void stopRecording() {
+			device.assertCap(Capability.MACRO_RECORDING);
+			device.macros.stopMacroRecording();
+		}
+
+		@Override
+		public void setMatrix(Matrix matrix) {
+			device.assertCap(Capability.MATRIX);
+			// TODO
+			// bindingLighting.setMatrix(profile.getName(), getId(), "");
+			throw new UnsupportedOperationException("TODO");
+		}
+
+		@Override
+		public Matrix getMatrix() {
+			device.assertCap(Capability.MATRIX);
+			// TODO
+			throw new UnsupportedOperationException("TODO");
+		}
+
+		@Override
+		public boolean isDefault() {
+			return device.binding.getDefaultMap(profile.getName()).equals(getId());
+		}
+
+		@Override
+		public void makeDefault() {
+			device.binding.setDefaultMap(profile.getName(), getId());
+			((RazerMacroProfile) profile).fireMapChanged(this);
+			device.fireMapChanged(this);
+		}
+
+		@Override
+		public MapSequence addSequence(InputEventCode key, boolean addDefaultActions) {
+			RazerMapSequence seq = new RazerMapSequence(this, key);
+			if (addDefaultActions)
+				seq.addAction(KeyMapAction.class, key);
+			synchronized (sequences) {
+				if (sequences.containsKey(key))
+					throw new IllegalArgumentException(String.format("Key %s already mapped.", key));
+				sequences.put(key, seq);
+			}
+			device.fireMapChanged(this);
+			return seq;
+
+		}
+
+	}
+
+	static abstract class RazerMapAction implements MapAction {
+
+		private RazerBinding binding;
+		private ProfileMap map;
+		private RazerMapSequence sequence;
+
+		RazerMapAction(ProfileMap map, RazerMapSequence sequence, RazerBinding binding, String value) {
+			this.binding = binding;
+			this.sequence = sequence;
+			this.map = map;
+			setValue(value);
+		}
+
+		@Override
+		public final ProfileMap getMap() {
+			return map;
+		}
+
+		@Override
+		public final int getActionId() {
+			int idx = getSequence().indexOf(this);
+			if (idx == -1)
+				throw new IllegalStateException("Found not found action ID for " + getActionType() + " in " + sequence);
+			return idx;
+		}
+
+		@Override
+		public void remove() {
+			doRemove();
+			sequence.remove(this);
+			if (sequence.isEmpty())
+				sequence.remove();
+		}
+
+		protected void doRemove() {
+			binding.removeAction(map.getProfile().getName(), map.getId(), sequence.getMacroKey().getCode(),
+					getActionId());
+		}
+
+		@Override
+		public MapSequence getSequence() {
+			return sequence;
+		}
+
+		@Override
+		public String toString() {
+			return getClass().getSimpleName() + " [hashCode=" + hashCode() + ",actionId=" + getActionId() + ", value="
+					+ getValue() + "]";
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public <A extends MapAction> A update(Class<A> actionType, Object value) {
+			RazerMacroProfileMap razerProfileMap = (RazerMacroProfileMap) getMap();
+			int actionId = getActionId();
+
+			razerProfileMap.device.binding.updateAction(getMap().getProfile().getName(), getMap().getId(),
+					getSequence().getMacroKey().getCode(), toNativeActionName(actionType),
+					value == null ? "" : String.valueOf(value), actionId);
+			JsonElement actions = JsonParser
+					.parseString(razerProfileMap.device.binding.getActions(getMap().getProfile().getName(),
+							getMap().getId(), String.valueOf(getSequence().getMacroKey().getCode())));
+			JsonArray actionsArray = actions.getAsJsonArray();
+			JsonObject actionObject = actionsArray.get(actionId).getAsJsonObject();
+
+			MapAction currentAction = sequence.get(actionId);
+			if (currentAction.getActionType().equals(actionType)) {
+				currentAction.setValue(value == null ? null : String.valueOf(value));
+				return (A) currentAction;
+			} else {
+				MapAction mapAction = razerProfileMap.createMapAction((RazerMapSequence) getSequence(), actionObject);
+
+				/* If switching between key types, keep the key code */
+				if ((actionType.equals(KeyMapAction.class)
+						&& currentAction.getActionType().equals(ReleaseMapAction.class))
+						|| (actionType.equals(ReleaseMapAction.class)
+								&& currentAction.getActionType().equals(KeyMapAction.class))) {
+					mapAction.setValue(currentAction.getValue());
+					razerProfileMap.device.binding.updateAction(getMap().getProfile().getName(), getMap().getId(),
+							getSequence().getMacroKey().getCode(), toNativeActionName(actionType), mapAction.getValue(),
+							actionId);
+				}
+
+				getSequence().set(actionId, mapAction);
+				((RazerMacroProfile) razerProfileMap.profile).fireMapChanged(razerProfileMap);
+				return (A) mapAction;
+			}
+		}
+
+		@Override
+		public void commit() {
+			update(getActionType(), getValue());
+		}
+	}
+
+	@SuppressWarnings("serial")
+	static class RazerMapSequence extends MapSequence {
+
+		public RazerMapSequence(ProfileMap map, InputEventCode key) {
+			super(map, key);
+		}
+
+		public RazerMapSequence(ProfileMap map) {
+			super(map);
+		}
+
+		@Override
+		public void remove() {
+			for (MapAction act : this) {
+				((RazerMapAction) act).doRemove();
+			}
+			clear();
+			((RazerMacroProfileMap) getMap()).sequences.remove(getMacroKey());
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public <A extends MapAction> A addAction(Class<A> actionType, Object value) {
+			RazerMacroProfileMap razerProfileMap = (RazerMacroProfileMap) getMap();
+			razerProfileMap.device.binding.addAction(getMap().getProfile().getName(), getMap().getId(),
+					getMacroKey().getCode(), toNativeActionName(actionType),
+					value instanceof InputEventCode ? String.valueOf(((InputEventCode) value).getCode())
+							: String.valueOf(value));
+
+			JsonElement actions = JsonParser.parseString(razerProfileMap.device.binding.getActions(
+					getMap().getProfile().getName(), getMap().getId(), String.valueOf(getMacroKey().getCode())));
+			JsonArray actionsArray = actions.getAsJsonArray();
+			JsonObject actionObject = actionsArray.get(actionsArray.size() - 1).getAsJsonObject();
+			MapAction mapAction = razerProfileMap.createMapAction(this, actionObject);
+			add(mapAction);
+			((RazerMacroProfile) razerProfileMap.profile).fireMapChanged(razerProfileMap);
+			return (A) mapAction;
+		}
+
+		@Override
+		public void commit() {
+			/*
+			 * There is no DBus function to update the key for a map, so have to remove the
+			 * entire map and recreate all of the actions
+			 */
+			RazerMacroProfileMap razerProfileMap = (RazerMacroProfileMap) getMap();
+			razerProfileMap.device.binding.removeMap(getMap().getProfile().getName(), getMap().getId());
+			razerProfileMap.device.binding.addMap(getMap().getProfile().getName(), getMap().getId());
+			for (Map.Entry<InputEventCode, MapSequence> seqEn : razerProfileMap.sequences.entrySet()) {
+				for (MapAction action : seqEn.getValue()) {
+					razerProfileMap.device.binding.addAction(getMap().getProfile().getName(), getMap().getId(),
+							seqEn.getValue().getMacroKey().getCode(), toNativeActionName(action.getActionType()),
+							action.getValue());
+				}
+			}
+		}
+
+		@Override
+		public void record() {
+			RazerMacroProfileMap razerProfileMap = (RazerMacroProfileMap) getMap();
+			razerProfileMap.device.macros.startMacroRecording(razerProfileMap.getProfile().getName(),
+					razerProfileMap.getId(), getMacroKey().getCode());
+		}
+
+		@Override
+		public boolean isRecording() {
+			return ((RazerMacroProfileMap) getMap()).device.macros.getMacroRecordingState();
+		}
+
+		@Override
+		public void stopRecording() {
+			((RazerMacroProfileMap) getMap()).device.macros.stopMacroRecording();
+		}
+	}
+
+	static class RazerKeyMapAction extends RazerMapAction implements KeyMapAction {
+
+		private InputEventCode press;
+
+		RazerKeyMapAction(ProfileMap map, RazerMapSequence sequence, RazerBinding binding, String press) {
+			super(map, sequence, binding, press);
+		}
+
+		@Override
+		public void validate() throws ValidationException {
+			if (press == null)
+				throw new ValidationException("keyMapAction.missingPress");
+		}
+
+		@Override
+		public InputEventCode getPress() {
+			return press;
+		}
+
+		@Override
+		public void setPress(InputEventCode press) {
+			this.press = press;
+		}
+
+	}
+
+	static class RazerReleaseMapAction extends RazerMapAction implements ReleaseMapAction {
+
+		private InputEventCode release;
+
+		RazerReleaseMapAction(ProfileMap map, RazerMapSequence sequence, RazerBinding binding, String value) {
+			super(map, sequence, binding, value);
+		}
+
+		@Override
+		public void validate() throws ValidationException {
+			if (release == null)
+				throw new ValidationException("keyReleaseAction.missingRelease");
+		}
+
+		@Override
+		public InputEventCode getRelease() {
+			return release;
+		}
+
+		@Override
+		public void setRelease(InputEventCode release) {
+			this.release = release;
+		}
+
+	}
+
+	static class RazerExecuteMapAction extends RazerMapAction implements ExecuteMapAction {
+
+		private String command;
+		private List<String> args;
+
+		RazerExecuteMapAction(ProfileMap map, RazerMapSequence sequence, RazerBinding binding, String value) {
+			super(map, sequence, binding, value);
+		}
+
+		@Override
+		public void validate() throws ValidationException {
+			if (command == null || command.length() == 0)
+				throw new ValidationException("executeMapAction.missingCommand");
+		}
+
+		@Override
+		public List<String> getArgs() {
+			return args;
+		}
+
+		@Override
+		public String getCommand() {
+			return command;
+		}
+
+		@Override
+		public void setArgs(List<String> args) {
+			this.args = args;
+		}
+
+		@Override
+		public void setCommand(String script) {
+			this.command = script;
+		}
+
+	}
+
+	static class RazerMapMapAction extends RazerMapAction implements MapMapAction {
+
+		private String mapName;
+
+		RazerMapMapAction(ProfileMap map, RazerMapSequence sequence, RazerBinding binding, String value) {
+			super(map, sequence, binding, value);
+		}
+
+		@Override
+		public void validate() throws ValidationException {
+			if (mapName == null || mapName.length() == 0)
+				throw new ValidationException("mapMapAction.missingMapName");
+		}
+
+		@Override
+		public String getMapName() {
+			return mapName;
+		}
+
+		@Override
+		public void setMapName(String mapName) {
+			this.mapName = mapName;
+		}
+	}
+
+	static class RazerProfileMapAction extends RazerMapAction implements ProfileMapAction {
+
+		private String profileName;
+
+		RazerProfileMapAction(ProfileMap map, RazerMapSequence sequence, RazerBinding binding, String value) {
+			super(map, sequence, binding, value);
+		}
+
+		@Override
+		public void validate() throws ValidationException {
+			if (profileName == null || profileName.length() == 0)
+				throw new ValidationException("profileMapAction.missingProfileName");
+		}
+
+		@Override
+		public String getProfileName() {
+			return profileName;
+		}
+
+		@Override
+		public void setProfileName(String profileName) {
+			this.profileName = profileName;
+		}
+	}
+
+	static class RazerShiftMapAction extends RazerMapAction implements ShiftMapAction {
+
+		private String mapName;
+
+		RazerShiftMapAction(ProfileMap map, RazerMapSequence sequence, RazerBinding binding, String value) {
+			super(map, sequence, binding, value);
+		}
+
+		@Override
+		public void validate() throws ValidationException {
+			if (mapName == null || mapName.length() == 0)
+				throw new ValidationException("shiftMapAction.missingMapName");
+		}
+
+		@Override
+		public String getMapName() {
+			return mapName;
+		}
+
+		@Override
+		public void setMapName(String mapName) {
+			this.mapName = mapName;
+		}
+	}
+
+	static class RazerSleepMapAction extends RazerMapAction implements SleepMapAction {
+
+		private float seconds;
+
+		RazerSleepMapAction(ProfileMap map, RazerMapSequence sequence, RazerBinding binding, String value) {
+			super(map, sequence, binding, value);
+		}
+
+		@Override
+		public void validate() throws ValidationException {
+		}
+
+		@Override
+		public float getSeconds() {
+			return seconds;
+		}
+
+		@Override
+		public void setSeconds(float seconds) {
+			this.seconds = seconds;
+		}
+	}
+
+	static String toNativeActionName(Class<? extends MapAction> actionType) {
+		String actionTypeName = actionType.getSimpleName();
+		actionTypeName = actionTypeName.substring(0, actionTypeName.length() - 9).toLowerCase();
+		return actionTypeName;
+	}
 }

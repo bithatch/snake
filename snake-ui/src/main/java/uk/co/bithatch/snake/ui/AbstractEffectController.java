@@ -44,7 +44,8 @@ public abstract class AbstractEffectController<E, H extends EffectHandler<E, ?>>
 	@Override
 	protected final void onSetDevice() throws Exception {
 		header.setBackground(createHeaderBackground());
-		deviceImage.setImage(new Image(context.getCache().getCachedImage(getDevice().getImage()), true));
+		deviceImage.setImage(new Image(context.getDefaultImage(getDevice().getType(),
+				context.getCache().getCachedImage(getDevice().getImage())), true));
 		deviceName.textProperty().set(getDevice().getName());
 		onSetEffectDevice();
 	}

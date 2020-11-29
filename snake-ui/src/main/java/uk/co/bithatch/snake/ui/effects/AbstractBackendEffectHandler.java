@@ -52,13 +52,15 @@ public abstract class AbstractBackendEffectHandler<E extends Effect, O extends A
 	}
 
 	@Override
-	protected void onActivate(Lit component) {
+	protected E onActivate(Lit component) {
 		E effect = (E) component.createEffect(clazz);
 
 		/* Load the configuration for this effect */
 		onLoad(getEffectPreferences(component), effect);
 
 		getContext().getScheduler().execute(() -> component.setEffect(effect));
+		
+		return effect;
 	}
 
 	protected void onLoad(Preferences prefs, E effect) {

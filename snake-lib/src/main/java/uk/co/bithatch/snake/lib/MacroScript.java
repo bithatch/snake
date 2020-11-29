@@ -3,18 +3,14 @@ package uk.co.bithatch.snake.lib;
 import java.io.File;
 import java.util.List;
 
+@Deprecated
 public class MacroScript implements Macro {
 
 	private List<String> args;
-	private Key macroKey;
 	private String script;
 
 	public List<String> getArgs() {
 		return args;
-	}
-
-	public Key getMacroKey() {
-		return macroKey;
 	}
 
 	public String getScript() {
@@ -25,17 +21,13 @@ public class MacroScript implements Macro {
 		this.args = args;
 	}
 
-	public void setMacroKey(Key macroKey) {
-		this.macroKey = macroKey;
-	}
-
 	public void setScript(String script) {
 		this.script = script;
 	}
 
 	@Override
 	public String toString() {
-		return "MacroScript [script=" + script + ", args=" + args + ", macroKey=" + macroKey + "]";
+		return "MacroScript [script=" + script + ", args=" + args  + "]";
 	}
 
 	@Override

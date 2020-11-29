@@ -3,6 +3,7 @@ package uk.co.bithatch.snake.lib;
 import java.util.ArrayList;
 
 @SuppressWarnings("serial")
+@Deprecated
 public class MacroSequence extends ArrayList<Macro> {
 
 	private Key key;

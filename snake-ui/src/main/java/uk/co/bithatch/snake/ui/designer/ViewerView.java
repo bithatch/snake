@@ -18,7 +18,7 @@ public interface ViewerView extends AutoCloseable {
 	
 	void refresh();
 
-	MultipleSelectionModel<IO> getKeySelectionModel();
+	MultipleSelectionModel<IO> getElementSelectionModel();
 
 	default void updateFromMatrix(int[][][] frame) {
 	}
