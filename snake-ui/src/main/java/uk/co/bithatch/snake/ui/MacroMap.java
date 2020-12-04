@@ -55,8 +55,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import javafx.util.converter.FloatStringConverter;
+import uk.co.bithatch.linuxio.EventCode;
 import uk.co.bithatch.snake.lib.Device;
-import uk.co.bithatch.snake.lib.InputEventCode;
 import uk.co.bithatch.snake.lib.ValidationException;
 import uk.co.bithatch.snake.lib.binding.ExecuteMapAction;
 import uk.co.bithatch.snake.lib.binding.KeyMapAction;
@@ -98,7 +98,7 @@ public class MacroMap extends AbstractDetailsController {
 		}
 	}
 
-	protected static String textForInputEvent(InputEventCode k) {
+	protected static String textForInputEvent(EventCode k) {
 		String keyName = String.valueOf(k);
 		String txt = keyName.substring(4);
 		if (txt.length() > 3)
@@ -227,7 +227,7 @@ public class MacroMap extends AbstractDetailsController {
 	@FXML
 	private VBox keySection;
 	@FXML
-	private ComboBox<InputEventCode> macroKey;
+	private ComboBox<EventCode> macroKey;
 	@FXML
 	private ToggleGroup macroType;
 	@FXML
@@ -249,7 +249,7 @@ public class MacroMap extends AbstractDetailsController {
 	@FXML
 	private VBox sequenceEditor;
 	@FXML
-	private ComboBox<InputEventCode> keyCode;
+	private ComboBox<EventCode> keyCode;
 	@FXML
 	private RadioButton keyMapAction;
 	@FXML
@@ -468,14 +468,14 @@ public class MacroMap extends AbstractDetailsController {
 			if (getSelectedMapAction() instanceof ReleaseMapAction) {
 				return ((ReleaseMapAction) getSelectedMapAction()).getRelease();
 			}
-			return InputEventCode.KEY_1;
+			return EventCode.KEY_1;
 
 		}));
 		releaseMapAction.selectedProperty().addListener(createMapActionListener(ReleaseMapAction.class, () -> {
 			if (getSelectedMapAction() instanceof KeyMapAction) {
 				return ((KeyMapAction) getSelectedMapAction()).getPress();
 			}
-			return InputEventCode.KEY_1;
+			return EventCode.KEY_1;
 
 		}));
 		shiftMapAction.selectedProperty().addListener(createMapActionListener(ShiftMapAction.class, () -> {
@@ -484,7 +484,7 @@ public class MacroMap extends AbstractDetailsController {
 			} else if (getSelectedMapAction() instanceof ReleaseMapAction) {
 				return ((ReleaseMapAction) getSelectedMapAction()).getRelease();
 			}
-			return InputEventCode.KEY_1;
+			return EventCode.KEY_1;
 
 		}));
 
@@ -542,7 +542,7 @@ public class MacroMap extends AbstractDetailsController {
 	@FXML
 	void evtAdd() {
 		try {
-			InputEventCode k = map.getNextFreeKey();
+			EventCode k = map.getNextFreeKey();
 			adjusting = true;
 			try {
 				MapSequence seq = map.addSequence(k, true);
@@ -873,7 +873,7 @@ public class MacroMap extends AbstractDetailsController {
 		protected MapSequence getSequenceForKey(Key key) {
 			if (key == null)
 				return null;
-			InputEventCode code = key.getEventCode();
+			EventCode code = key.getEventCode();
 			if (code != null) {
 				return map.getSequences().get(code);
 			}
@@ -1049,7 +1049,7 @@ public class MacroMap extends AbstractDetailsController {
 		public void buildTree() {
 			getRoot().getChildren().clear();
 			var root = rootProperty().get();
-			for (Map.Entry<InputEventCode, MapSequence> en : map.getSequences().entrySet()) {
+			for (Map.Entry<EventCode, MapSequence> en : map.getSequences().entrySet()) {
 				MapSequence seq = en.getValue();
 				TreeItem<Object> macroSequence = addSequenceNode(seq);
 				if (root.getChildren().size() == 1) {

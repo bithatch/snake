@@ -49,11 +49,12 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
+import uk.co.bithatch.linuxio.EventCode;
+import uk.co.bithatch.linuxio.EventCode.Ev;
 import uk.co.bithatch.snake.lib.BrandingImage;
 import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.DeviceType;
-import uk.co.bithatch.snake.lib.InputEventCode;
 import uk.co.bithatch.snake.lib.Key;
 import uk.co.bithatch.snake.lib.Macro;
 import uk.co.bithatch.snake.lib.MacroKey;
@@ -996,7 +997,7 @@ public class NativeRazerDevice implements Device {
 	private RazerBinding binding;
 	private List<Profile> profiles;
 	private RazerBindingLighting bindingLighting;
-	private Set<InputEventCode> supportedInputEvents = new LinkedHashSet<>();
+	private Set<EventCode> supportedInputEvents = new LinkedHashSet<>();
 	private Set<Key> supportedLegacyKeys = new LinkedHashSet<>();
 
 	private DeviceType deviceType;
@@ -1011,7 +1012,7 @@ public class NativeRazerDevice implements Device {
 		// TODO actual supported events will need backend support (or implement our ownt
 		// evdev caps discovery, or dervice from layout)
 
-		var keyList = new ArrayList<>(Arrays.asList(InputEventCode.values()));
+		var keyList = new ArrayList<>(Arrays.asList(EventCode.values()));
 		Collections.sort(keyList, (k1, k2) -> k1.name().compareTo(k2.name()));
 		supportedInputEvents.addAll(keyList);
 		var legacyKeyList = new ArrayList<>(Arrays.asList(Key.values()));
@@ -1348,7 +1349,7 @@ public class NativeRazerDevice implements Device {
 	}
 
 	@Override
-	public Set<InputEventCode> getSupportedInputEvents() {
+	public Set<EventCode> getSupportedInputEvents() {
 		return supportedInputEvents;
 	}
 
@@ -1943,7 +1944,7 @@ public class NativeRazerDevice implements Device {
 		private RazerMacroProfile profile;
 		private NativeRazerDevice device;
 		private RazerBindingLighting bindingLighting;
-		private Map<InputEventCode, MapSequence> sequences;
+		private Map<EventCode, MapSequence> sequences;
 
 		RazerMacroProfileMap(NativeRazerDevice device, RazerMacroProfile profile, String id,
 				RazerBindingLighting bindingLighting) {
@@ -1994,13 +1995,13 @@ public class NativeRazerDevice implements Device {
 		}
 
 		@Override
-		public Map<InputEventCode, MapSequence> getSequences() {
+		public Map<EventCode, MapSequence> getSequences() {
 			if (sequences == null) {
 				sequences = new LinkedHashMap<>();
 				JsonObject actions = JsonParser
 						.parseString(device.binding.getActions(getProfile().getName(), getId(), "")).getAsJsonObject();
 				for (String key : actions.keySet()) {
-					RazerMapSequence seq = new RazerMapSequence(this, InputEventCode.fromCode(Integer.parseInt(key)));
+					RazerMapSequence seq = new RazerMapSequence(this, EventCode.fromCode(Ev.EV_KEY, Integer.parseInt(key)));
 					JsonArray actionsArray = actions.get(key).getAsJsonArray();
 					for (JsonElement actionElement : actionsArray) {
 						JsonObject actionObject = actionElement.getAsJsonObject();
@@ -2022,7 +2023,7 @@ public class NativeRazerDevice implements Device {
 				} catch (NumberFormatException nfe) {
 					// TODO get last pressed key if available instead of next available
 					return new RazerReleaseMapAction(this, seq, device.binding,
-							String.valueOf(getNextFreeKey().getCode()));
+							String.valueOf(getNextFreeKey().code()));
 				}
 			case "execute":
 				return new RazerExecuteMapAction(this, seq, device.binding, value);
@@ -2042,7 +2043,7 @@ public class NativeRazerDevice implements Device {
 				try {
 					return new RazerKeyMapAction(this, seq, device.binding, value);
 				} catch (Exception e) {
-					return new RazerKeyMapAction(this, seq, device.binding, String.valueOf(getNextFreeKey().getCode()));
+					return new RazerKeyMapAction(this, seq, device.binding, String.valueOf(getNextFreeKey().code()));
 				}
 			}
 		}
@@ -2111,7 +2112,7 @@ public class NativeRazerDevice implements Device {
 		}
 
 		@Override
-		public MapSequence addSequence(InputEventCode key, boolean addDefaultActions) {
+		public MapSequence addSequence(EventCode key, boolean addDefaultActions) {
 			RazerMapSequence seq = new RazerMapSequence(this, key);
 			if (addDefaultActions)
 				seq.addAction(KeyMapAction.class, key);
@@ -2162,7 +2163,7 @@ public class NativeRazerDevice implements Device {
 		}
 
 		protected void doRemove() {
-			binding.removeAction(map.getProfile().getName(), map.getId(), sequence.getMacroKey().getCode(),
+			binding.removeAction(map.getProfile().getName(), map.getId(), sequence.getMacroKey().code(),
 					getActionId());
 		}
 
@@ -2184,11 +2185,11 @@ public class NativeRazerDevice implements Device {
 			int actionId = getActionId();
 
 			razerProfileMap.device.binding.updateAction(getMap().getProfile().getName(), getMap().getId(),
-					getSequence().getMacroKey().getCode(), toNativeActionName(actionType),
+					getSequence().getMacroKey().code(), toNativeActionName(actionType),
 					value == null ? "" : String.valueOf(value), actionId);
 			JsonElement actions = JsonParser
 					.parseString(razerProfileMap.device.binding.getActions(getMap().getProfile().getName(),
-							getMap().getId(), String.valueOf(getSequence().getMacroKey().getCode())));
+							getMap().getId(), String.valueOf(getSequence().getMacroKey().code())));
 			JsonArray actionsArray = actions.getAsJsonArray();
 			JsonObject actionObject = actionsArray.get(actionId).getAsJsonObject();
 
@@ -2206,7 +2207,7 @@ public class NativeRazerDevice implements Device {
 								&& currentAction.getActionType().equals(KeyMapAction.class))) {
 					mapAction.setValue(currentAction.getValue());
 					razerProfileMap.device.binding.updateAction(getMap().getProfile().getName(), getMap().getId(),
-							getSequence().getMacroKey().getCode(), toNativeActionName(actionType), mapAction.getValue(),
+							getSequence().getMacroKey().code(), toNativeActionName(actionType), mapAction.getValue(),
 							actionId);
 				}
 
@@ -2225,7 +2226,7 @@ public class NativeRazerDevice implements Device {
 	@SuppressWarnings("serial")
 	static class RazerMapSequence extends MapSequence {
 
-		public RazerMapSequence(ProfileMap map, InputEventCode key) {
+		public RazerMapSequence(ProfileMap map, EventCode key) {
 			super(map, key);
 		}
 
@@ -2247,12 +2248,12 @@ public class NativeRazerDevice implements Device {
 		public <A extends MapAction> A addAction(Class<A> actionType, Object value) {
 			RazerMacroProfileMap razerProfileMap = (RazerMacroProfileMap) getMap();
 			razerProfileMap.device.binding.addAction(getMap().getProfile().getName(), getMap().getId(),
-					getMacroKey().getCode(), toNativeActionName(actionType),
-					value instanceof InputEventCode ? String.valueOf(((InputEventCode) value).getCode())
+					getMacroKey().code(), toNativeActionName(actionType),
+					value instanceof EventCode ? String.valueOf(((EventCode) value).code())
 							: String.valueOf(value));
 
 			JsonElement actions = JsonParser.parseString(razerProfileMap.device.binding.getActions(
-					getMap().getProfile().getName(), getMap().getId(), String.valueOf(getMacroKey().getCode())));
+					getMap().getProfile().getName(), getMap().getId(), String.valueOf(getMacroKey().code())));
 			JsonArray actionsArray = actions.getAsJsonArray();
 			JsonObject actionObject = actionsArray.get(actionsArray.size() - 1).getAsJsonObject();
 			MapAction mapAction = razerProfileMap.createMapAction(this, actionObject);
@@ -2270,10 +2271,10 @@ public class NativeRazerDevice implements Device {
 			RazerMacroProfileMap razerProfileMap = (RazerMacroProfileMap) getMap();
 			razerProfileMap.device.binding.removeMap(getMap().getProfile().getName(), getMap().getId());
 			razerProfileMap.device.binding.addMap(getMap().getProfile().getName(), getMap().getId());
-			for (Map.Entry<InputEventCode, MapSequence> seqEn : razerProfileMap.sequences.entrySet()) {
+			for (Map.Entry<EventCode, MapSequence> seqEn : razerProfileMap.sequences.entrySet()) {
 				for (MapAction action : seqEn.getValue()) {
 					razerProfileMap.device.binding.addAction(getMap().getProfile().getName(), getMap().getId(),
-							seqEn.getValue().getMacroKey().getCode(), toNativeActionName(action.getActionType()),
+							seqEn.getValue().getMacroKey().code(), toNativeActionName(action.getActionType()),
 							action.getValue());
 				}
 			}
@@ -2283,7 +2284,7 @@ public class NativeRazerDevice implements Device {
 		public void record() {
 			RazerMacroProfileMap razerProfileMap = (RazerMacroProfileMap) getMap();
 			razerProfileMap.device.macros.startMacroRecording(razerProfileMap.getProfile().getName(),
-					razerProfileMap.getId(), getMacroKey().getCode());
+					razerProfileMap.getId(), getMacroKey().code());
 		}
 
 		@Override
@@ -2299,7 +2300,7 @@ public class NativeRazerDevice implements Device {
 
 	static class RazerKeyMapAction extends RazerMapAction implements KeyMapAction {
 
-		private InputEventCode press;
+		private EventCode press;
 
 		RazerKeyMapAction(ProfileMap map, RazerMapSequence sequence, RazerBinding binding, String press) {
 			super(map, sequence, binding, press);
@@ -2312,12 +2313,12 @@ public class NativeRazerDevice implements Device {
 		}
 
 		@Override
-		public InputEventCode getPress() {
+		public EventCode getPress() {
 			return press;
 		}
 
 		@Override
-		public void setPress(InputEventCode press) {
+		public void setPress(EventCode press) {
 			this.press = press;
 		}
 
@@ -2325,7 +2326,7 @@ public class NativeRazerDevice implements Device {
 
 	static class RazerReleaseMapAction extends RazerMapAction implements ReleaseMapAction {
 
-		private InputEventCode release;
+		private EventCode release;
 
 		RazerReleaseMapAction(ProfileMap map, RazerMapSequence sequence, RazerBinding binding, String value) {
 			super(map, sequence, binding, value);
@@ -2338,12 +2339,12 @@ public class NativeRazerDevice implements Device {
 		}
 
 		@Override
-		public InputEventCode getRelease() {
+		public EventCode getRelease() {
 			return release;
 		}
 
 		@Override
-		public void setRelease(InputEventCode release) {
+		public void setRelease(EventCode release) {
 			this.release = release;
 		}
 

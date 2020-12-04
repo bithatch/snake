@@ -38,6 +38,11 @@
 			<artifactId>snake-lib</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<version>1.0-SNAPSHOT</version>
+			<artifactId>macrolib</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>uk.co.bithatch</groupId>
 			<artifactId>FX-BorderlessScene</artifactId>
 		</dependency>

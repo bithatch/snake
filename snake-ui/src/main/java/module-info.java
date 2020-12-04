@@ -25,8 +25,6 @@ module uk.co.bithatch.snake.ui {
 	requires transitive uk.co.bithatch.linuxio;
 	requires com.sshtools.twoslices;
 	requires org.controlsfx.controls;
-
-	/* requires transitive uk.co.bithatch.macrolib; */
     uses uk.co.bithatch.snake.lib.Backend; 
     uses uk.co.bithatch.snake.ui.PlatformService; 
     uses uk.co.bithatch.snake.ui.EffectHandler;
@@ -41,4 +39,3 @@ module uk.co.bithatch.snake.ui {
 	uk.co.bithatch.snake.ui.effects.StaticEffectHandler,
 	uk.co.bithatch.snake.ui.effects.WaveEffectHandler;
 }
-

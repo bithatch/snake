@@ -14,10 +14,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import uk.co.bithatch.linuxio.EventCode;
 import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.DeviceType;
-import uk.co.bithatch.snake.lib.InputEventCode;
 import uk.co.bithatch.snake.lib.Region;
 import uk.co.bithatch.snake.lib.layouts.Accessory.AccessoryType;
 
@@ -113,7 +113,7 @@ public class DeviceLayout implements uk.co.bithatch.snake.lib.layouts.DeviceView
 				case KEY:
 					Key key = new Key(view);
 					if (elementObject.has("eventCode")) {
-						key.setEventCode(InputEventCode.valueOf(elementObject.get("eventCode").getAsString()));
+						key.setEventCode(EventCode.valueOf(elementObject.get("eventCode").getAsString()));
 					}
 					if (elementObject.has("legacyKey")) {
 						key.setLegacyKey(uk.co.bithatch.snake.lib.Key.valueOf(elementObject.get("legacyKey").getAsString()));
@@ -357,35 +357,35 @@ public class DeviceLayout implements uk.co.bithatch.snake.lib.layouts.DeviceView
 		}
 	}
 
-	public Set<InputEventCode> getSupportedInputEvents() {
-		Set<InputEventCode> inputEventCodes = new LinkedHashSet<>();
+	public Set<EventCode> getSupportedInputEvents() {
+		Set<EventCode> EventCodes = new LinkedHashSet<>();
 		synchronized (views) {
 			for (DeviceView v : views.values()) {
 				for (IO el : v.getElements()) {
 					if (el instanceof Key) {
 						Key k = (Key) el;
 						if (k.getEventCode() != null)
-							inputEventCodes.add(k.getEventCode());
+							EventCodes.add(k.getEventCode());
 					}
 				}
 			}
 		}
-		return inputEventCodes;
+		return EventCodes;
 	}
 
 	public Set<uk.co.bithatch.snake.lib.Key> getSupportedLegacyKeys() {
-		Set<uk.co.bithatch.snake.lib.Key> inputEventCodes = new LinkedHashSet<>();
+		Set<uk.co.bithatch.snake.lib.Key> EventCodes = new LinkedHashSet<>();
 		synchronized (views) {
 			for (DeviceView v : views.values()) {
 				for (IO el : v.getElements()) {
 					if (el instanceof Key) {
 						Key k = (Key) el;
 						if (k.getLegacyKey() != null)
-							inputEventCodes.add(k.getLegacyKey());
+							EventCodes.add(k.getLegacyKey());
 					}
 				}
 			}
 		}
-		return inputEventCodes;
+		return EventCodes;
 	}
 }

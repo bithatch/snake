@@ -2,20 +2,20 @@ package uk.co.bithatch.snake.lib.binding;
 
 import java.util.ArrayList;
 
-import uk.co.bithatch.snake.lib.InputEventCode;
+import uk.co.bithatch.linuxio.EventCode;
 import uk.co.bithatch.snake.lib.ValidationException;
 
 @SuppressWarnings("serial")
 public abstract class MapSequence extends ArrayList<MapAction> {
 
-	private InputEventCode key;
+	private EventCode key;
 	private ProfileMap map;
 
 	public MapSequence(ProfileMap map) {
 		this.map = map;
 	}
 
-	public MapSequence(ProfileMap map, InputEventCode key) {
+	public MapSequence(ProfileMap map, EventCode key) {
 		setMacroKey(key);
 		this.map = map;
 	}
@@ -24,11 +24,11 @@ public abstract class MapSequence extends ArrayList<MapAction> {
 		return map;
 	}
 
-	public InputEventCode getMacroKey() {
+	public EventCode getMacroKey() {
 		return key;
 	}
 
-	public void setMacroKey(InputEventCode key) {
+	public void setMacroKey(EventCode key) {
 		this.key = key;
 	}
 
@@ -49,7 +49,7 @@ public abstract class MapSequence extends ArrayList<MapAction> {
 
 	public abstract void stopRecording();
 
-	public InputEventCode getLastInputCode() {
+	public EventCode getLastInputCode() {
 		int idx = size() - 1;
 		while (idx > -1) {
 			MapAction a = get(idx);
@@ -59,6 +59,6 @@ public abstract class MapSequence extends ArrayList<MapAction> {
 				return ((ReleaseMapAction) a).getRelease();
 			idx--;
 		}
-		return InputEventCode.BTN_0;
+		return EventCode.BTN_0;
 	}
 }

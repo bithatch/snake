@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import uk.co.bithatch.linuxio.EventCode;
 import uk.co.bithatch.snake.lib.Region.Name;
 import uk.co.bithatch.snake.lib.binding.Profile;
 import uk.co.bithatch.snake.lib.binding.ProfileMap;
@@ -28,7 +29,7 @@ public interface Device extends AutoCloseable, Grouping, Lit {
 		void mapRemoved(ProfileMap profile);
 	}
 
-	Set<InputEventCode> getSupportedInputEvents();
+	Set<EventCode> getSupportedInputEvents();
 
 	Set<Key> getSupportedLegacyKeys();
 

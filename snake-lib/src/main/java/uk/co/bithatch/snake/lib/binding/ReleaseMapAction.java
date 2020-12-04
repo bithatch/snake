@@ -1,15 +1,16 @@
 package uk.co.bithatch.snake.lib.binding;
 
-import uk.co.bithatch.snake.lib.InputEventCode;
+import uk.co.bithatch.linuxio.EventCode;
+import uk.co.bithatch.linuxio.EventCode.Ev;
 
 public interface ReleaseMapAction extends MapAction {
 
-	InputEventCode getRelease();
+	EventCode getRelease();
 
-	void setRelease(InputEventCode release);
+	void setRelease(EventCode release);
 
 	default String getValue() {
-		return String.valueOf(getRelease().getCode());
+		return String.valueOf(getRelease().code());
 	}
 
 	@Override
@@ -18,6 +19,6 @@ public interface ReleaseMapAction extends MapAction {
 	}
 
 	default void setValue(String value) {
-		setRelease(InputEventCode.fromCode(Integer.parseInt(value)));
+		setRelease(EventCode.fromCode(Ev.EV_KEY, Integer.parseInt(value)));
 	}
 }

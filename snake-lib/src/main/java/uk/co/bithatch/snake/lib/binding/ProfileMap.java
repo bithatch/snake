@@ -2,7 +2,7 @@ package uk.co.bithatch.snake.lib.binding;
 
 import java.util.Map;
 
-import uk.co.bithatch.snake.lib.InputEventCode;
+import uk.co.bithatch.linuxio.EventCode;
 import uk.co.bithatch.snake.lib.effects.Matrix;
 
 public interface ProfileMap {
@@ -29,7 +29,7 @@ public interface ProfileMap {
 
 	String getId();
 
-	Map<InputEventCode, MapSequence> getSequences();
+	Map<EventCode, MapSequence> getSequences();
 
 	void remove();
 
@@ -43,11 +43,11 @@ public interface ProfileMap {
 
 	void makeDefault();
 
-	MapSequence addSequence(InputEventCode key, boolean addDefault);
+	MapSequence addSequence(EventCode key, boolean addDefault);
 
 	@SuppressWarnings("resource")
-	default InputEventCode getNextFreeKey() {
-		for (InputEventCode code : getProfile().getDevice().getSupportedInputEvents()) {
+	default EventCode getNextFreeKey() {
+		for (EventCode code : getProfile().getDevice().getSupportedInputEvents()) {
 			if (!getSequences().containsKey(code))
 				return code;
 		}

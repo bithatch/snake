@@ -41,10 +41,10 @@ import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.util.Callback;
 import javafx.util.Duration;
+import uk.co.bithatch.linuxio.EventCode;
 import uk.co.bithatch.snake.lib.BrandingImage;
 import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.Device;
-import uk.co.bithatch.snake.lib.InputEventCode;
 import uk.co.bithatch.snake.lib.Lit;
 import uk.co.bithatch.snake.lib.Region;
 import uk.co.bithatch.snake.lib.effects.Off;
@@ -155,7 +155,7 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 	@FXML
 	private Label widthLabel;
 	@FXML
-	private SearchableComboBox<InputEventCode> keyMapping;
+	private SearchableComboBox<EventCode> keyMapping;
 	@FXML
 	private SearchableComboBox<uk.co.bithatch.snake.lib.Key> legacyKeyMapping;
 
@@ -447,19 +447,6 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 			if (!adjusting) {
 				List<IO> selectedElements = deviceViewer.getSelectedElements();
 				if (!selectedElements.isEmpty()) {
-					IO selectedElement = deviceViewer.getSelectedElement();
-//					if (selectedElements.size() == 1 && selectedElement instanceof Area) {
-//						/*
-//						 * If we are currently on the AREA view, and the current label appears to be the
-//						 * old region name, the update the label to the new region name
-//						 */
-//						String oldLabel = LayoutEditor.getBestRegionName(deviceViewer.getSelectedView(), oldVal);
-//						if (Objects.equals(oldLabel, selectedElement.getLabel())) {
-//							String newLabel = LayoutEditor.getBestRegionName(deviceViewer.getSelectedView(), newVal);
-//							label.textProperty().set(newLabel);
-//							selectedElement.setLabel(newLabel);
-//						}
-//					}
 
 					for (IO el : selectedElements) {
 						if (el instanceof RegionIO) {
@@ -666,7 +653,6 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 					 * element itself.
 					 */
 					if (element instanceof RegionIO) {
-						RegionIO r = (RegionIO) element;
 						accessory.setVisible(false);
 						accessory.setDisable(true);
 					} else {

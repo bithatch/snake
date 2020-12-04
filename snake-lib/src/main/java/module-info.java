@@ -4,6 +4,7 @@ module uk.co.bithatch.snake.lib {
 	requires transitive java.xml;
 	requires transitive com.google.gson;
 	requires jdk.crypto.ec;
+	requires transitive uk.co.bithatch.linuxio;
     exports uk.co.bithatch.snake.lib;
     exports uk.co.bithatch.snake.lib.effects;
     exports uk.co.bithatch.snake.lib.layouts;

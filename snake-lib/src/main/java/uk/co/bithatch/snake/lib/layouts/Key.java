@@ -2,11 +2,11 @@ package uk.co.bithatch.snake.lib.layouts;
 
 import java.util.Objects;
 
-import uk.co.bithatch.snake.lib.InputEventCode;
+import uk.co.bithatch.linuxio.EventCode;
 
 public class Key extends AbstractMatrixIO {
 
-	private InputEventCode eventCode;
+	private EventCode eventCode;
 	private uk.co.bithatch.snake.lib.Key legacyKey;
 
 	public Key() {
@@ -33,7 +33,7 @@ public class Key extends AbstractMatrixIO {
 		}
 	}
 
-	public InputEventCode getEventCode() {
+	public EventCode getEventCode() {
 		return eventCode;
 	}
 
@@ -51,7 +51,7 @@ public class Key extends AbstractMatrixIO {
 		}
 	}
 
-	public void setEventCode(InputEventCode eventCode) {
+	public void setEventCode(EventCode eventCode) {
 		if (!Objects.equals(eventCode, this.eventCode)) {
 			this.eventCode = eventCode;
 			fireChanged();

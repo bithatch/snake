@@ -3,8 +3,6 @@ package uk.co.bithatch.snake.lib.binding;
 import java.util.ArrayList;
 import java.util.List;
 
-import uk.co.bithatch.snake.lib.InputEventCode;
-
 public interface ExecuteMapAction extends MapAction {
 
 	List<String> getArgs();

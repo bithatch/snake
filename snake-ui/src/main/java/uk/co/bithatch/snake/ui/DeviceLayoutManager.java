@@ -12,9 +12,9 @@ import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 import javafx.util.Duration;
+import uk.co.bithatch.linuxio.EventCode;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.DeviceType;
-import uk.co.bithatch.snake.lib.InputEventCode;
 import uk.co.bithatch.snake.lib.Region;
 import uk.co.bithatch.snake.lib.layouts.Accessory;
 import uk.co.bithatch.snake.lib.layouts.Accessory.AccessoryType;
@@ -191,7 +191,7 @@ public class DeviceLayoutManager implements Listener {
 								Key key = new Key(view);
 								setMatrixPositionFromPreferences(elementNode, key);
 								String name = elementNode.get("eventCode", "");
-								key.setEventCode(name.equals("") ? null : InputEventCode.valueOf(name));
+								key.setEventCode(name.equals("") ? null : EventCode.valueOf(name));
 								name = elementNode.get("legacyKey", "");
 								key.setLegacyKey(name.equals("") ? null : uk.co.bithatch.snake.lib.Key.valueOf(name));
 								regionName = elementNode.get("region", null);

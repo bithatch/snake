@@ -1,15 +1,15 @@
 package uk.co.bithatch.snake.lib.binding;
 
-import uk.co.bithatch.snake.lib.InputEventCode;
+import uk.co.bithatch.linuxio.EventCode;
 
 public interface KeyMapAction extends MapAction {
 
-	InputEventCode getPress();
+	EventCode getPress();
 
-	void setPress(InputEventCode press);
+	void setPress(EventCode press);
 
 	default String getValue() {
-		return String.valueOf(getPress().getCode());
+		return String.valueOf(getPress().code());
 	}
 
 	@Override
@@ -18,6 +18,6 @@ public interface KeyMapAction extends MapAction {
 	}
 
 	default void setValue(String value) {
-		setPress(InputEventCode.fromCode(Integer.parseInt(value)));
+		setPress(EventCode.fromCode(EventCode.Ev.EV_KEY, Integer.parseInt(value)));
 	}
 }
