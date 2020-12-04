@@ -1248,7 +1248,7 @@ public class NativeRazerDevice implements Device {
 			public JsonElement serialize(MacroKey src, Type typeOfSrc, JsonSerializationContext context) {
 				JsonObject root = new JsonObject();
 				root.addProperty("type", "MacroKey");
-				root.addProperty("key_id", src.getKey().name());
+				root.addProperty("key_id", src.getKey().nativeKeyName());
 				root.addProperty("pre_pause", src.getPrePause());
 				root.addProperty("state", src.getState().name());
 				return root;
@@ -1268,13 +1268,10 @@ public class NativeRazerDevice implements Device {
 			public JsonElement serialize(MacroScript src, Type typeOfSrc, JsonSerializationContext context) {
 				JsonObject root = new JsonObject();
 				root.addProperty("type", "MacroScript");
-				root.addProperty("command", src.getScript());
-				var arr = new JsonArray();
+				root.addProperty("script", src.getScript() == null ? "" : src.getScript());
 				if (src.getArgs() != null) {
-					for (String s : src.getArgs())
-						arr.add(s);
+					root.addProperty("args", String.join(" ", src.getArgs()));
 				}
-				root.add("args", arr);
 				return root;
 			}
 		});
@@ -1304,7 +1301,7 @@ public class NativeRazerDevice implements Device {
 	@Override
 	public void deleteMacro(Key key) {
 		assertCap(Capability.MACROS);
-		macros.deleteMacro(key.name());
+		macros.deleteMacro(key.nativeKeyName());
 	}
 
 	@Override
@@ -1431,7 +1428,7 @@ public class NativeRazerDevice implements Device {
 				Macro macro;
 				if (type.equals("MacroKey")) {
 					MacroKey macroKey = new MacroKey();
-					macroKey.setKey(Key.valueOf(obj.get("key_id").getAsString()));
+					macroKey.setKey(Key.fromNativeKeyName(obj.get("key_id").getAsString()));
 					macroKey.setPrePause(obj.get("pre_pause").getAsLong());
 					macroKey.setState(State.valueOf(obj.get("state").getAsString()));
 					macro = macroKey;
@@ -1441,13 +1438,9 @@ public class NativeRazerDevice implements Device {
 					macro = macroURL;
 				} else if (type.equals("MacroScript")) {
 					MacroScript macroScript = new MacroScript();
-					macroScript.setScript(obj.get("command").getAsString());
+					macroScript.setScript(obj.get("script").getAsString());
 					if (obj.has("args")) {
-						List<String> args = new ArrayList<>();
-						for (JsonElement argEl : obj.get("args").getAsJsonArray()) {
-							args.add(argEl.getAsString());
-						}
-						macroScript.setArgs(args);
+						macroScript.setArgs(Arrays.asList(obj.get("args").getAsString().split(" ")));
 					}
 					macro = macroScript;
 				} else

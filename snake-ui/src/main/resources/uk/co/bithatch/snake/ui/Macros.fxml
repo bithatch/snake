@@ -22,6 +22,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import org.controlsfx.control.SearchableComboBox?>
 
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.Macros">
    <children>
@@ -102,7 +103,7 @@
                         <VBox fx:id="sequenceEditor">
                            <children>
                               <Label styleClass="subtitle" text="%macroKeySubtitle" />
-                              <ComboBox fx:id="macroKey" prefWidth="150.0" />
+                              <SearchableComboBox fx:id="macroKey" prefWidth="150.0" />
                               <Hyperlink onAction="#evtAddMacro" text="%addMacro" />
                            </children>
                            <styleClass>
@@ -142,7 +143,7 @@
                               <VBox fx:id="keyMacroSection" styleClass="tools">
                                  <children>
                                     <Label styleClass="subtitle" text="%keySubtitle" />
-                                    <ComboBox fx:id="simulateKey" prefWidth="150.0" />
+                                    <SearchableComboBox fx:id="simulateKey" prefWidth="150.0" />
                                     <Label styleClass="emphasis" text="%state" />
                                     <ComboBox fx:id="state" prefWidth="150.0" />
                                     <Label styleClass="emphasis" text="%pause" />

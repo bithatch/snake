@@ -35,8 +35,13 @@ public class MacroScript implements Macro {
 		if (script == null || script.length() == 0)
 			throw new ValidationException("macroScript.missingScript");
 		var f = new File(script);
-		if (!f.exists() || !f.isFile())
+		if (!f.exists() || !f.isFile()) {
+			for(String path : System.getenv("PATH").split(":")) {
+				if(new File(new File(path), script).exists())
+					return;
+			}
 			throw new ValidationException("macroScript.invalidScript");
+		}
 	}
 
 }

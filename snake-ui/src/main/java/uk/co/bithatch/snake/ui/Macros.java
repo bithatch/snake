@@ -4,10 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.System.Logger.Level;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -20,12 +22,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 import java.util.prefs.Preferences;
 
+import org.controlsfx.control.SearchableComboBox;
+
 import com.sshtools.icongenerator.AwesomeIcon;
-import com.sshtools.icongenerator.IconBuilder;
+import com.sshtools.icongenerator.IconBuilder.TextContent;
 
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Hyperlink;
@@ -53,44 +56,78 @@ import uk.co.bithatch.snake.lib.MacroSequence;
 import uk.co.bithatch.snake.lib.MacroURL;
 import uk.co.bithatch.snake.lib.ValidationException;
 import uk.co.bithatch.snake.ui.util.JavaFX;
+import uk.co.bithatch.snake.ui.util.Strings;
+import uk.co.bithatch.snake.ui.widgets.GeneratedIcon;
 
 public class Macros extends AbstractDetailsController {
 
-	public static IconBuilder builderForMacroSequence(MacroSequence seq) {
-		IconBuilder builder = new IconBuilder();
-		builder.width(32);
-		builder.height(32);
-		builder.round();
-		var txt = seq.getMacroKey().name();
-		if (txt.length() > 3)
-			txt = txt.substring(0, 3);
-		builder.text(txt);
-		builder.color(Integer.parseInt("ff00ff", 16));
-		builder.autoTextColor();
-		return builder;
+	public static String textForMapSequence(MacroSequence seq) {
+		return textForInputEvent(seq.getMacroKey());
 	}
 
-	public static IconBuilder builderForMacro(Macro mkey) {
-		IconBuilder builder = new IconBuilder();
-		builder.width(24);
-		builder.height(24);
-		builder.roundRect(4);
-		if (mkey instanceof MacroURL) {
-			builder.color(Integer.parseInt("ffff00", 16));
-			builder.textColor(0);
-			builder.icon(AwesomeIcon.GLOBE);
-		} else if (mkey instanceof MacroScript) {
-			builder.color(Integer.parseInt("00ffff", 16));
-			builder.textColor(0);
-			builder.icon(AwesomeIcon.HASHTAG);
-		} else {
-			builder.color(Integer.parseInt("00ff00", 16));
-			builder.textColor(0);
-			builder.icon(AwesomeIcon.KEYBOARD_O);
+	protected static String textForMapAction(Macro action) {
+		if (action instanceof MacroKey)
+			return textForInputEvent(((MacroKey) action).getKey());
+		else if (action instanceof MacroScript)
+			return ((MacroScript) action).getScript();
+		else {
+			String url = ((MacroURL) action).getUrl();
+			try {
+				String host = new URL(url).getHost();
+				if (host == null || host.equals(""))
+					return " ";
+				else
+					return host;
+			} catch (MalformedURLException murle) {
+				return " ";
+			}
 		}
-		builder.fontSize(24);
-		builder.bold(true);
-		return builder;
+	}
+
+	protected static String textForInputEvent(Key k) {
+		String keyName = String.valueOf(k);
+		if (keyName.length() > 3)
+			return Strings.toName(keyName);
+		else {
+			if (keyName.startsWith("BTN_")) {
+				return MessageFormat.format(bundle.getString("button.name"), keyName);
+			} else {
+				return MessageFormat.format(bundle.getString("key.name"), keyName);
+			}
+		}
+	}
+
+	public static GeneratedIcon iconForMapSequence(MacroSequence seq) {
+		GeneratedIcon icon = new GeneratedIcon();
+		icon.getStyleClass().add("mapSequence");
+		icon.setPrefHeight(32);
+		icon.setPrefWidth(32);
+		String keyName = String.valueOf(seq.getMacroKey());
+		icon.getStyleClass().add("mapSequenceKey");
+		icon.setText(keyName);
+		if (keyName.length() > 3)
+			icon.setTextContent(TextContent.INITIALS);
+		else
+			icon.setTextContent(TextContent.ORIGINAL);
+		return icon;
+	}
+
+	public static GeneratedIcon iconForMacro(Macro mkey) {
+		GeneratedIcon icon = new GeneratedIcon();
+		icon.getStyleClass().add("mapAction");
+		icon.setPrefHeight(24);
+		icon.setPrefWidth(24);
+		if (mkey instanceof MacroScript) {
+			icon.setIcon(AwesomeIcon.HASHTAG);
+		} else if (mkey instanceof MacroURL) {
+			icon.setIcon(AwesomeIcon.GLOBE);
+		} else {
+			if (((MacroKey) mkey).getState() == State.DOWN)
+				icon.setIcon(AwesomeIcon.ARROW_DOWN);
+			else
+				icon.setIcon(AwesomeIcon.ARROW_UP);
+		}
+		return icon;
 	}
 
 	private static class MacroListCell extends TreeCell<Object> {
@@ -101,22 +138,20 @@ public class Macros extends AbstractDetailsController {
 				setGraphic(null);
 				setText(null);
 			} else {
-				IconBuilder builder;
 				if (item instanceof MacroSequence) {
 					MacroSequence seq = (MacroSequence) item;
-					builder = builderForMacroSequence(seq);
-					setText(seq.getMacroKey().name());
+					setGraphic(iconForMapSequence(seq));
+					setText(textForMapSequence(seq));
 				} else {
 					Macro macro = (Macro) item;
-					builder = builderForMacro(macro);
+					setGraphic(iconForMacro(macro));
 					if (macro == null)
 						setText("<null>");
 					else
-						setText(bundle.getString("macroType." + macro.getClass().getSimpleName()));
+						setText(MessageFormat.format(bundle.getString("macroType." + macro.getClass().getSimpleName()),
+								textForMapAction(macro)));
 				}
 
-				var icon = builder.build(Canvas.class);
-				setGraphic(icon);
 			}
 		}
 	}
@@ -170,7 +205,7 @@ public class Macros extends AbstractDetailsController {
 	@FXML
 	private VBox keyMacroSection;
 	@FXML
-	private ComboBox<Key> macroKey;
+	private SearchableComboBox<Key> macroKey;
 	@FXML
 	private TreeView<Object> macros;
 	@FXML
@@ -192,7 +227,7 @@ public class Macros extends AbstractDetailsController {
 	private VBox sequenceEditor;
 
 	@FXML
-	private ComboBox<Key> simulateKey;
+	private SearchableComboBox<Key> simulateKey;
 	@FXML
 	private ComboBox<State> state;
 
@@ -208,7 +243,7 @@ public class Macros extends AbstractDetailsController {
 
 	private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
 	private ScheduledFuture<?> task;
-	private Set<MacroSequence> macrosToSave = new LinkedHashSet<>();
+	private Set<MacroSequence> sequencesToSave = new LinkedHashSet<>();
 	private boolean adjusting = false;
 
 	protected void error(String key) {
@@ -271,25 +306,28 @@ public class Macros extends AbstractDetailsController {
 		scriptMacroSection.visibleProperty().bind(scriptMacro.selectedProperty());
 		keyMacroSection.managedProperty().bind(keyMacroSection.visibleProperty());
 		keyMacroSection.visibleProperty().bind(keyMacro.selectedProperty());
-		
-		if(context.getLayouts().hasLayout(getDevice()))
+
+		if (context.getLayouts().hasLayout(getDevice()))
 			macroKey.itemsProperty().get().addAll(context.getLayouts().getLayout(getDevice()).getSupportedLegacyKeys());
 		else
 			macroKey.itemsProperty().get().addAll(getDevice().getSupportedLegacyKeys());
-		
+
 		state.itemsProperty().get().addAll(Arrays.asList(State.values()));
 		UnaryOperator<Change> integerFilter = change -> {
 			String newText = change.getControlNewText();
-			if (newText.matches("-?([1-9][0-9]*)?")) {
+			try {
+				Integer.parseInt(newText);
 				return change;
+			}
+			catch(Exception e) {
 			}
 			return null;
 		};
 		pause.setTextFormatter(new TextFormatter<Integer>(new IntegerStringConverter(), 0, integerFilter));
-		
+
 		// TODO this is wrong, should be 'xte' events
 		simulateKey.itemsProperty().get().addAll(getDevice().getSupportedLegacyKeys());
-		
+
 		editor.managedProperty().bind(editor.visibleProperty());
 		urlOpen.disableProperty().bind(Bindings.isEmpty(urlLocation.textProperty()));
 		scriptLocation.textProperty().addListener((e, o, n) -> {
@@ -297,6 +335,7 @@ public class Macros extends AbstractDetailsController {
 				var macro = (MacroScript) getSelectedMacro();
 				macro.setScript(scriptLocation.textProperty().get());
 				saveMacroSequence(getSelectedSequence());
+				macros.refresh();
 			}
 		});
 		state.getSelectionModel().selectedItemProperty().addListener((e, o, n) -> {
@@ -305,6 +344,7 @@ public class Macros extends AbstractDetailsController {
 				if (macro != null) {
 					macro.setState(state.getSelectionModel().getSelectedItem());
 					saveMacroSequence(getSelectedSequence());
+					macros.refresh();
 				}
 			}
 		});
@@ -333,21 +373,24 @@ public class Macros extends AbstractDetailsController {
 				var macro = (MacroURL) getSelectedMacro();
 				macro.setUrl(urlLocation.textProperty().get());
 				saveMacroSequence(getSelectedSequence());
+				macros.refresh();
 			}
 		});
 		scriptArgs.textProperty().addListener((e, o, n) -> {
 			if (!adjusting) {
 				var macro = (MacroScript) getSelectedMacro();
-				macro.setArgs(parseQuotedString(urlLocation.textProperty().get()));
+				macro.setArgs(parseQuotedString(scriptArgs.textProperty().get()));
 				saveMacroSequence(getSelectedSequence());
+				macros.refresh();
 			}
 		});
 		macroKey.getSelectionModel().selectedItemProperty().addListener((e, o, n) -> {
-			if (!adjusting) {
+			if (!adjusting && n != null) {
 				var macro = getSelectedSequence();
 				if (macro != null) {
-					getDevice().deleteMacro(macro.getMacroKey());
-					macro.setMacroKey(macroKey.getSelectionModel().getSelectedItem());
+					if (o != null)
+						getDevice().deleteMacro(o);
+					macro.setMacroKey(n);
 					saveMacroSequence(macro);
 					macros.refresh();
 				}
@@ -355,22 +398,27 @@ public class Macros extends AbstractDetailsController {
 		});
 		macros.getSelectionModel().selectedItemProperty().addListener((e, o, n) -> {
 			if (!adjusting) {
-				var macro = getSelectedMacro();
-				editor.visibleProperty().set(macro != null);
-				if (macro == null) {
-					delete.textProperty().set(bundle.getString("deleteSequence"));
-				} else {
-					delete.textProperty().set(bundle.getString("delete"));
+				adjusting = true;
+				try {
+					var macro = getSelectedMacro();
+					editor.visibleProperty().set(macro != null);
+					if (macro == null) {
+						delete.textProperty().set(bundle.getString("deleteSequence"));
+					} else {
+						delete.textProperty().set(bundle.getString("delete"));
+					}
+					setSequence(getSelectedSequence());
+					setMacro(macro);
+					setAvailableEditors();
+					if (macro instanceof MacroURL)
+						urlMacro.selectedProperty().set(true);
+					else if (macro instanceof MacroScript)
+						scriptMacro.selectedProperty().set(true);
+					else
+						keyMacro.selectedProperty().set(true);
+				} finally {
+					adjusting = false;
 				}
-				setSequence(getSelectedSequence());
-				setMacro(macro);
-				setAvailableEditors();
-				if (macro instanceof MacroURL)
-					urlMacro.selectedProperty().set(true);
-				else if (macro instanceof MacroScript)
-					scriptMacro.selectedProperty().set(true);
-				else
-					keyMacro.selectedProperty().set(true);
 			}
 		});
 		delete.visibleProperty().set(getSelectedSequence() != null);
@@ -578,27 +626,27 @@ public class Macros extends AbstractDetailsController {
 				task.cancel(false);
 			}
 			error(null);
-			synchronized (macrosToSave) {
-				macrosToSave.add(mkey);
+			synchronized (sequencesToSave) {
+				sequencesToSave.add(mkey);
 			}
 			task = executor.schedule(() -> {
-				synchronized (macrosToSave) {
+				synchronized (sequencesToSave) {
 					try {
-						for (MacroSequence m : macrosToSave) {
+						for (MacroSequence m : sequencesToSave) {
 							getDevice().deleteMacro(m.getMacroKey());
 							getDevice().addMacro(m);
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
 					} finally {
-						macrosToSave.clear();
+						sequencesToSave.clear();
 						context.getLegacyMacroStorage().save();
 					}
 				}
 			}, 1000, TimeUnit.MILLISECONDS);
 		} catch (ValidationException ve) {
-			synchronized (macrosToSave) {
-				macrosToSave.remove(mkey);
+			synchronized (sequencesToSave) {
+				sequencesToSave.remove(mkey);
 			}
 			error(ve.getMessage());
 		}
@@ -612,36 +660,26 @@ public class Macros extends AbstractDetailsController {
 
 	private void setMacro(Macro macro) {
 		if (macro != null) {
-			adjusting = true;
-			try {
-				if (macro instanceof MacroKey) {
-					MacroKey macroKey = (MacroKey) macro;
-					simulateKey.getSelectionModel().select(macroKey.getKey());
-					pause.textProperty().set(String.valueOf(macroKey.getPrePause()));
-					state.getSelectionModel().select(macroKey.getState());
-				} else if (macro instanceof MacroURL) {
-					MacroURL macroURL = (MacroURL) macro;
-					urlLocation.textProperty().set(macroURL.getUrl());
-				} else if (macro instanceof MacroScript) {
-					MacroScript macroScript = (MacroScript) macro;
-					scriptLocation.textProperty().set(macroScript.getScript());
-					if (macroScript.getArgs() == null || macroScript.getArgs().isEmpty())
-						scriptArgs.textProperty().set("");
-					else
-						scriptArgs.textProperty().set(String.join("\n", macroScript.getArgs()));
-				}
-			} finally {
-				adjusting = false;
+			if (macro instanceof MacroKey) {
+				MacroKey macroKey = (MacroKey) macro;
+				simulateKey.getSelectionModel().select(macroKey.getKey());
+				pause.textProperty().set(String.valueOf(macroKey.getPrePause()));
+				state.getSelectionModel().select(macroKey.getState());
+			} else if (macro instanceof MacroURL) {
+				MacroURL macroURL = (MacroURL) macro;
+				urlLocation.textProperty().set(macroURL.getUrl());
+			} else if (macro instanceof MacroScript) {
+				MacroScript macroScript = (MacroScript) macro;
+				scriptLocation.textProperty().set(macroScript.getScript());
+				if (macroScript.getArgs() == null || macroScript.getArgs().isEmpty())
+					scriptArgs.textProperty().set("");
+				else
+					scriptArgs.textProperty().set(String.join("\n", macroScript.getArgs()));
 			}
 		}
 	}
 
 	private void setSequence(MacroSequence seq) {
-		adjusting = true;
-		try {
-			macroKey.getSelectionModel().select(seq == null ? null : seq.getMacroKey());
-		} finally {
-			adjusting = false;
-		}
+		macroKey.getSelectionModel().select(seq == null ? null : seq.getMacroKey());
 	}
 }
