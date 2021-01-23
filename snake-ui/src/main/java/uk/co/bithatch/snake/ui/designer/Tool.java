@@ -1,9 +1,10 @@
 package uk.co.bithatch.snake.ui.designer;
 
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
+
+import org.kordamp.ikonli.fontawesome.FontAwesome;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -13,24 +14,17 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
-import uk.co.bithatch.snake.lib.Region;
-import uk.co.bithatch.snake.lib.Region.Name;
-import uk.co.bithatch.snake.lib.layouts.Area;
 import uk.co.bithatch.snake.lib.layouts.ComponentType;
-import uk.co.bithatch.snake.lib.layouts.DeviceView;
 import uk.co.bithatch.snake.lib.layouts.IO;
-import uk.co.bithatch.snake.lib.layouts.MatrixCell;
 import uk.co.bithatch.snake.lib.layouts.MatrixIO;
-import uk.co.bithatch.snake.lib.layouts.ViewPosition;
-import uk.co.bithatch.snake.ui.graphics.AbstractGraphic;
-import uk.co.bithatch.snake.ui.graphics.AccessoryGraphic;
-import uk.co.bithatch.snake.ui.graphics.AreaGraphic;
-import uk.co.bithatch.snake.ui.graphics.KeyGraphic;
-import uk.co.bithatch.snake.ui.graphics.LEDGraphic;
 import uk.co.bithatch.snake.ui.util.Delta;
-import uk.co.bithatch.snake.ui.util.JavaFX;
 import uk.co.bithatch.snake.ui.util.Maths;
-import uk.co.bithatch.snake.ui.util.Strings;
+import uk.co.bithatch.snake.widgets.AbstractGraphic;
+import uk.co.bithatch.snake.widgets.AccessoryGraphic;
+import uk.co.bithatch.snake.widgets.AreaGraphic;
+import uk.co.bithatch.snake.widgets.JavaFX;
+import uk.co.bithatch.snake.widgets.KeyGraphic;
+import uk.co.bithatch.snake.widgets.LEDGraphic;
 
 public class Tool extends StackPane {
 	private final Delta dragDelta = new Delta();
@@ -57,7 +51,8 @@ public class Tool extends StackPane {
 			else
 				throw new UnsupportedOperationException();
 		} else {
-			graphic = new Label(TabbedViewer.bundle.getString("dot"));
+			graphic = new Label();
+			((Label)graphic).setGraphic(new FontIcon(FontAwesome.DOT_CIRCLE_O));
 			graphic.getStyleClass().add("smallIcon");
 		}
 		getChildren().add(graphic);
@@ -76,6 +71,7 @@ public class Tool extends StackPane {
 				}
 			}
 		});
+		setOnContextMenuRequested((e) -> deviceViewerPane.contextMenu(this, e));
 	}
 
 	public void setRGB(int[] rgb) {
@@ -88,7 +84,7 @@ public class Tool extends StackPane {
 	void startDrag(MouseEvent mouseEvent) {
 		if (deviceViewerPane.isLayoutSelectableElements()) {
 			selectedAtDragStart.clear();
-			for (ElementView ev : deviceViewerPane.elements.get()) {
+			for (ElementView ev : deviceViewerPane.getElementViews()) {
 				if (deviceViewerPane.getElementSelectionModel().getSelectedItems().contains(ev.getElement())) {
 					selectedAtDragStart.put(ev,
 							new Point2D(ev.getElementTool().getLayoutX(), ev.getElementTool().getLayoutY()));
@@ -121,15 +117,15 @@ public class Tool extends StackPane {
 	void dragMovement(MouseEvent mouseEvent) {
 		if (startX > -1 && startY > -1) {
 
-			int idx = deviceViewerPane.componentTypes.indexOf(Tool.this);
+			int idx = deviceViewerPane.getComponentTypes().indexOf(Tool.this);
 			if (idx != -1) {
 
 				/*
 				 * Creating a new element. Remove this tool from the list so it doesnt get
 				 * removed from the scene
 				 */
-				deviceViewerPane.componentTypes.remove(idx);
-				deviceViewerPane.getChildren().remove(deviceViewerPane.componentTypes.remove(idx - 1));
+				deviceViewerPane.getComponentTypes().remove(idx);
+				deviceViewerPane.getChildren().remove(deviceViewerPane.getComponentTypes().remove(idx - 1));
 
 				deviceViewerPane.rebuildComponentTypesPanel();
 
@@ -161,7 +157,7 @@ public class Tool extends StackPane {
 
 					try {
 						((MatrixIO) mio).setMatrixXY(
-								deviceViewerPane.view.getNextFreeCell(deviceViewerPane.componentType().get()));
+								deviceViewerPane.getView().getNextFreeCell(deviceViewerPane.componentType().get()));
 					} catch (IllegalStateException ise) {
 					}
 
@@ -176,8 +172,8 @@ public class Tool extends StackPane {
 				}
 //				elementView.getElement().setLabel(label);
 				elementView.setLabel(deviceViewerPane.createLabel(elementView.getElement()));
-				deviceViewerPane.pane.getChildren().add(elementView.getLabel());
-				deviceViewerPane.elements.get().add(elementView);
+				deviceViewerPane.getPane().getChildren().add(elementView.getLabel());
+				deviceViewerPane.getElementViews().add(elementView);
 
 				/*
 				 * Needed to make sure the above label has proper sizes to be able to calculate
@@ -195,20 +191,20 @@ public class Tool extends StackPane {
 
 			for (Map.Entry<ElementView, Point2D> en : selectedAtDragStart.entrySet()) {
 				if (en.getKey() != elementView) {
-					deviceViewerPane.canvas.updateElement(en.getKey(), en.getValue().getX() + mx,
+					deviceViewerPane.getCanvas().updateElement(en.getKey(), en.getValue().getX() + mx,
 							en.getValue().getY() + my);
 					deviceViewerPane.positionElement(en.getKey());
 				}
 			}
 
-			Insets insets = deviceViewerPane.pane.getInsets();
+			Insets insets = deviceViewerPane.getPane().getInsets();
 			double toolX = layoutXProperty().get() + (layoutBoundsProperty().get().getWidth() / 2f);
 			double toolY = layoutYProperty().get() + (layoutBoundsProperty().get().getHeight() / 2f);
 
-			deviceViewerPane.canvas.updateElement(elementView, toolX - insets.getLeft(), toolY - insets.getTop());
+			deviceViewerPane.getCanvas().updateElement(elementView, toolX - insets.getLeft(), toolY - insets.getTop());
 
 			deviceViewerPane.layoutLabels();
-			deviceViewerPane.canvas.draw();
+			deviceViewerPane.getCanvas().draw();
 		}
 	}
 
@@ -221,12 +217,12 @@ public class Tool extends StackPane {
 			double dist = Maths.distance(startX, startY, endX, endY);
 			IO element = elementView.getElement();
 			if (dist < 30) {
-				if (!deviceViewerPane.view.getElements().contains(element)) {
+				if (!deviceViewerPane.getView().getElements().contains(element)) {
 
 					if (deviceViewerPane.isLayoutSelectableElements())
 						deviceViewerPane.clearSelection();
 
-					deviceViewerPane.elements.get().remove(elementView);
+					deviceViewerPane.getElementViews().remove(elementView);
 					deviceViewerPane.getChildren().remove(elementView.getElementTool());
 					deviceViewerPane.getChildren().remove(elementView.getLabel());
 					deviceViewerPane.rebuildComponentTypesPanel();
@@ -238,18 +234,19 @@ public class Tool extends StackPane {
 
 				}
 			} else {
-				Insets insets = deviceViewerPane.pane.getInsets();
+				Insets insets = deviceViewerPane.getPane().getInsets();
 				double toolX = endX + (layoutBoundsProperty().get().getWidth() / 2f);
 				double toolY = endY + (layoutBoundsProperty().get().getHeight() / 2f);
-				deviceViewerPane.canvas.updateElement(elementView, toolX - insets.getLeft(), toolY - insets.getTop());
+				deviceViewerPane.getCanvas().updateElement(elementView, toolX - insets.getLeft(),
+						toolY - insets.getTop());
 
-				if (!deviceViewerPane.view.getElements().contains(element)) {
-					deviceViewerPane.view.addElement(element);
+				if (!deviceViewerPane.getView().getElements().contains(element)) {
+					deviceViewerPane.getView().addElement(element);
 					deviceViewerPane.addToSelection(element);
 				}
 
 				deviceViewerPane.layoutLabels();
-				deviceViewerPane.canvas.draw();
+				deviceViewerPane.getCanvas().draw();
 			}
 			setCursor(Cursor.HAND);
 			startX = startY = -1;

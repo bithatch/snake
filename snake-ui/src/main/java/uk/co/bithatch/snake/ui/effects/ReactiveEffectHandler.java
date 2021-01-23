@@ -6,6 +6,7 @@ import uk.co.bithatch.snake.lib.Colors;
 import uk.co.bithatch.snake.lib.Lit;
 import uk.co.bithatch.snake.lib.effects.Reactive;
 import uk.co.bithatch.snake.ui.ReactiveOptions;
+import uk.co.bithatch.snake.ui.SchedulerManager.Queue;
 
 public class ReactiveEffectHandler extends AbstractBackendEffectHandler<Reactive, ReactiveOptions> {
 
@@ -30,7 +31,7 @@ public class ReactiveEffectHandler extends AbstractBackendEffectHandler<Reactive
 		Reactive reactive = (Reactive) controller.getEffect().clone();
 		reactive.setColor(controller.getColor());
 		reactive.setSpeed(controller.getSpeed());
-		getContext().getScheduler().execute(() -> component.setEffect(reactive));
+		getContext().getSchedulerManager().get(Queue.DEVICE_IO).execute(() -> component.setEffect(reactive));
 		save(component, reactive);
 
 	}

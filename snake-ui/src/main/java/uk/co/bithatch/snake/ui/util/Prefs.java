@@ -8,7 +8,11 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 
 public class Prefs {
-
+	
+	public final static String PREF_DECORATED = "decorated";
+	public final static boolean PREF_DECORATED_DEFAULT = false;
+	
+	
 	public final static Set<String> addToStringSet(Preferences node, String key, String value) {
 		Set<String> set = new LinkedHashSet<>(getStringSet(node, key));
 		set.add(value);

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" styleClass="control" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.VolumeControl">
+   <children>
+      <HBox styleClass="gapBottom">
+         <children>
+            <Label maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="header" text="%volume" HBox.hgrow="ALWAYS" />
+         </children>
+      </HBox>
+      <HBox alignment="CENTER" styleClass="padded">
+         <children>
+            <Label fx:id="muteToggle" onMouseClicked="#evtMuteToggle" styleClass="icon">
+               <graphic>
+                  <FontIcon iconLiteral="fa-volume-down" iconSize="32" />
+               </graphic></Label>
+            <Slider fx:id="volume" majorTickUnit="1000.0" minorTickCount="100" snapToTicks="true" />
+            <Label styleClass="icon">
+               <graphic>
+                  <FontIcon iconLiteral="fa-volume-up" iconSize="32" />
+               </graphic></Label>
+         </children>
+      </HBox>
+   </children>
+</VBox>

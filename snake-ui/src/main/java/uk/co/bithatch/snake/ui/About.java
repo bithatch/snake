@@ -3,7 +3,7 @@ package uk.co.bithatch.snake.ui;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import uk.co.bithatch.snake.ui.widgets.Direction;
+import uk.co.bithatch.snake.widgets.Direction;
 
 public class About extends AbstractDeviceController {
 
@@ -34,6 +34,6 @@ public class About extends AbstractDeviceController {
 
 	@FXML
 	void evtChanges(ActionEvent evt) {
-		context.push(Changes.class, Direction.FROM_BOTTOM);
+		context.push(Changes.class, Direction.FADE);
 	}
 }

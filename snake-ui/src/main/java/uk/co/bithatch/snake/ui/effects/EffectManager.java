@@ -1,8 +1,12 @@
 package uk.co.bithatch.snake.ui.effects;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -13,24 +17,26 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.prefs.Preferences;
 
+import uk.co.bithatch.snake.lib.Backend.BackendListener;
 import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.Lit;
 import uk.co.bithatch.snake.lib.Region;
 import uk.co.bithatch.snake.lib.effects.Effect;
+import uk.co.bithatch.snake.lib.effects.Off;
 import uk.co.bithatch.snake.ui.App;
 import uk.co.bithatch.snake.ui.EffectHandler;
 import uk.co.bithatch.snake.ui.util.Prefs;
 
-public class EffectManager {
+public class EffectManager implements BackendListener, Closeable {
 
 	private final class EffectAcquisitionImpl implements EffectAcquisition {
 		private final Device device;
 		private final Stack<EffectAcquisitionImpl> stack;
-		private Map<Region, EffectHandler<?, ?>> effects = new HashMap<>();
+		private Map<Lit, EffectHandler<?, ?>> effects = new HashMap<>();
 		private List<EffectChangeListener> listeners = new ArrayList<>();
-		private Map<Region, EffectHandler<?, ?>> active = Collections.synchronizedMap(new HashMap<>());
-		private Map<Region, Object> activations = Collections.synchronizedMap(new HashMap<>());
+		private Map<Lit, EffectHandler<?, ?>> active = Collections.synchronizedMap(new HashMap<>());
+		private Map<Lit, Object> activations = Collections.synchronizedMap(new HashMap<>());
 
 		private EffectAcquisitionImpl(Device device, Stack<EffectAcquisitionImpl> stack) {
 			this.device = device;
@@ -43,15 +49,81 @@ public class EffectManager {
 		}
 
 		@Override
+		public void deactivate(Lit lit) {
+			/* This current effect */
+			EffectHandler<?, ?> effect = effects.get(lit);
+			if (effect != null) {
+				if (LOG.isLoggable(Level.DEBUG))
+					LOG.log(Level.DEBUG,
+							String.format("De-activating effect %s on %s", effect.getDisplayName(), lit.toString()));
+				effect.deactivate(lit);
+			}
+		}
+
+		@Override
+		public void remove(Lit lit) {
+			/* This current effect */
+			EffectHandler<?, ?> effect = effects.remove(lit);
+
+			if (effect != null) {
+
+				if (LOG.isLoggable(Level.INFO))
+					LOG.log(Level.INFO,
+							String.format("Removing effect %s on %s", effect.getDisplayName(), lit.toString()));
+
+				active.remove(lit);
+				activations.remove(lit);
+				effect.deactivate(lit);
+
+				for (int i = listeners.size() - 1; i >= 0; i--)
+					listeners.get(i).effectChanged(lit, effect);
+			}
+
+		}
+
+		@Override
 		public void activate(Lit lit, EffectHandler<?, ?> effect) {
-			if (lit instanceof Device) {
-				for (Region r : ((Device) lit).getRegions())
-					effects.put(r, effect);
+			if (LOG.isLoggable(Level.DEBUG))
+				LOG.log(Level.DEBUG,
+						String.format("Activating effect %s on %s", effect.getDisplayName(), lit.toString()));
+
+			/* Activate the new effect */
+			if (lit.getSupportedEffects().contains(effect.getBackendEffectClass())) {
+				if (effect.isRegions()) {
+
+					if (lit instanceof Device) {
+						deactivateDevicesRegions((Device) lit);
+						for (Region r : ((Device) lit).getRegions())
+							effects.put(r, effect);
+					} else {
+						deactivateLitsDevice(lit);
+						effects.put(lit, effect);
+					}
+				} else {
+					/*
+					 * Effect doesn't support regions, so first of all it must only be activated as
+					 * a whole Device
+					 */
+
+					if (!(lit instanceof Device)) {
+						throw new IllegalArgumentException("Cannot set individual regions for this effect.");
+					}
+
+					deactivateDevicesRegions((Device) lit);
+
+					effects.put((Device) lit, effect);
+				}
+				activations.put(lit, effect.activate(lit));
+				active.put(lit, effect);
 			} else
-				effects.put((Region) lit, effect);
-			doActivate(lit, effect);
+				throw new UnsupportedOperationException(String.format("Effect %s is not supported on %s", effect, lit));
+
 			for (int i = listeners.size() - 1; i >= 0; i--)
 				listeners.get(i).effectChanged(lit, effect);
+
+			if (LOG.isLoggable(Level.DEBUG))
+				LOG.log(Level.DEBUG, String.format("Now %d effects, %d activations, and %d active in acq. %s",
+						effects.size(), activations.size(), active.size(), hashCode()));
 		}
 
 		public void addListener(EffectChangeListener listener) {
@@ -63,13 +135,22 @@ public class EffectManager {
 			synchronized (acquisitions) {
 				stack.remove(this);
 
+				/*
+				 * Deactivate all the effects this acquisition used. Some effects may need to
+				 * turn off timers etc
+				 *
+				 */
+				for (Lit lit : new ArrayList<>(getLitAreas())) {
+					deactivate(lit);
+				}
+
 				/* If no acquisitions left, turn off effects */
 				if (acquisitions.isEmpty()) {
 					activate(device, EffectManager.this.getEffect(device, OffEffectHandler.class));
 				} else {
 					/* Return to the previous acquisitions effect */
 					Stack<EffectAcquisitionImpl> deviceStack = acquisitions.get(device);
-					if (deviceStack != null) {
+					if (deviceStack != null && !deviceStack.isEmpty()) {
 						EffectAcquisition iface = deviceStack.peek();
 						for (Lit subLit : iface.getLitAreas()) {
 							EffectHandler<?, ?> litEffect = iface.getEffect(subLit);
@@ -89,31 +170,32 @@ public class EffectManager {
 		@SuppressWarnings("resource")
 		@Override
 		public EffectHandler<?, ?> getEffect(Lit lit) {
-			if (lit instanceof Device) {
-				EffectHandler<?, ?> leffect = null;
-				for (Region r : Lit.getDevice(lit).getRegions()) {
-					EffectHandler<?, ?> reffect = getEffect(r);
-					if (leffect != null && !Objects.equals(reffect, leffect)) {
-						/* Different effects on different regions */
-						return null;
-					}
-					leffect = reffect;
-				}
-
-				/* Same effect on same regions */
-				return leffect;
+			if (effects.containsKey(lit)) {
+				return effects.get(lit);
 			} else {
-				if (effects.containsKey(lit)) {
-					return effects.get(lit);
-				} else {
-					String effectName = getPreferences(lit).get(EffectManager.PREF_EFFECT, "");
-					return EffectManager.this.getEffect(Lit.getDevice(lit), effectName);
+				String effectName = getPreferences(lit).get(EffectManager.PREF_EFFECT, "");
+				if (lit instanceof Device) {
+					if (effectName.equals("")) {
+						EffectHandler<?, ?> leffect = null;
+						for (Region r : Lit.getDevice(lit).getRegions()) {
+							EffectHandler<?, ?> reffect = getEffect(r);
+							if (leffect != null && !Objects.equals(reffect, leffect)) {
+								/* Different effects on different regions */
+								return null;
+							}
+							leffect = reffect;
+						}
+
+						/* Same effect on same regions */
+						return leffect;
+					}
 				}
+				return EffectManager.this.getEffect(Lit.getDevice(lit), effectName);
 			}
 		}
 
 		@Override
-		public Set<Region> getLitAreas() {
+		public Set<Lit> getLitAreas() {
 			return effects.keySet();
 		}
 
@@ -152,35 +234,37 @@ public class EffectManager {
 			return fx;
 		}
 
-		protected void deactivateComponent(Lit component) {
-			EffectHandler<?, ?> deviceEffect = active.get(component);
-			if (deviceEffect != null) {
-				deviceEffect.deactivate(component);
-				active.remove(component);
-				activations.remove(component);
-			}
-		}
-
-		private void doActivate(Lit component, EffectHandler<?, ?> effect) {
-			synchronized (active) {
-				deactivateComponent(component);
-				if (effect != null) {
-					effect.activate(component);
-					if (component instanceof Device) {
-						for (Region r : ((Device) component).getRegions()) {
-							activateRegion(r, effect);
-						}
-					} else {
-						activateRegion((Region) component, effect);
-					}
+		protected void deactivateDevicesRegions(Device lit) {
+			/* If there are region region effects, deactivate and remove those first */
+			for (Region r : lit.getRegions()) {
+				EffectHandler<?, ?> regionEffect = effects.remove(r);
+				if (regionEffect != null) {
+					if (LOG.isLoggable(Level.DEBUG))
+						LOG.log(Level.DEBUG, String.format("Deactivating devices region effect %s on %s",
+								regionEffect.getDisplayName(), lit.toString()));
+					regionEffect.deactivate(r);
+					active.remove(r);
+					activations.remove(r);
 				}
 			}
+			deactivateLitsDevice(lit);
 		}
 
-		private void activateRegion(Region component, EffectHandler<?, ?> effect) {
-			if (component.getSupportedEffects().contains(effect.getBackendEffectClass())) {
-				activations.put(component, effect.activate(component));
-				active.put((Region) component, effect);
+		protected void deactivateLitsDevice(Lit region) {
+			/*
+			 * Effect supports regions, so remove and deactivate any device effect and if
+			 * activating a device, replace with individual regions.
+			 */
+			Device litDevice = Lit.getDevice(region);
+			EffectHandler<?, ?> deviceEffect = effects.remove(litDevice);
+			if (deviceEffect != null) {
+				if (LOG.isLoggable(Level.DEBUG))
+					LOG.log(Level.DEBUG, String.format("Deactivating regions device effect %s on %s",
+							deviceEffect.getDisplayName(), region.toString()));
+
+				deviceEffect.deactivate(litDevice);
+				active.remove(litDevice);
+				activations.remove(litDevice);
 			}
 		}
 	}
@@ -192,6 +276,7 @@ public class EffectManager {
 	}
 
 	public static final String PREF_EFFECT = "effect";
+	public static final String PREF_SYNC = "sync";
 
 	final static System.Logger LOG = System.getLogger(EffectManager.class.getName());
 
@@ -209,6 +294,9 @@ public class EffectManager {
 
 	public EffectAcquisition acquire(Device device) {
 		Stack<EffectAcquisitionImpl> stack = getStack(device);
+		if (!stack.isEmpty()) {
+			stack.peek().deactivate(device);
+		}
 		EffectAcquisitionImpl iface = new EffectAcquisitionImpl(device, stack);
 		stack.add(iface);
 		return iface;
@@ -218,6 +306,9 @@ public class EffectManager {
 		if (device == null)
 			throw new IllegalArgumentException("Must provide device.");
 
+		if (LOG.isLoggable(Level.DEBUG))
+			LOG.log(Level.DEBUG, String.format("Adding effect handler %s to device %s", device.getName(),
+					handler.getClass().getName()));
 		Map<String, EffectHandler<?, ?>> deviceEffectHandlers = getDeviceEffectHandlers(device);
 		checkForName(handler, deviceEffectHandlers);
 
@@ -229,6 +320,11 @@ public class EffectManager {
 		handler.added(device);
 		for (int i = listeners.size() - 1; i >= 0; i--)
 			listeners.get(i).effectAdded(device, handler);
+	}
+
+	public void open() {
+		context.getBackend().addListener(this);
+		context.getBackend().setSync(context.getPreferences().getBoolean(PREF_SYNC, false));
 	}
 
 	public void addListener(Listener listener) {
@@ -298,13 +394,19 @@ public class EffectManager {
 
 	public EffectAcquisition getRootAcquisition(Device device) {
 		synchronized (acquisitions) {
-			return acquisitions.get(device).firstElement();
+			Stack<EffectAcquisitionImpl> stack = getStack(device);
+			return stack.isEmpty() ? null : stack.firstElement();
 		}
 	}
 
 	public boolean isSupported(Lit component, Class<? extends EffectHandler<?, ?>> clazz) {
-		return findEffect(component, clazz) != null || (clazz.equals(CustomEffectHandler.class)
-				&& Lit.getDevice(component).getCapabilities().contains(Capability.MATRIX));
+		return findEffect(component, clazz) != null || isMatrixEffect(component, clazz);
+	}
+
+	protected boolean isMatrixEffect(Lit component, Class<? extends EffectHandler<?, ?>> clazz) {
+		/* TODO make this better */
+		return (clazz.equals(CustomEffectHandler.class) || clazz.equals(AudioEffectHandler.class))
+				&& Lit.getDevice(component).getCapabilities().contains(Capability.MATRIX);
 	}
 
 	public void remove(EffectHandler<?, ?> handler) {
@@ -317,7 +419,7 @@ public class EffectManager {
 					for (EffectAcquisitionImpl acq : en.getValue()) {
 						for (Lit r : new ArrayList<>(acq.active.keySet())) {
 							if (acq.active.get(r).equals(handler)) {
-								acq.deactivateComponent(r);
+								acq.deactivate(r);
 							}
 						}
 					}
@@ -358,6 +460,9 @@ public class EffectManager {
 					handler.getName(), EffectHandler.class.getName()));
 		}
 		deviceEffectHandlers.put(handler.getName(), handler);
+		if (LOG.isLoggable(Level.DEBUG))
+			LOG.log(Level.DEBUG,
+					String.format("Adding effect %s, serviced by %s", handler.getName(), handler.getClass().getName()));
 		handler.open(context, device);
 	}
 
@@ -385,6 +490,106 @@ public class EffectManager {
 				return (H) eh;
 		}
 		return null;
+	}
+
+	public boolean isSync() {
+		return context.getBackend().isSync();
+	}
+
+	public void setSync(boolean sync) {
+		context.getBackend().setSync(sync);
+		context.getPreferences().putBoolean("sync", sync);
+	}
+
+	@Override
+	public void deviceAdded(Device device) {
+		addDevice(device);
+	}
+
+	@Override
+	public void deviceRemoved(Device device) {
+		removeDevice(device);
+	}
+
+	protected void removeDevice(Device device) {
+		synchronized (acquisitions) {
+			Stack<EffectAcquisitionImpl> acq = acquisitions.get(device);
+			while (acq != null && !acq.isEmpty()) {
+				try {
+					EffectAcquisitionImpl pop = acq.pop();
+					pop.close();
+				} catch (Exception e) {
+					LOG.log(Level.ERROR, "Failed to close effect acquisition.", e);
+				}
+			}
+			acquisitions.remove(device);
+		}
+	}
+
+	public void addDevice(Device dev) {
+		synchronized (acquisitions) {
+			if (LOG.isLoggable(Level.DEBUG))
+				LOG.log(Level.DEBUG, String.format("Adding device %s to effect manager.", dev.getName()));
+
+			/* Acquire an effects controller for this device */
+			EffectAcquisition acq = acquire(dev);
+
+			EffectHandler<?, ?> deviceEffect = acq.getEffect(dev);
+			boolean activated = false;
+			if (deviceEffect != null && !deviceEffect.isRegions()) {
+				/* Always activates at device level */
+				acq.activate(dev, deviceEffect);
+				activated = true;
+			} else {
+				/* No effect configured for device as a whole, check the regions */
+				for (Region r : dev.getRegions()) {
+					EffectHandler<?, ?> regionEffect = acq.getEffect(r);
+					if (regionEffect != null && regionEffect.isRegions()) {
+						try {
+							acq.activate(r, regionEffect);
+							activated = true;
+						} catch (UnsupportedOperationException uoe) {
+							if (LOG.isLoggable(Level.DEBUG))
+								LOG.log(Level.WARNING, "Failed to activate effect.", uoe);
+						}
+					}
+				}
+			}
+
+			/* Now try at device level */
+			if (!activated && deviceEffect != null) {
+				acq.activate(dev, deviceEffect);
+				activated = true;
+			}
+
+			if (!activated) {
+				/* Get the first effect and activate on whole device */
+				Set<EffectHandler<?, ?>> effects = getEffects(dev);
+				Iterator<EffectHandler<?, ?>> it = effects.iterator();
+				while (it.hasNext()) {
+					EffectHandler<?, ?> fx = it.next();
+					if (dev.getSupportedEffects().contains(fx.getBackendEffectClass())) {
+						acq.activate(dev, fx);
+						break;
+					}
+				}
+			}
+		}
+
+	}
+
+	@Override
+	public void close() throws IOException {
+		synchronized (acquisitions) {
+			while (!acquisitions.isEmpty()) {
+				Device device = acquisitions.keySet().iterator().next();
+				if (context.getConfiguration().isTurnOffOnExit()) {
+					device.setEffect(new Off());
+				}
+				removeDevice(device);
+			}
+		}
+
 	}
 
 }

@@ -1,15 +1,21 @@
 package uk.co.bithatch.snake.lib.layouts;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -19,6 +25,7 @@ import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.DeviceType;
 import uk.co.bithatch.snake.lib.Region;
+import uk.co.bithatch.snake.lib.Region.Name;
 import uk.co.bithatch.snake.lib.layouts.Accessory.AccessoryType;
 
 public class DeviceLayout implements uk.co.bithatch.snake.lib.layouts.DeviceView.Listener {
@@ -47,6 +54,7 @@ public class DeviceLayout implements uk.co.bithatch.snake.lib.layouts.DeviceView
 	private URL base;
 	private DeviceType deviceType = DeviceType.UNRECOGNISED;
 	private List<Listener> listeners = new ArrayList<>();
+	private Map<String, Object> clientProperties = Collections.synchronizedMap(new HashMap<>());
 
 	public DeviceLayout() {
 	}
@@ -63,7 +71,9 @@ public class DeviceLayout implements uk.co.bithatch.snake.lib.layouts.DeviceView
 		}
 		this.deviceType = layout.deviceType;
 		for (Map.Entry<ViewPosition, DeviceView> en : layout.views.entrySet()) {
-			views.put(en.getKey(), new DeviceView(en.getValue(), this));
+			DeviceView view = new DeviceView(en.getValue(), this);
+			view.addListener(this);
+			views.put(en.getKey(), view);
 		}
 	}
 
@@ -76,11 +86,17 @@ public class DeviceLayout implements uk.co.bithatch.snake.lib.layouts.DeviceView
 		}
 	}
 
-	public DeviceLayout(URL archive, JsonObject sequenceJson) {
-		setBase(archive);
-		setName(sequenceJson.has("name") ? sequenceJson.get("name").getAsString() : null);
+	@SuppressWarnings("unchecked")
+	public DeviceLayout(URL metaData, JsonObject sequenceJson) {
+		setBase(getParent(metaData));
+		setName(sequenceJson.has("name") ? sequenceJson.get("name").getAsString() : getNameFromArchive(metaData));
 		setMatrixHeight(sequenceJson.get("matrixHeight").getAsInt());
 		setMatrixWidth(sequenceJson.get("matrixWidth").getAsInt());
+		if (sequenceJson.has("clientProperties")) {
+			clientProperties
+					.putAll((Map<String, Object>) new Gson().fromJson(sequenceJson.get("clientProperties"), Map.class));
+		}
+
 		setDeviceType(DeviceType.valueOf(sequenceJson.get("deviceType").getAsString()));
 		JsonArray frames = sequenceJson.get("views").getAsJsonArray();
 		for (JsonElement viewElement : frames) {
@@ -116,7 +132,8 @@ public class DeviceLayout implements uk.co.bithatch.snake.lib.layouts.DeviceView
 						key.setEventCode(EventCode.valueOf(elementObject.get("eventCode").getAsString()));
 					}
 					if (elementObject.has("legacyKey")) {
-						key.setLegacyKey(uk.co.bithatch.snake.lib.Key.valueOf(elementObject.get("legacyKey").getAsString()));
+						key.setLegacyKey(
+								uk.co.bithatch.snake.lib.Key.valueOf(elementObject.get("legacyKey").getAsString()));
 					}
 					configureMatrixIO(elementObject, key);
 					element = key;
@@ -156,6 +173,29 @@ public class DeviceLayout implements uk.co.bithatch.snake.lib.layouts.DeviceView
 		}
 	}
 
+	protected String getNameFromArchive(URL url) {
+		if (url == null)
+			return null;
+		else if (url.getPath() == null)
+			return url.toExternalForm();
+		else {
+			String path = url.getPath();
+			int idx = path.lastIndexOf('/');
+			if (idx != -1) {
+				path = path.substring(idx + 1);
+			}
+			idx = path.lastIndexOf('.');
+			if (idx != -1) {
+				path = path.substring(0, idx);
+			}
+			try {
+				return URLDecoder.decode(path, "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+	}
+
 	protected void configureMatrixIO(JsonObject elementObject, MatrixIO led) {
 		if (elementObject.has("matrixX") || elementObject.has("matrixY")) {
 			led.setMatrixX(elementObject.has("matrixX") ? elementObject.get("matrixX").getAsInt() : 0);
@@ -165,12 +205,16 @@ public class DeviceLayout implements uk.co.bithatch.snake.lib.layouts.DeviceView
 		}
 	}
 
+	public Map<String, Object> getClientProperties() {
+		return clientProperties;
+	}
+
 	public void addListener(Listener listener) {
 		listeners.add(listener);
 	}
 
 	public void removeListener(Listener listener) {
-		listeners.add(listener);
+		listeners.remove(listener);
 	}
 
 	public DeviceType getDeviceType() {
@@ -387,5 +431,100 @@ public class DeviceLayout implements uk.co.bithatch.snake.lib.layouts.DeviceView
 			}
 		}
 		return EventCodes;
+	}
+
+	public void store(JsonObject layoutObject) {
+
+		layoutObject.addProperty("matrixHeight", getMatrixHeight());
+		layoutObject.addProperty("matrixWidth", getMatrixWidth());
+		layoutObject.addProperty("deviceType", getDeviceType().name());
+		if (clientProperties.size() > 0) {
+			layoutObject.add("clientProperties", new Gson().toJsonTree(clientProperties));
+		}
+
+		JsonArray frameInfo = new JsonArray();
+		for (DeviceView deviceView : getViews().values()) {
+			JsonObject viewObject = new JsonObject();
+
+			viewObject.addProperty("desaturateImage", deviceView.isDesaturateImage());
+			viewObject.addProperty("imageOpacity", deviceView.getImageOpacity());
+			if (deviceView.getImageUri() != null)
+				viewObject.addProperty("imageUri", deviceView.getImageUri());
+			viewObject.addProperty("imageScale", deviceView.getImageScale());
+			viewObject.addProperty("position", deviceView.getPosition().name());
+
+			JsonArray elementsArray = new JsonArray();
+
+			for (IO element : deviceView.getElements()) {
+				JsonObject elementObject = new JsonObject();
+				elementObject.addProperty("type", ComponentType.fromClass(element.getClass()).name());
+				elementObject.addProperty("x", element.getX());
+				elementObject.addProperty("y", element.getY());
+				elementObject.addProperty("label", element.getLabel());
+				if (element instanceof Area) {
+					Name region = ((Area) element).getRegion();
+					if (region != null)
+						elementObject.addProperty("region", region.name());
+				}
+				if (element instanceof Accessory) {
+					AccessoryType type = ((Accessory) element).getAccessory();
+					if (type != null)
+						elementObject.addProperty("accessory", type.name());
+				}
+				if (element instanceof MatrixCell) {
+					Name region = ((MatrixCell) element).getRegion();
+					if (region != null)
+						elementObject.addProperty("region", region.name());
+				}
+				if (element instanceof Key && ((Key) element).getEventCode() != null) {
+					elementObject.addProperty("eventCode", ((Key) element).getEventCode().name());
+				}
+				if (element instanceof Key && ((Key) element).getLegacyKey() != null) {
+					elementObject.addProperty("legacyKey", ((Key) element).getLegacyKey().name());
+				}
+				if (element instanceof MatrixIO && ((MatrixIO) element).isMatrixLED()) {
+					elementObject.addProperty("matrixX", ((MatrixIO) element).getMatrixX());
+					elementObject.addProperty("matrixY", ((MatrixIO) element).getMatrixY());
+				}
+				elementsArray.add(elementObject);
+			}
+			viewObject.add("elements", elementsArray);
+			frameInfo.add(viewObject);
+		}
+		layoutObject.add("views", frameInfo);
+
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T getClientProperty(String key) {
+		synchronized (clientProperties) {
+			if (!clientProperties.containsKey(key)) {
+				throw new IllegalArgumentException("No such property.");
+			}
+			return (T) clientProperties.get(key);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T getClientProperty(String key, T defaultValue) {
+		synchronized (clientProperties) {
+			return clientProperties.containsKey(key) ? (T) clientProperties.get(key) : defaultValue;
+		}
+	}
+
+	private static URL getParent(URL url) {
+		try {
+			String urlPath = url.toExternalForm();
+			int idx = urlPath.lastIndexOf('!');
+			if (idx == -1) {
+				URI uri = url.toURI();
+				return (uri.getPath().endsWith("/") ? uri.resolve("..") : uri.resolve(".")).toURL();
+			} else {
+				idx = urlPath.lastIndexOf('/');
+				return new URL(urlPath.substring(0, idx));
+			}
+		} catch (MalformedURLException | URISyntaxException e) {
+			throw new IllegalStateException("Failed to get parent URL.", e);
+		}
 	}
 }

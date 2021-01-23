@@ -14,6 +14,7 @@ import uk.co.bithatch.snake.lib.effects.Effect;
 import uk.co.bithatch.snake.lib.effects.Matrix;
 import uk.co.bithatch.snake.lib.layouts.Cell;
 import uk.co.bithatch.snake.ui.AbstractEffectController;
+import uk.co.bithatch.snake.ui.SchedulerManager.Queue;
 
 public class BlinkEffectHandler
 		extends AbstractEffectHandler<Matrix, AbstractEffectController<Matrix, BlinkEffectHandler>> {
@@ -31,6 +32,11 @@ public class BlinkEffectHandler
 	}
 
 	@Override
+	public boolean isRegions() {
+		return false;
+	}
+
+	@Override
 	public void deactivate(Lit component) {
 		synchronized (highlights) {
 			task.cancel(false);
@@ -41,7 +47,7 @@ public class BlinkEffectHandler
 
 	@Override
 	public void update(Lit component) {
-		getContext().getScheduler().execute(() -> component.updateEffect(effect));
+		component.updateEffect(effect);
 	}
 
 	public Matrix getEffect() {
@@ -52,7 +58,7 @@ public class BlinkEffectHandler
 	protected Matrix onActivate(Lit component) {
 		effect = component.createEffect(Matrix.class);
 		int[] dw = Lit.getDevice(component).getMatrixSize();
-		effect.setCells(new int[dw[0]][dw[1]][]);
+		effect.setCells(new int[dw[0]][dw[1]][3]);
 		on = true;
 		reset(component);
 		return effect;
@@ -61,7 +67,7 @@ public class BlinkEffectHandler
 	protected synchronized void reset(Lit component) {
 		if (task != null)
 			task.cancel(false);
-		task = getContext().getScheduler().scheduleAtFixedRate(() -> {
+		task = getContext().getSchedulerManager().get(Queue.DEVICE_IO).scheduleAtFixedRate(() -> {
 			frame(component);
 			on = !on;
 		}, 0, 250, TimeUnit.MILLISECONDS);

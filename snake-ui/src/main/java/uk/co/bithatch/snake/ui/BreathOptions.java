@@ -3,25 +3,25 @@ package uk.co.bithatch.snake.ui;
 import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import uk.co.bithatch.snake.lib.effects.Breath;
 import uk.co.bithatch.snake.lib.effects.Breath.Mode;
 import uk.co.bithatch.snake.ui.effects.BreathEffectHandler;
-import uk.co.bithatch.snake.ui.util.JavaFX;
-import uk.co.bithatch.snake.ui.widgets.Direction;
+import uk.co.bithatch.snake.widgets.ColorBar;
+import uk.co.bithatch.snake.widgets.Direction;
+import uk.co.bithatch.snake.widgets.JavaFX;
 
 public class BreathOptions extends AbstractBackendEffectController<Breath, BreathEffectHandler> {
 
 	@FXML
-	private ColorPicker color;
+	private ColorBar color;
 
 	@FXML
-	private ColorPicker color1;
+	private ColorBar color1;
 
 	@FXML
-	private ColorPicker color2;
+	private ColorBar color2;
 
 	@FXML
 	private Label colorLabel;
@@ -53,15 +53,15 @@ public class BreathOptions extends AbstractBackendEffectController<Breath, Breat
 	}
 
 	public int[] getColor() {
-		return JavaFX.toRGB(color.valueProperty().get());
+		return JavaFX.toRGB(color.getColor());
 	}
 
 	public int[] getColor1() {
-		return JavaFX.toRGB(color1.valueProperty().get());
+		return JavaFX.toRGB(color1.getColor());
 	}
 
 	public int[] getColor2() {
-		return JavaFX.toRGB(color2.valueProperty().get());
+		return JavaFX.toRGB(color2.getColor());
 	}
 
 	@Override
@@ -84,9 +84,9 @@ public class BreathOptions extends AbstractBackendEffectController<Breath, Breat
 			if (random.isSelected())
 				update();
 		});
-		color.valueProperty().addListener((e) -> update());
-		color1.valueProperty().addListener((e) -> update());
-		color2.valueProperty().addListener((e) -> update());
+		color.colorProperty().addListener((e) -> update());
+		color1.colorProperty().addListener((e) -> update());
+		color2.colorProperty().addListener((e) -> update());
 	}
 
 	protected void update() {
@@ -110,9 +110,9 @@ public class BreathOptions extends AbstractBackendEffectController<Breath, Breat
 				random.selectedProperty().set(true);
 				break;
 			}
-			color.valueProperty().set(JavaFX.toColor(effect.getColor()));
-			color1.valueProperty().set(JavaFX.toColor(effect.getColor1()));
-			color2.valueProperty().set(JavaFX.toColor(effect.getColor2()));
+			color.setColor(JavaFX.toColor(effect.getColor()));
+			color1.setColor(JavaFX.toColor(effect.getColor1()));
+			color2.setColor(JavaFX.toColor(effect.getColor2()));
 		} finally {
 			adjusting = false;
 		}

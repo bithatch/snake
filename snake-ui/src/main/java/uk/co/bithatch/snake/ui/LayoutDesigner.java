@@ -13,11 +13,12 @@ import java.util.Set;
 
 import org.controlsfx.control.SearchableComboBox;
 import org.controlsfx.control.ToggleSwitch;
+import org.kordamp.ikonli.fontawesome.FontAwesome;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Hyperlink;
@@ -33,9 +34,9 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
@@ -69,11 +70,11 @@ import uk.co.bithatch.snake.ui.designer.Viewer.ViewerListener;
 import uk.co.bithatch.snake.ui.designer.ViewerView;
 import uk.co.bithatch.snake.ui.effects.BlinkEffectHandler;
 import uk.co.bithatch.snake.ui.effects.EffectAcquisition;
-import uk.co.bithatch.snake.ui.util.JavaFX;
 import uk.co.bithatch.snake.ui.util.Strings;
 import uk.co.bithatch.snake.ui.util.Time.Timer;
 import uk.co.bithatch.snake.ui.util.Visitor;
-import uk.co.bithatch.snake.ui.widgets.Direction;
+import uk.co.bithatch.snake.widgets.Direction;
+import uk.co.bithatch.snake.widgets.JavaFX;
 
 public class LayoutDesigner extends AbstractDetailsController implements Listener, ViewerListener {
 
@@ -84,7 +85,7 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 	private EffectAcquisition acq;
 
 	@FXML
-	private Button addView;
+	private Hyperlink addView;
 	@FXML
 	private RadioButton autoImage;
 	@FXML
@@ -94,7 +95,7 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 	@FXML
 	private ToggleSwitch enabled;
 	@FXML
-	private Button export;
+	private Hyperlink export;
 	@FXML
 	private RadioButton fileImage;
 	@FXML
@@ -140,14 +141,14 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 	@FXML
 	private Hyperlink removeElement;
 	@FXML
-	private Button removeView;
+	private Hyperlink remove;
 	@FXML
 	private TabPane sideBar;
 
 	@FXML
 	private StackPane stack;
 	@FXML
-	private ToolBar toolBar;
+	private HBox toolBar;
 	@FXML
 	private RadioButton urlImage;
 	@FXML
@@ -228,15 +229,18 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 			try {
 				acq.close();
 			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 	}
 
-	@Override
-	protected void onSetDeviceDetails() throws Exception {
+	public void setLayout(DeviceLayout layout) throws Exception {
+		this.layout = layout;
+
 		JavaFX.bindManagedToVisible(enabled, width, widthLabel, toolBar, sideBar, removeElement, matrixX, matrixY,
-				matrixXLabel, matrixYLabel, position, positionLabel, region, regionLabel, legacyKeyMapping, legacyKeyMappingLabel, keyMapping, keyMappingLabel,
-				accessory, accessoryLabel, labelLabel, label, matrixLabel, noSelection);
+				matrixXLabel, matrixYLabel, position, positionLabel, region, regionLabel, legacyKeyMapping,
+				legacyKeyMappingLabel, keyMapping, keyMappingLabel, accessory, accessoryLabel, labelLabel, label,
+				matrixLabel, noSelection);
 
 		matrixXLabel.labelForProperty().set(matrixX);
 		matrixYLabel.labelForProperty().set(matrixY);
@@ -266,12 +270,11 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 						super.updateItem(item, empty);
 						String imageUrl;
 						if (item == null || empty) {
-							imageUrl = context.getConfiguration().themeProperty().getValue()
-									.getEffectImage(24, Off.class).toExternalForm();
+							imageUrl = context.getConfiguration().getTheme().getEffectImage(24, Off.class)
+									.toExternalForm();
 							setText(bundle.getString("noRegion"));
 						} else {
-							imageUrl = context.getConfiguration().themeProperty().getValue().getRegionImage(24, item)
-									.toExternalForm();
+							imageUrl = context.getConfiguration().getTheme().getRegionImage(24, item).toExternalForm();
 							setText(bundle.getString("region." + item.name()));
 						}
 						ImageView iv = new ImageView(imageUrl);
@@ -291,18 +294,7 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 		Device device = getDevice();
 		deviceViewer = new TabbedViewer(context, device);
 		stack.getChildren().add(deviceViewer);
-		DeviceLayoutManager layouts = context.getLayouts();
 		deviceViewer.setSelectionMode(SelectionMode.MULTIPLE);
-		boolean hasLayout = layouts.hasLayout(device);
-		if (!hasLayout) {
-			layout = new DeviceLayout(device);
-			DeviceView view = new DeviceView();
-			view.setPosition(ViewPosition.TOP);
-			layout.addView(view);
-			layouts.addLayout(layout);
-		} else {
-			layout = layouts.getLayout(device);
-		}
 
 		if (layout.getViews().get(ViewPosition.MATRIX) == null
 				&& device.getCapabilities().contains(Capability.MATRIX)) {
@@ -464,8 +456,8 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 									: null;
 							if (cell != null) {
 								cell.setRegion(newVal);
-							} 
-							if(newVal == null)
+							}
+							if (newVal == null)
 								m.setMatrixXY(null);
 						}
 					}
@@ -493,6 +485,7 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 			blink.open(context, device);
 			acq.activate(device, blink);
 		}
+
 	}
 
 	void visitRelatedCells(MatrixIO mio, Visitor<MatrixIO> visit) {
@@ -625,8 +618,10 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 						selectedRegion = ((RegionIO) el).getRegion();
 				}
 
-				matrixX.setVisible(noLighting ==0 && deviceLayout.getMatrixWidth() > 1 && matrixEls == elements.size() && matrixEls > 0);
-				matrixY.setVisible(noLighting ==0 && deviceLayout.getMatrixHeight() > 1 && matrixEls == elements.size() && matrixEls > 0);
+				matrixX.setVisible(noLighting == 0 && deviceLayout.getMatrixWidth() > 1 && matrixEls == elements.size()
+						&& matrixEls > 0);
+				matrixY.setVisible(noLighting == 0 && deviceLayout.getMatrixHeight() > 1 && matrixEls == elements.size()
+						&& matrixEls > 0);
 				position.setVisible(!viewingMatrix);
 				noSelection.textProperty().set(bundle.getString(viewingMatrix ? "noMatrixSelection" : "noSelection"));
 
@@ -675,8 +670,7 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 					if (element instanceof Key) {
 						keyMapping.getSelectionModel().select(((Key) element).getEventCode());
 						legacyKeyMapping.getSelectionModel().select(((Key) element).getLegacyKey());
-					}
-					else {
+					} else {
 						keyMapping.getSelectionModel().clearSelection();
 						legacyKeyMapping.getSelectionModel().clearSelection();
 					}
@@ -751,7 +745,7 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 					Set<Cell> highlightCells = new HashSet<>();
 					DeviceView matrixView = deviceLayout.getViews().get(ViewPosition.MATRIX);
 					for (IO element : elements) {
-						if (element instanceof MatrixIO && ((MatrixIO)element).isMatrixLED())
+						if (element instanceof MatrixIO && ((MatrixIO) element).isMatrixLED())
 							highlightCells.add(((MatrixIO) element).getMatrixXY());
 						else if (element instanceof Area) {
 							/* Add all of the cells in this area to highlight */
@@ -821,14 +815,30 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 	}
 
 	@FXML
-	void evtRemoveView() {
-		Confirm confirm = context.push(Confirm.class, Direction.FADE);
-		confirm.confirm(bundle, "removeView", () -> {
-			DeviceView view = deviceViewer.getSelectedView();
-			deviceViewer.getLayout().removeView(view.getPosition());
-			deviceViewer.removeView(view);
-			updateAvailability();
-		}, deviceViewer.getSelectedView().getPosition());
+	void evtRemove() {
+
+		if (deviceViewer.getViews().size() < 2
+				|| deviceViewer.getSelectedView().getPosition().equals(ViewPosition.MATRIX)) {
+
+			Confirm confirm = context.push(Confirm.class, Direction.FADE);
+			confirm.getTitle().graphicProperty().set(new FontIcon(FontAwesome.TRASH));
+			confirm.getYes().graphicProperty().set(new FontIcon(FontAwesome.TRASH));
+			confirm.confirm(bundle, "removeLayout", () -> {
+				context.getLayouts().remove(layout);
+				context.pop();
+
+			}, deviceViewer.getSelectedView().getPosition());
+		} else {
+			Confirm confirm = context.push(Confirm.class, Direction.FADE);
+			confirm.getTitle().graphicProperty().set(new FontIcon(FontAwesome.TRASH));
+			confirm.getYes().graphicProperty().set(new FontIcon(FontAwesome.TRASH));
+			confirm.confirm(bundle, "removeView", () -> {
+				DeviceView view = deviceViewer.getSelectedView();
+				deviceViewer.getLayout().removeView(view.getPosition());
+				deviceViewer.removeView(view);
+				updateAvailability();
+			}, deviceViewer.getSelectedView().getPosition());
+		}
 	}
 
 	String getDefaultOutputLocation() {
@@ -837,8 +847,8 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 	}
 
 	void updateAvailability() {
-		removeView.setDisable(deviceViewer.getViews().size() < 2
-				|| deviceViewer.getSelectedView().getPosition().equals(ViewPosition.MATRIX));
+		remove.setDisable(deviceViewer.getViews().size() > 1
+				&& deviceViewer.getSelectedView().getPosition().equals(ViewPosition.MATRIX));
 	}
 
 	void updateBackgroundImageComponents() {
@@ -893,7 +903,14 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 		DeviceLayoutManager layouts = context.getLayouts();
 		boolean hasContributedLayout = layouts.hasLayout(getDevice()) && layouts.getLayout(getDevice()).isReadOnly();
 		boolean hasOfficialLayout = context.getLayouts().hasOfficialLayout(getDevice());
-		if (!hasOfficialLayout) {
+		boolean hasUserLayout = context.getLayouts().hasUserLayout(getDevice());
+		if (hasUserLayout) {
+			if (hasContributedLayout || hasOfficialLayout)
+				notifyMessage(MessagePersistence.ONCE_PER_RUNTIME, MessageType.WARNING,
+						bundle.getString("info.masking"));
+			else
+				notifyMessage(MessagePersistence.ONCE_PER_RUNTIME, MessageType.INFO, bundle.getString("info.user"));
+		} else if (!hasOfficialLayout) {
 			if (hasContributedLayout) {
 				notifyMessage(MessagePersistence.ONCE_PER_RUNTIME, MessageType.INFO,
 						bundle.getString("info.contributed"));
@@ -901,6 +918,7 @@ public class LayoutDesigner extends AbstractDetailsController implements Listene
 				notifyMessage(MessagePersistence.ONCE_PER_RUNTIME, MessageType.INFO,
 						bundle.getString("info.notOfficial"));
 		} else {
+
 			clearNotifications(false);
 		}
 	}

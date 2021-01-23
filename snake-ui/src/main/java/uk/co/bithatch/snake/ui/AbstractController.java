@@ -1,6 +1,5 @@
 package uk.co.bithatch.snake.ui;
 
-
 import java.lang.System.Logger.Level;
 import java.net.URL;
 import java.util.ArrayList;
@@ -10,6 +9,9 @@ import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.prefs.Preferences;
+
+import org.kordamp.ikonli.fontawesome.FontAwesome;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import javafx.animation.ScaleTransition;
 import javafx.application.Platform;
@@ -31,6 +33,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import uk.co.bithatch.snake.ui.SchedulerManager.Queue;
 import uk.co.bithatch.snake.ui.util.Strings;
 
 public abstract class AbstractController implements Controller {
@@ -76,6 +79,16 @@ public abstract class AbstractController implements Controller {
 			throw re;
 		} catch (Exception e) {
 			throw new IllegalStateException(e);
+		}
+	}
+
+	public void error(Exception exception) {
+		if (exception == null)
+			clearNotifications(true);
+		else {
+			LOG.log(Level.ERROR, "Error.", exception);
+			String msg = exception.getLocalizedMessage();
+			notifyMessage(MessagePersistence.EVERYTIME, MessageType.DANGER, msg);
 		}
 	}
 
@@ -134,8 +147,8 @@ public abstract class AbstractController implements Controller {
 	protected Background createHeaderBackground() {
 		return new Background(
 				new BackgroundImage(
-						new Image(context.getConfiguration().themeProperty().getValue().getResource("fibre.jpg")
-								.toExternalForm(), true),
+						new Image(context.getConfiguration().getTheme().getResource("fibre.jpg").toExternalForm(),
+								true),
 						BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
 						new BackgroundSize(100d, 100d, true, true, false, true)));
 	}
@@ -178,7 +191,7 @@ public abstract class AbstractController implements Controller {
 			l1.setAlignment(Pos.CENTER);
 			l1.getStyleClass().add("icon");
 			l1.getStyleClass().add("popupMessageIcon");
-			l1.textProperty().set(App.BUNDLE.getString("messageType." + type.name()));
+			l1.graphicProperty().set(new FontIcon(App.BUNDLE.getString("messageType." + type.name())));
 			l2.getChildren().add(l1);
 
 			if (title != null) {
@@ -200,7 +213,8 @@ public abstract class AbstractController implements Controller {
 				l2.getChildren().add(c2);
 			}
 
-			Hyperlink l3 = new Hyperlink(App.BUNDLE.getString("close"));
+			Hyperlink l3 = new Hyperlink();
+			l3.setGraphic(new FontIcon(FontAwesome.CLOSE));
 			l3.getStyleClass().add("icon");
 			l3.getStyleClass().add("popupMessageClose");
 			l3.setAlignment(Pos.CENTER);
@@ -214,7 +228,7 @@ public abstract class AbstractController implements Controller {
 			setRight(l3);
 
 			if (timeout != 0)
-				task = context.getScheduler().schedule(() -> {
+				task = context.getSchedulerManager().get(Queue.TIMER).schedule(() -> {
 					Platform.runLater(() -> close());
 				}, timeout, TimeUnit.SECONDS);
 		}

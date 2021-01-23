@@ -1,6 +1,9 @@
 package uk.co.bithatch.snake.lib.layouts;
 
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,7 +57,17 @@ public class DeviceLayouts implements uk.co.bithatch.snake.lib.layouts.DeviceLay
 		listeners.remove(listener);
 	}
 
+	public void registerLayout(DeviceLayout layout) {
+		doAddLayout(layout);
+	}
+	
 	public void addLayout(DeviceLayout layout) {
+		doAddLayout(layout);
+		for (int i = listeners.size() - 1; i >= 0; i--)
+			listeners.get(i).layoutAdded(layout);
+	}
+
+	protected void doAddLayout(DeviceLayout layout) {
 		if (layouts.contains(layout))
 			throw new IllegalStateException("Already contains this layout.");
 
@@ -63,8 +76,6 @@ public class DeviceLayouts implements uk.co.bithatch.snake.lib.layouts.DeviceLay
 			remove(layout);
 		}
 		layouts.add(layout);
-		for (int i = listeners.size() - 1; i >= 0; i--)
-			listeners.get(i).layoutAdded(layout);
 		layout.addListener(this);
 	}
 
@@ -110,7 +121,7 @@ public class DeviceLayouts implements uk.co.bithatch.snake.lib.layouts.DeviceLay
 				JsonElement json = Json.toJson(in);
 				DeviceLayout builtInlayout = new DeviceLayout(res, json.getAsJsonObject());
 				builtInlayout.setReadOnly(true);
-				addLayout(builtInlayout);
+				doAddLayout(builtInlayout);
 				return builtInlayout;
 			} catch (Exception ioe) {
 				throw new IllegalStateException(String.format("Failed to load built-in layout.", res), ioe);
@@ -139,7 +150,7 @@ public class DeviceLayouts implements uk.co.bithatch.snake.lib.layouts.DeviceLay
 		} else {
 			for (MatrixCell[] row : legacyLayout.getKeys()) {
 				for (MatrixCell col : row) {
-					if(col != null)
+					if (col != null)
 						v.addElement(col);
 				}
 			}

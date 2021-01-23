@@ -30,6 +30,7 @@ import uk.co.bithatch.snake.lib.layouts.LED;
 import uk.co.bithatch.snake.lib.layouts.MatrixCell;
 import uk.co.bithatch.snake.lib.layouts.MatrixIO;
 import uk.co.bithatch.snake.lib.layouts.ViewPosition;
+import uk.co.bithatch.snake.ui.SchedulerManager.Queue;
 import uk.co.bithatch.snake.ui.util.Prefs;
 import uk.co.bithatch.snake.ui.util.Strings;
 import uk.co.bithatch.snake.ui.util.Time.Timer;
@@ -49,6 +50,22 @@ public class DeviceLayoutManager implements Listener {
 		backend = new DeviceLayouts();
 		backend.addListener(this);
 		prefs = context.getPreferences().node("layouts");
+	}
+
+	public List<DeviceLayout> getLayouts() {
+		List<DeviceLayout> l = new ArrayList<>();
+		for (DeviceLayout a : backend.getLayouts()) {
+			Device device = context.getBackend().getDevice(a.getName());
+			if (device != null) {
+				DeviceLayout u = getUserLayout(device);
+				if (u != null)
+					l.add(u);
+				else
+					l.add(a);
+			} else
+				l.add(a);
+		}
+		return l;
 	}
 
 	public boolean hasLayout(Device device) {
@@ -145,10 +162,22 @@ public class DeviceLayoutManager implements Listener {
 
 	public DeviceLayout getLayout(Device device) {
 
-		/* Check first if there is a saved layout */
+		DeviceLayout layout = backend.hasLayout(device) ? backend.getLayout(device) : null;
+		if(layout == null || layout.isReadOnly()) {
+			/* Either a built-in or an add-on, is there a user layout to override it? */
+			DeviceLayout userLayout = getUserLayout(device);
+			if (userLayout != null) {
+				return userLayout;
+			}
+		}
+
+		return layout;
+	}
+
+	protected DeviceLayout getUserLayout(Device device) {
+		String id = Strings.toId(device.getName());
 		try {
-			String id = Strings.toId(device.getName());
-			if (!backend.hasLayout(device) && prefs.nodeExists(id)) {
+			if (prefs.nodeExists(id)) {
 				Preferences layoutNode = prefs.node(id);
 				DeviceLayout dl = new DeviceLayout(device);
 				dl.setDeviceType(DeviceType.valueOf(layoutNode.get("deviceType", DeviceType.UNRECOGNISED.name())));
@@ -234,14 +263,13 @@ public class DeviceLayoutManager implements Listener {
 					}
 					dl.addView(view);
 				}
-				backend.addLayout(dl);
+				backend.registerLayout(dl);
 				return dl;
 			}
 		} catch (BackingStoreException bse) {
-			throw new IllegalStateException("Could not get layout.", bse);
+			throw new IllegalStateException(bse);
 		}
-
-		return backend.getLayout(device);
+		return null;
 	}
 
 	protected void setMatrixPositionFromPreferences(Preferences elementNode, MatrixIO led) {
@@ -267,7 +295,7 @@ public class DeviceLayoutManager implements Listener {
 	}
 
 	public void removeListener(Listener listener) {
-		backend.addListener(listener);
+		backend.removeListener(listener);
 	}
 
 	public boolean hasOfficialLayout(Device device) {
@@ -279,6 +307,13 @@ public class DeviceLayoutManager implements Listener {
 	}
 
 	public void remove(DeviceLayout layout) {
+		if (!layout.isReadOnly()) {
+			try {
+				prefs.node(Strings.toId(layout.getName())).removeNode();
+			} catch (BackingStoreException e) {
+				LOG.log(Level.ERROR, "Failed to remove layout node.", e);
+			}
+		}
 		backend.remove(layout);
 	}
 
@@ -323,7 +358,7 @@ public class DeviceLayoutManager implements Listener {
 	}
 
 	void queueSave() {
-		context.getLoadQueue().execute(() -> {
+		context.getSchedulerManager().get(Queue.APP_IO).execute(() -> {
 			synchronized (dirty) {
 				saveAll();
 				dirty.clear();

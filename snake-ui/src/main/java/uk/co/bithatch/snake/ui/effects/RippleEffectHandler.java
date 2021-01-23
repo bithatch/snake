@@ -7,6 +7,7 @@ import uk.co.bithatch.snake.lib.Lit;
 import uk.co.bithatch.snake.lib.effects.Ripple;
 import uk.co.bithatch.snake.lib.effects.Ripple.Mode;
 import uk.co.bithatch.snake.ui.RippleOptions;
+import uk.co.bithatch.snake.ui.SchedulerManager.Queue;
 
 public class RippleEffectHandler extends AbstractBackendEffectHandler<Ripple, RippleOptions> {
 
@@ -34,7 +35,7 @@ public class RippleEffectHandler extends AbstractBackendEffectHandler<Ripple, Ri
 		ripple.setMode(controller.getMode());
 		ripple.setColor(controller.getColor());
 		ripple.setRefreshRate(controller.getRefreshRate());
-		getContext().getScheduler().execute(() -> component.setEffect(ripple));
+		getContext().getSchedulerManager().get(Queue.DEVICE_IO).execute(() -> component.setEffect(ripple));
 		save(component, ripple);
 		
 	}

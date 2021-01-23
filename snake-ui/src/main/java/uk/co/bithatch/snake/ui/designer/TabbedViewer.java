@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -25,7 +26,7 @@ import uk.co.bithatch.snake.ui.App;
 import uk.co.bithatch.snake.ui.Confirm;
 import uk.co.bithatch.snake.ui.ListMultipleSelectionModel;
 import uk.co.bithatch.snake.ui.util.BasicList;
-import uk.co.bithatch.snake.ui.widgets.Direction;
+import uk.co.bithatch.snake.widgets.Direction;
 
 public class TabbedViewer extends TabPane implements Viewer {
 
@@ -53,7 +54,11 @@ public class TabbedViewer extends TabPane implements Viewer {
 		this.device = device;
 
 		enabledTypes.set(new BasicList<>());
-		setEnabledTypes(device.getSupportedComponentTypes());
+		Set<ComponentType> types = device.getSupportedComponentTypes();
+		if(context.getMacroManager().isSupported(device)) {
+			types.add(ComponentType.KEY);
+		}
+		setEnabledTypes(new ArrayList<>(types));
 		setKeySelectionModel(new ListMultipleSelectionModel<>(new ObservableListBase<>() {
 
 			@Override

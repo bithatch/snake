@@ -55,9 +55,9 @@ import uk.co.bithatch.snake.lib.MacroScript;
 import uk.co.bithatch.snake.lib.MacroSequence;
 import uk.co.bithatch.snake.lib.MacroURL;
 import uk.co.bithatch.snake.lib.ValidationException;
-import uk.co.bithatch.snake.ui.util.JavaFX;
 import uk.co.bithatch.snake.ui.util.Strings;
-import uk.co.bithatch.snake.ui.widgets.GeneratedIcon;
+import uk.co.bithatch.snake.widgets.GeneratedIcon;
+import uk.co.bithatch.snake.widgets.JavaFX;
 
 public class Macros extends AbstractDetailsController {
 
@@ -625,7 +625,7 @@ public class Macros extends AbstractDetailsController {
 			if (task != null) {
 				task.cancel(false);
 			}
-			error(null);
+			error((String)null);
 			synchronized (sequencesToSave) {
 				sequencesToSave.add(mkey);
 			}

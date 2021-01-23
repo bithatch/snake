@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.String?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.layout.HBox?>
@@ -9,7 +10,7 @@
    <children>
       <HBox styleClass="gapBottom">
          <children>
-            <Label styleClass="header" text="%gameMode" />
+            <Label maxWidth="1.7976931348623157E308" styleClass="header" text="%gameMode" HBox.hgrow="ALWAYS" />
          </children>
       </HBox>
       <HBox>
@@ -18,6 +19,10 @@
             <Slider fx:id="gameMode" blockIncrement="1.0" majorTickUnit="1.0" max="1.0" minorTickCount="0" prefWidth="64.0" showTickMarks="true" snapToTicks="true" />
             <Label fx:id="on" text="%on" />
          </children>
+         <styleClass>
+            <String fx:value="padded" />
+            <String fx:value="row" />
+         </styleClass>
       </HBox>
    </children>
 </VBox>

@@ -3,8 +3,35 @@ package uk.co.bithatch.snake.ui.util;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Base64;
+import java.util.List;
 
 public class Strings {
+
+	public static String toSeparatedList(String separator, Iterable<? extends Object> values) {
+		StringBuilder b = new StringBuilder();
+		for (Object o : values) {
+			if (b.length() > 0)
+				b.append(separator);
+			b.append(String.valueOf(o));
+		}
+		return b.toString();
+	}
+
+	public static List<String> addIfNotAdded(List<String> target, String... source) {
+		for (String s : source) {
+			if (!target.contains(s))
+				target.add(s);
+		}
+		return target;
+	}
+
+	public static List<String> addIfNotAdded(List<String> target, List<String> source) {
+		for (String s : source) {
+			if (!target.contains(s))
+				target.add(s);
+		}
+		return target;
+	}
 
 	public static String toId(String name) {
 		return name.toLowerCase().replace(" ", "-").replace("_", "-").replaceAll("[^a-z0-9\\-]", "");

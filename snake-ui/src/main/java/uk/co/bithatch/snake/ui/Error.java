@@ -2,17 +2,18 @@ package uk.co.bithatch.snake.ui;
 
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 
 import javafx.animation.FadeTransition;
-import javafx.beans.property.Property;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.util.Duration;
 import uk.co.bithatch.snake.lib.BackendException;
-import uk.co.bithatch.snake.ui.widgets.Direction;
+import uk.co.bithatch.snake.widgets.Direction;
 
-public class Error extends AbstractDeviceController {
+public class Error extends AbstractDeviceController implements PreferenceChangeListener {
 	final static ResourceBundle bundle = ResourceBundle.getBundle(Error.class.getName());
 
 	@FXML
@@ -27,10 +28,9 @@ public class Error extends AbstractDeviceController {
 
 	@Override
 	protected void onConfigure() throws Exception {
-		Property<Boolean> decProp = context.getConfiguration().decoratedProperty();
-		decoratedTools.visibleProperty().set(decProp.getValue());
-		context.getConfiguration().decoratedProperty()
-				.addListener((e) -> decoratedTools.visibleProperty().set(decProp.getValue()));
+
+		decoratedTools.visibleProperty().set(context.getConfiguration().isDecorated());
+		context.getConfiguration().getNode().addPreferenceChangeListener(this);
 	}
 
 	@FXML
@@ -48,6 +48,11 @@ public class Error extends AbstractDeviceController {
 			anim.setToValue(1);
 			anim.play();
 		}
+	}
+
+	@Override
+	protected void onDeviceCleanUp() {
+		context.getConfiguration().getNode().removePreferenceChangeListener(this);
 	}
 
 	public void setError(Throwable e) {
@@ -74,5 +79,13 @@ public class Error extends AbstractDeviceController {
 	@FXML
 	void evtOptions() {
 		context.push(Options.class, Direction.FROM_BOTTOM);
+	}
+
+	@Override
+	public void preferenceChange(PreferenceChangeEvent evt) {
+		if (evt.getKey().equals(Configuration.PREF_DECORATED)) {
+			decoratedTools.visibleProperty().set(context.getConfiguration().isDecorated());
+		}
+
 	}
 }

@@ -1,0 +1,462 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import org.controlsfx.control.SearchableComboBox?>
+<?import org.controlsfx.control.ToggleSwitch?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+<?import uk.co.bithatch.snake.widgets.ProfileLEDs?>
+
+<VBox xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.Bank">
+   <children>
+      <VBox fx:id="popupMessages" styleClass="popupMessages" />
+      <BorderPane fx:id="header" styleClass="nav">
+         <center>
+            <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
+               <children>
+                  <Group>
+                     <children>
+                        <ImageView fx:id="deviceImage" fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true" styleClass="titleImage" />
+                        <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true" styleClass="titleImage" x="60.0" y="6.0">
+                           <image>
+                              <Image url="@icons/macros32.png" />
+                           </image>
+                        </ImageView>
+                     </children>
+                  </Group>
+                  <VBox>
+                     <children>
+                        <Label fx:id="title" styleClass="title" />
+                        <Label fx:id="deviceName" text="Device Name" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+         </center>
+         <right>
+            <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
+               <children>
+                  <Hyperlink fx:id="back" onAction="#evtBack" styleClass="iconButton">
+                     <graphic>
+                        <FontIcon iconLiteral="fa-arrow-down" iconSize="32" />
+                     </graphic></Hyperlink>
+               </children>
+            </HBox>
+         </right>
+      </BorderPane>
+      <TabPane VBox.vgrow="ALWAYS">
+         <tabs>
+            <Tab closable="false" text="%sequences">
+               <content>
+                  <StackPane>
+                     <children>
+                        <Region fx:id="background" prefHeight="200.0" prefWidth="200.0" />
+                        <BorderPane fx:id="viewContainer">
+                           <right>
+                              <ScrollPane hbarPolicy="NEVER" BorderPane.alignment="CENTER">
+                                 <content>
+                                    <VBox minWidth="-Infinity" prefWidth="400.0" styleClass="column">
+                                       <children>
+                                          <VBox fx:id="unmappedSection" styleClass="padded">
+                                             <children>
+                                                <Label text="%unmappedMacro" wrapText="true">
+                                                   <graphic>
+                                                      <FontIcon iconLiteral="fa-warning" iconSize="22" />
+                                                   </graphic></Label>
+                                             </children>
+                                          </VBox>
+                                          <VBox fx:id="newMacroSection" styleClass="padded">
+                                             <children>
+                                                <Label text="%newMacro" wrapText="true">
+                                                   <graphic>
+                                                      <FontIcon iconLiteral="fa-plus" iconSize="22" />
+                                                   </graphic></Label>
+                                             </children>
+                                          </VBox>
+                                          <VBox fx:id="sequenceEditor" styleClass="column">
+                                             <children>
+                                                <BorderPane>
+                                                   <center>
+                                                      <Label styleClass="subtitle" text="%macroKeySubtitle" BorderPane.alignment="CENTER_LEFT" />
+                                                   </center>
+                                                </BorderPane>
+                                                <SearchableComboBox fx:id="macroKey" prefWidth="150.0" />
+                                             </children>
+                                          </VBox>
+                                          <VBox fx:id="editor" styleClass="column">
+                                             <children>
+                                                <GridPane VBox.vgrow="NEVER">
+                                                  <columnConstraints>
+                                                    <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
+                                                    <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
+                                                      <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
+                                                      <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
+                                                      <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
+                                                      <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" />
+                                                  </columnConstraints>
+                                                  <rowConstraints>
+                                                    <RowConstraints minHeight="-Infinity" prefHeight="30.0" vgrow="NEVER" />
+                                                    <RowConstraints maxHeight="-Infinity" minHeight="-Infinity" prefHeight="30.0" vgrow="NEVER" />
+                                                  </rowConstraints>
+                                                   <children>
+                                                      <RadioButton fx:id="simpleMacro" mnemonicParsing="false" GridPane.rowIndex="1">
+                                                         <opaqueInsets>
+                                                            <Insets />
+                                                         </opaqueInsets>
+                                                         <toggleGroup>
+                                                            <ToggleGroup fx:id="macroType" />
+                                                         </toggleGroup>
+                                                      </RadioButton>
+                                                      <RadioButton fx:id="uinputMacro" mnemonicParsing="false" toggleGroup="$macroType" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                      <RadioButton fx:id="scriptMacro" mnemonicParsing="false" toggleGroup="$macroType" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                                                      <Label contentDisplay="TOP" text="%simple" textAlignment="CENTER">
+                                                         <graphic>
+                                                            <FontIcon iconLiteral="fa-level-up" iconSize="22" />
+                                                         </graphic></Label>
+                                                      <Label contentDisplay="TOP" text="%uinput" textAlignment="CENTER" GridPane.columnIndex="1">
+                                                         <graphic>
+                                                            <FontIcon iconLiteral="fa-toggle-down" iconSize="22" />
+                                                         </graphic></Label>
+                                                      <Label contentDisplay="TOP" text="%script" textAlignment="CENTER" GridPane.columnIndex="2">
+                                                         <graphic>
+                                                            <FontIcon iconLiteral="fa-paragraph" iconSize="22" />
+                                                         </graphic></Label>
+                                                      <Label alignment="CENTER" contentDisplay="TOP" text="%command" textAlignment="CENTER" GridPane.columnIndex="3">
+                                                         <graphic>
+                                                            <FontIcon iconLiteral="fa-hashtag" iconSize="22" />
+                                                         </graphic></Label>
+                                                      <Label alignment="CENTER" contentDisplay="TOP" text="%action" textAlignment="CENTER" GridPane.columnIndex="4">
+                                                         <graphic>
+                                                            <FontIcon iconLiteral="fa-flash" iconSize="22" />
+                                                         </graphic></Label>
+                                                      <Label alignment="CENTER" contentDisplay="TOP" text="%noop" textAlignment="CENTER" GridPane.columnIndex="5">
+                                                         <graphic>
+                                                            <FontIcon iconLiteral="fa-bed" iconSize="22" />
+                                                         </graphic></Label>
+                                                      <RadioButton fx:id="commandMacro" mnemonicParsing="false" toggleGroup="$macroType" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                                                      <RadioButton fx:id="actionMacro" mnemonicParsing="false" toggleGroup="$macroType" GridPane.columnIndex="4" GridPane.rowIndex="1" />
+                                                      <RadioButton fx:id="noopMacro" mnemonicParsing="false" toggleGroup="$macroType" GridPane.columnIndex="5" GridPane.rowIndex="1" />
+                                                   </children>
+                                                </GridPane>
+                                                <VBox fx:id="keySection" styleClass="column">
+                                                   <children>
+                                                      <Label styleClass="subtitle" text="%keySubtitle" />
+                                                      <SearchableComboBox fx:id="keyCode" prefWidth="150.0" />
+                                                      <CheckBox fx:id="passthrough" mnemonicParsing="false" text="%passthrough" />
+                                                      <VBox styleClass="gapLeft">
+                                                         <children>
+                                                            <ComboBox fx:id="targetType" prefWidth="150.0" />
+                                                            <Label text="%value" />
+                                                            <Spinner fx:id="value" />
+                                                         </children>
+                                                      </VBox>
+                                                   </children>
+                                                </VBox>
+                                                <VBox fx:id="actionSection" styleClass="column">
+                                                   <children>
+                                                      <Label styleClass="subtitle" text="%targetAction" />
+                                                      <ComboBox fx:id="targetAction" prefWidth="150.0" />
+                                                   </children>
+                                                </VBox>
+                                                <VBox fx:id="simpleMacroSection">
+                                                   <children>
+                                                      <Label styleClass="subtitle" text="%simpleMacro" />
+                                                      <TextField fx:id="simpleMacroText" />
+                                                      <Label styleClass="small" text="%simpleMacro.description" />
+                                                   </children>
+                                                </VBox>
+                                                <VBox fx:id="commandSection" styleClass="column">
+                                                   <children>
+                                                      <Label styleClass="subtitle" text="%commandSubtitle" />
+                                                      <HBox styleClass="row">
+                                                         <children>
+                                                            <TextField fx:id="commandLocation" />
+                                                            <Button mnemonicParsing="false" onAction="#evtCommandBrowse">
+                                                               <graphic>
+                                                                  <FontIcon iconLiteral="fa-ellipsis-h" iconSize="16" />
+                                                               </graphic></Button>
+                                                         </children>
+                                                      </HBox>
+                                                      <Label styleClass="emphasis" text="%arguments" />
+                                                      <Label styleClass="small" text="%argumentsDescription" wrapText="true" />
+                                                      <TextArea fx:id="commandArgs" maxWidth="-Infinity" prefWidth="300.0" VBox.vgrow="ALWAYS" />
+                                                   </children>
+                                                </VBox>
+                                                <VBox fx:id="scriptSection">
+                                                   <children>
+                                                      <Label styleClass="subtitle" text="%script.subtitle" />
+                                                      <TextArea fx:id="script" maxWidth="-Infinity" prefWidth="300.0" />
+                                                      <Label text="%script.description" wrapText="true" />
+                                                   </children>
+                                                </VBox>
+                                                <VBox fx:id="repeatSection" styleClass="column">
+                                                   <children>
+                                                      <Label styleClass="subtitle" text="%repeat" />
+                                                      <ComboBox fx:id="repeatMode" prefWidth="150.0" />
+                                                      <Label styleClass="emphasis" text="%repeatDelay" />
+                                                      <TextField fx:id="repeatDelay" />
+                                                      <Label styleClass="small" text="%repeatDelay.description" />
+                                                   </children>
+                                                </VBox>
+                                             </children>
+                                          </VBox>
+                                          <HBox alignment="CENTER_LEFT" styleClass="tools">
+                                             <children>
+                                                <Hyperlink fx:id="delete" onAction="#evtDelete" text="%delete">
+                                                   <graphic>
+                                                      <FontIcon iconLiteral="fa-trash" iconSize="22" />
+                                                   </graphic></Hyperlink>
+                                                <Hyperlink fx:id="recordMacro" onAction="#evtRecordMacro" text="%recordMacro">
+                                                   <graphic>
+                                                      <FontIcon iconLiteral="fa-circle" iconSize="22" />
+                                                   </graphic></Hyperlink>
+                                             </children>
+                                          </HBox>
+                                       </children>
+                                    </VBox>
+                                 </content>
+                                 <styleClass>
+                                    <String fx:value="transparentBackground" />
+                                    <String fx:value="focusless" />
+                                 </styleClass>
+                              </ScrollPane>
+                           </right>
+                           <center>
+                              <BorderPane BorderPane.alignment="CENTER">
+                                 <center>
+                                    <BorderPane fx:id="macrosContainer" BorderPane.alignment="CENTER">
+                                       <bottom>
+                                          <HBox styleClass="compactTools" BorderPane.alignment="CENTER">
+                                             <children>
+                                                <Hyperlink onAction="#evtImport" text="%import">
+                                                   <graphic>
+                                                      <FontIcon iconLiteral="fa-folder-open" iconSize="22" />
+                                                   </graphic></Hyperlink>
+                                                <Hyperlink fx:id="export" onAction="#evtExport" text="%export">
+                                                   <graphic>
+                                                      <FontIcon iconLiteral="fa-save" iconSize="22" />
+                                                   </graphic></Hyperlink>
+                                             </children>
+                                          </HBox>
+                                       </bottom>
+                                    </BorderPane>
+                                 </center>
+                                 <top>
+                                    <VBox styleClass="tools" BorderPane.alignment="CENTER">
+                                       <children>
+                                          <HBox alignment="CENTER_LEFT" styleClass="row">
+                                             <children>
+                                                <Hyperlink fx:id="add" onAction="#evtAdd" text="%add">
+                                                   <graphic>
+                                                      <FontIcon iconLiteral="fa-plus" iconSize="16" />
+                                                   </graphic></Hyperlink>
+                                             </children>
+                                          </HBox>
+                                       </children>
+                                    </VBox>
+                                 </top>
+                              </BorderPane>
+                           </center>
+                        </BorderPane>
+                     </children>
+                  </StackPane>
+               </content>
+            </Tab>
+            <Tab closable="false" text="%bank">
+               <content>
+                  <StackPane>
+                     <children>
+                        <VBox>
+                           <children>
+                              <Label styleClass="emphasis" text="%defaultBank" />
+                              <HBox styleClass="row">
+                                 <children>
+                                    <ToggleSwitch fx:id="defaultBank" />
+                                    <Label fx:id="defaultBankOnText" styleClass="deemphasis" text="%defaultBankOn" />
+                                    <Label fx:id="defaultBankOffText" styleClass="deemphasis" text="%defaultBankOff" />
+                                 </children>
+                              </HBox>
+                              <Label styleClass="emphasis" text="%bankName" />
+                              <TextField fx:id="bankName" />
+                              <Label fx:id="profileLEDLabel" styleClass="emphasis" text="%profileLED" />
+                              <RadioButton fx:id="automatic" mnemonicParsing="false" onAction="#evtAutomatic" text="%automatic">
+                                 <toggleGroup>
+                                    <ToggleGroup fx:id="profileLEDMode" />
+                                 </toggleGroup>
+                              </RadioButton>
+                              <RadioButton fx:id="manual" mnemonicParsing="false" onAction="#evtManual" text="%manual" toggleGroup="$profileLEDMode" />
+                              <ProfileLEDs fx:id="profileLED" styleClass="gapLeft" />
+                           </children>
+                           <styleClass>
+                              <String fx:value="column" />
+                              <String fx:value="section" />
+                           </styleClass>
+                        </VBox>
+                     </children>
+                  </StackPane>
+               </content>
+            </Tab>
+            <Tab closable="false" text="%profile">
+              <content>
+                  <StackPane>
+                     <children>
+                        <VBox prefHeight="200.0" prefWidth="100.0">
+                           <styleClass>
+                              <String fx:value="column" />
+                              <String fx:value="section" />
+                           </styleClass>
+                           <children>
+                              <Label styleClass="emphasis" text="%defaultProfile" />
+                              <HBox styleClass="row">
+                                 <children>
+                                    <ToggleSwitch fx:id="defaultProfile" />
+                                    <Label fx:id="defaultProfileOnText" text="%defaultProfileOn" />
+                                    <Label fx:id="defaultProfileOffText" text="%defaultProfileOff" />
+                                 </children>
+                              </HBox>
+                              <Label styleClass="emphasis" text="%profileName" />
+                              <TextField fx:id="profileName" />
+                              <Label styleClass="subtitle" text="%activation" />
+                              <GridPane>
+                                <columnConstraints>
+                                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+                                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+                                </columnConstraints>
+                                <rowConstraints>
+                                  <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                                </rowConstraints>
+                                 <children>
+                                    <VBox styleClass="column">
+                                       <children>
+                                          <Label styleClass="emphasis" text="%applications" />
+                                          <HBox alignment="CENTER_LEFT">
+                                             <children>
+                                                <VBox styleClass="column">
+                                                   <children>
+                                                      <ComboBox fx:id="application" prefWidth="350.0" styleClass="gapLeft" />
+                                                      <Label text="%or" />
+                                                      <TextField fx:id="applicationRegExp" />
+                                                   </children>
+                                                </VBox>
+                                                <Hyperlink fx:id="addApplication" onAction="#evtAddApplication">
+                                                   <graphic>
+                                                      <FontIcon iconLiteral="fa-plus" iconSize="22" />
+                                                   </graphic>
+                                                </Hyperlink>
+                                             </children>
+                                          </HBox>
+                                          <TabPane fx:id="applicationsTabs" tabClosingPolicy="UNAVAILABLE">
+                                             <tabs>
+                                                <Tab closable="false" text="%include">
+                                                   <content>
+                                                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                         <children>
+                                                            <ListView fx:id="includeApplication" prefHeight="200.0" styleClass="transparentBackground" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                                         </children>
+                                                      </AnchorPane>
+                                                   </content>
+                                                </Tab>
+                                                <Tab closable="false" text="%exclude">
+                                                   <content>
+                                                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                         <children>
+                                                            <ListView fx:id="excludeApplication" prefHeight="200.0" styleClass="transparentBackground" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                                         </children>
+                                                      </AnchorPane>
+                                                   </content>
+                                                </Tab>
+                                             </tabs>
+                                          </TabPane>
+                                          <Hyperlink fx:id="removeApplication" onAction="#evtRemoveApplication" text="%removeApplication">
+                                             <graphic>
+                                                <FontIcon iconLiteral="fa-trash" iconSize="22" />
+                                             </graphic>
+                                          </Hyperlink>
+                                       </children>
+                                    </VBox>
+                                    <VBox styleClass="column" GridPane.columnIndex="1">
+                                       <children>
+                                          <Label styleClass="emphasis" text="%windows" />
+                                          <HBox alignment="CENTER_LEFT">
+                                             <children>
+                                                <VBox styleClass="column">
+                                                   <children>
+                                                      <ComboBox fx:id="window" prefWidth="350.0" styleClass="gapLeft" />
+                                                      <Label text="%or" />
+                                                      <TextField fx:id="windowRegExp" />
+                                                   </children>
+                                                </VBox>
+                                                <Hyperlink fx:id="addWindow" onAction="#evtAddWindow">
+                                                   <graphic>
+                                                      <FontIcon iconLiteral="fa-plus" iconSize="22" />
+                                                   </graphic>
+                                                </Hyperlink>
+                                             </children>
+                                          </HBox>
+                                          <TabPane fx:id="windowsTabs" tabClosingPolicy="UNAVAILABLE">
+                                            <tabs>
+                                              <Tab closable="false" text="%include">
+                                                <content>
+                                                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                         <children>
+                                                            <ListView fx:id="includeWindow" prefHeight="200.0" styleClass="transparentBackground" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                                         </children>
+                                                      </AnchorPane>
+                                                </content>
+                                              </Tab>
+                                              <Tab closable="false" text="%exclude">
+                                                <content>
+                                                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                         <children>
+                                                            <ListView fx:id="excludeWindow" prefHeight="200.0" styleClass="transparentBackground" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                                         </children>
+                                                      </AnchorPane>
+                                                </content>
+                                              </Tab>
+                                            </tabs>
+                                          </TabPane>
+                                          <Hyperlink fx:id="removeWindow" onAction="#evtRemoveWindow" text="%removeApplication">
+                                             <graphic>
+                                                <FontIcon iconLiteral="fa-trash" iconSize="22" />
+                                             </graphic>
+                                          </Hyperlink>
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </GridPane>
+                           </children>
+                        </VBox>
+                     </children>
+                  </StackPane>
+              </content>
+            </Tab>
+         </tabs>
+      </TabPane>
+   </children>
+</VBox>

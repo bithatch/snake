@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import uk.co.bithatch.snake.ui.SchedulerManager.Queue;
 import uk.co.bithatch.snake.ui.util.Strings;
 
 public class Cache implements Closeable {
@@ -68,7 +69,7 @@ public class Cache implements Closeable {
 					URL url = new URL(image);
 					if (!waiting.contains(url)) {
 						waiting.add(url);
-						context.getLoadQueue().execute(() -> {
+						context.getSchedulerManager().get(Queue.APP_IO).execute(() -> {
 							File tmpCacheFile = new File(cacheDir, hash + ".tmp");
 							try (InputStream in = url.openStream()) {
 								try (OutputStream out = new FileOutputStream(tmpCacheFile)) {
@@ -84,7 +85,7 @@ public class Cache implements Closeable {
 									resolved.put(image, cacheFile.toURI().toURL().toExternalForm());
 								}
 							} catch (IOException ioe) {
-								LOG.log(Level.ERROR, "Failed to cache image.");
+								LOG.log(Level.ERROR, "Failed to cache image.", ioe);
 								resolved.put(image, image);
 								return;
 							}

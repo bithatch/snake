@@ -970,6 +970,7 @@ public class NativeRazerDevice implements Device {
 	private ScheduledFuture<?> batteryTask;
 	private Map<BrandingImage, String> brandingImages = new HashMap<>();
 	private RazerBrightness brightness;
+	private RazerRegionProfileLEDs leds;
 	private Set<Capability> caps = new HashSet<>();
 	private DBusConnection conn;
 	private RazerDevice device;
@@ -1065,6 +1066,19 @@ public class NativeRazerDevice implements Device {
 		}
 
 		try {
+			RazerRegionProfileLEDs leds = conn.getRemoteObject("org.razer", String.format("/org/razer/device/%s", path),
+					RazerRegionProfileLEDs.class);
+			leds.getBlueLED();
+			if (LOG.isLoggable(Level.DEBUG))
+				LOG.log(Level.DEBUG, String.format("%s has profile LEDS control.", getName()));
+			caps.add(Capability.PROFILE_LEDS);
+			this.leds = leds;
+		} catch (Exception e) {
+			//
+			if (LOG.isLoggable(Level.DEBUG))
+				LOG.log(Level.DEBUG, String.format("%s has no profile LEDs.", getName()));
+		}
+		try {
 			RazerBattery battery = conn.getRemoteObject("org.razer", String.format("/org/razer/device/%s", path),
 					RazerBattery.class);
 			battery.getBattery();
@@ -1084,6 +1098,10 @@ public class NativeRazerDevice implements Device {
 			RazerGameMode gameMode = conn.getRemoteObject("org.razer", String.format("/org/razer/device/%s", path),
 					RazerGameMode.class);
 			gameMode.getGameMode();
+			if (!getType().equals(DeviceType.KEYBOARD)) {
+				throw new UnsupportedOperationException(
+						"Why do things other than keyboard have this DBus method if it doesn't work?");
+			}
 			this.gameMode = gameMode;
 
 			if (LOG.isLoggable(Level.DEBUG))
@@ -1104,9 +1122,14 @@ public class NativeRazerDevice implements Device {
 			if (LOG.isLoggable(Level.DEBUG))
 				LOG.log(Level.DEBUG, String.format("%s has macro profiles.", getName()));
 
-			binding.getProfiles();
-			caps.add(Capability.MACROS);
-			caps.add(Capability.MACRO_PROFILES);
+			try {
+				binding.getProfiles();
+				caps.add(Capability.MACRO_PROFILES);
+				caps.add(Capability.MACROS);
+			} catch (Exception e) {
+				if (LOG.isLoggable(Level.DEBUG))
+					LOG.log(Level.DEBUG, String.format("%s has no legacy macros.", getName()));
+			}
 
 			try {
 				RazerBindingLighting bindingLighting = conn.getRemoteObject("org.razer",
@@ -1148,6 +1171,10 @@ public class NativeRazerDevice implements Device {
 
 			try {
 				macro.getMacros();
+				if (!getType().equals(DeviceType.KEYBOARD)) {
+					throw new UnsupportedOperationException(
+							"Why do things other than keyboard have this DBus method if it doesn't work?");
+				}
 				this.macros = macro;
 
 				if (LOG.isLoggable(Level.DEBUG))
@@ -1421,7 +1448,16 @@ public class NativeRazerDevice implements Device {
 		JsonObject jsonObject = JsonParser.parseString(macroString).getAsJsonObject();
 		Map<Key, MacroSequence> macroSequences = new LinkedHashMap<>();
 		for (String key : jsonObject.keySet()) {
-			MacroSequence seq = new MacroSequence(Key.fromNativeKeyName(key));
+			Key keyObj = Key.values()[0];
+			try {
+				keyObj = Key.fromNativeKeyName(key);
+			} catch (IllegalArgumentException iae) {
+				LOG.log(Level.WARNING, String.format(
+						"Macro trigger has invalid key %s. This has been ignored and defaulted to the first available. If macros are saved now, the original key will be lost.",
+						key));
+				;
+			}
+			MacroSequence seq = new MacroSequence(keyObj);
 			JsonArray arr = jsonObject.get(key).getAsJsonArray();
 			for (JsonElement el : arr) {
 				JsonObject obj = el.getAsJsonObject();
@@ -1429,7 +1465,15 @@ public class NativeRazerDevice implements Device {
 				Macro macro;
 				if (type.equals("MacroKey")) {
 					MacroKey macroKey = new MacroKey();
-					macroKey.setKey(Key.fromNativeKeyName(obj.get("key_id").getAsString()));
+					try {
+						macroKey.setKey(Key.fromNativeKeyName(obj.get("key_id").getAsString()));
+					} catch (IllegalArgumentException iae) {
+						LOG.log(Level.WARNING, String.format(
+								"Macro action has invalid key %s. This has been ignored and defaulted to the first available. If macros are saved now, the original key will be lost.",
+								obj.get("key_id").getAsString()));
+						macroKey.setKey(Key.values()[0]);
+						;
+					}
 					macroKey.setPrePause(obj.get("pre_pause").getAsLong());
 					macroKey.setState(State.valueOf(obj.get("state").getAsString()));
 					macro = macroKey;
@@ -1697,10 +1741,22 @@ public class NativeRazerDevice implements Device {
 
 	@Override
 	public String toString() {
-		return "NativeRazerDevice [getImage()=" + getImage() + ", getType()=" + getType() + ", getMode()=" + getMode()
-				+ ", getName()=" + getName() + ", getDriverVersion()=" + getDriverVersion() + ", getFirmware()="
-				+ getFirmware() + ", getSerial()=" + getSerial() + ", isSuspended()=" + isSuspended()
-				+ ", getCapabilties()=" + getCapabilities() + "]";
+		return "NativeRazerDevice [deviceName=" + deviceName + ", driverVersion=" + driverVersion + ", firmware="
+				+ firmware + ", path=" + path + "]";
+	}
+
+	@Override
+	public boolean[] getProfileRGB() {
+		assertCap(Capability.PROFILE_LEDS);
+		return new boolean[] { leds.getRedLED(), leds.getGreenLED(), leds.getBlueLED() };
+	}
+
+	@Override
+	public void setProfileRGB(boolean[] rgb) {
+		assertCap(Capability.PROFILE_LEDS);
+		leds.setRedLED(rgb[0]);
+		leds.setGreenLED(rgb[1]);
+		leds.setBlueLED(rgb[2]);
 	}
 
 	protected void fireMapAdded(ProfileMap map) {
@@ -2001,7 +2057,8 @@ public class NativeRazerDevice implements Device {
 				JsonObject actions = JsonParser
 						.parseString(device.binding.getActions(getProfile().getName(), getId(), "")).getAsJsonObject();
 				for (String key : actions.keySet()) {
-					RazerMapSequence seq = new RazerMapSequence(this, EventCode.fromCode(Ev.EV_KEY, Integer.parseInt(key)));
+					RazerMapSequence seq = new RazerMapSequence(this,
+							EventCode.fromCode(Ev.EV_KEY, Integer.parseInt(key)));
 					JsonArray actionsArray = actions.get(key).getAsJsonArray();
 					for (JsonElement actionElement : actionsArray) {
 						JsonObject actionObject = actionElement.getAsJsonObject();
@@ -2163,8 +2220,7 @@ public class NativeRazerDevice implements Device {
 		}
 
 		protected void doRemove() {
-			binding.removeAction(map.getProfile().getName(), map.getId(), sequence.getMacroKey().code(),
-					getActionId());
+			binding.removeAction(map.getProfile().getName(), map.getId(), sequence.getMacroKey().code(), getActionId());
 		}
 
 		@Override
@@ -2249,8 +2305,7 @@ public class NativeRazerDevice implements Device {
 			RazerMacroProfileMap razerProfileMap = (RazerMacroProfileMap) getMap();
 			razerProfileMap.device.binding.addAction(getMap().getProfile().getName(), getMap().getId(),
 					getMacroKey().code(), toNativeActionName(actionType),
-					value instanceof EventCode ? String.valueOf(((EventCode) value).code())
-							: String.valueOf(value));
+					value instanceof EventCode ? String.valueOf(((EventCode) value).code()) : String.valueOf(value));
 
 			JsonElement actions = JsonParser.parseString(razerProfileMap.device.binding.getActions(
 					getMap().getProfile().getName(), getMap().getId(), String.valueOf(getMacroKey().code())));

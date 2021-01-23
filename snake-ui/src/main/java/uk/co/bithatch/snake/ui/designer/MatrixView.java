@@ -23,9 +23,9 @@ import javafx.scene.layout.Pane;
 import uk.co.bithatch.snake.lib.Colors;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.Device.Listener;
+import uk.co.bithatch.snake.lib.Region;
 import uk.co.bithatch.snake.lib.binding.Profile;
 import uk.co.bithatch.snake.lib.binding.ProfileMap;
-import uk.co.bithatch.snake.lib.Region;
 import uk.co.bithatch.snake.lib.layouts.Area;
 import uk.co.bithatch.snake.lib.layouts.Cell;
 import uk.co.bithatch.snake.lib.layouts.ComponentType;
@@ -38,9 +38,9 @@ import uk.co.bithatch.snake.lib.layouts.ViewPosition;
 import uk.co.bithatch.snake.ui.KeyboardLayout;
 import uk.co.bithatch.snake.ui.ListMultipleSelectionModel;
 import uk.co.bithatch.snake.ui.util.BasicList;
-import uk.co.bithatch.snake.ui.util.JavaFX;
 import uk.co.bithatch.snake.ui.util.ListWrapper;
-import uk.co.bithatch.snake.ui.widgets.SelectableArea;
+import uk.co.bithatch.snake.widgets.JavaFX;
+import uk.co.bithatch.snake.widgets.SelectableArea;
 
 public class MatrixView extends SelectableArea implements ViewerView, Listener {
 
@@ -56,14 +56,15 @@ public class MatrixView extends SelectableArea implements ViewerView, Listener {
 
 			managedProperty().bind(visibleProperty());
 
-			Label butLabel = new Label(element == null || element.getDisplayLabel() == null ? "" : element.getDisplayLabel());
+			Label butLabel = new Label(
+					element == null || element.getDisplayLabel() == null ? "" : element.getDisplayLabel());
 			butLabel.textOverrunProperty().set(OverrunStyle.CLIP);
 			graphicProperty().set(butLabel);
 
 			if (element != null && element.getWidth() > 0) {
 				minWidthProperty().set(element.getWidth() * 0.30);
 			}
-			if (element.isDisabled() || element.getLabel() == null) {
+			if (element.isDisabled() || element.getDisplayLabel() == null) {
 				if (view.isLayoutReadOnly())
 					setVisible(false);
 				else
@@ -449,47 +450,6 @@ public class MatrixView extends SelectableArea implements ViewerView, Listener {
 		}
 		return expanded;
 
-	}
-
-	public final static int[] getRGBAverage(DeviceLayout layout, Collection<IO> elements, int[][][] frame) {
-		DeviceView matrixView = null;
-		int[] rgb = new int[3];
-		int r = 0;
-		for (IO element : elements) {
-			if (element instanceof Area) {
-				if (matrixView == null)
-					matrixView = layout.getViews().get(ViewPosition.MATRIX);
-				Area area = (Area) element;
-				Region.Name region = area.getRegion();
-				for (IO cell : matrixView.getElements()) {
-					MatrixCell mc = (MatrixCell) cell;
-					if (mc.getRegion() == region) {
-						int[] rgbe = frame[mc.getMatrixY()][mc.getMatrixX()];
-						if (rgbe != null) {
-							rgb[0] += rgbe[0];
-							rgb[1] += rgbe[1];
-							rgb[2] += rgbe[2];
-						}
-						r++;
-					}
-				}
-			} else if (element instanceof MatrixIO) {
-				MatrixIO matrixIO = (MatrixIO) element;
-				if (matrixIO.isMatrixLED()) {
-					int[] rgbe = frame[matrixIO.getMatrixY()][matrixIO.getMatrixX()];
-					if (rgb != null) {
-						rgb[0] += rgbe[0];
-						rgb[1] += rgbe[1];
-						rgb[2] += rgbe[2];
-						r++;
-					}
-				}
-			}
-		}
-		if (r == 0)
-			return Colors.COLOR_BLACK;
-		else
-			return new int[] { rgb[0] / r, rgb[1] / r, rgb[2] / r };
 	}
 
 	@Override

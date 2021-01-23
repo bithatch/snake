@@ -1,0 +1,815 @@
+{
+	"matrixHeight": 2,
+	"matrixWidth": 24,
+	"deviceType": "ACCESSORY",
+	"clientProperties": {
+		"includeInputEventDevices": [".*Razer_Nommo_Chroma-event-if00"]
+	},
+	"views": [
+		{
+			"desaturateImage": false,
+			"imageOpacity": 1.0,
+			"imageUri": "nommo-gallery-1500x1000-11.png",
+			"imageScale": 1.0,
+			"position": "THREE_D_1",
+			"elements": [
+				{
+					"type": "KEY",
+					"x": 0.6100499,
+					"y": 0.83682007,
+					"label": "Volume Down",
+					"eventCode": "KEY_VOLUMEDOWN"
+				},
+				{
+					"type": "KEY",
+					"x": 0.6518909,
+					"y": 0.85146445,
+					"label": "Volume Up",
+					"eventCode": "KEY_VOLUMEUP"
+				},
+				{
+					"type": "LED",
+					"x": 0.55007356,
+					"y": 0.8998536,
+					"label": "R2",
+					"matrixX": 1,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.398229,
+					"y": 0.683,
+					"label": "L17",
+					"matrixX": 16,
+					"matrixY": 1
+				},
+				{
+					"type": "LED",
+					"x": 0.19378419,
+					"y": 0.7263333,
+					"label": "L2",
+					"matrixX": 1,
+					"matrixY": 1
+				},
+				{
+					"type": "LED",
+					"x": 0.38156244,
+					"y": 0.71133333,
+					"label": "L18",
+					"matrixX": 17,
+					"matrixY": 1
+				},
+				{
+					"type": "LED",
+					"x": 0.40156215,
+					"y": 0.64800006,
+					"label": "L16",
+					"matrixX": 15,
+					"matrixY": 1
+				},
+				{
+					"type": "LED",
+					"x": 0.35934028,
+					"y": 0.728,
+					"label": "L19",
+					"matrixX": 18,
+					"matrixY": 1
+				},
+				{
+					"type": "LED",
+					"x": 0.60489583,
+					"y": 0.9113334,
+					"label": "R24",
+					"matrixX": 23,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.6604507,
+					"y": 0.908,
+					"label": "R22",
+					"matrixX": 21,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.56373686,
+					"y": 0.7118898,
+					"label": "R10\n",
+					"matrixX": 9,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.31156212,
+					"y": 0.7446667,
+					"label": "L21",
+					"matrixX": 20,
+					"matrixY": 1
+				},
+				{
+					"type": "LED",
+					"x": 0.2160065,
+					"y": 0.5963333,
+					"label": "L8",
+					"matrixX": 7,
+					"matrixY": 1
+				},
+				{
+					"type": "LED",
+					"x": 0.28711766,
+					"y": 0.7496667,
+					"label": "L22",
+					"matrixX": 21,
+					"matrixY": 1
+				},
+				{
+					"type": "LED",
+					"x": 0.26378426,
+					"y": 0.74966663,
+					"label": "L23",
+					"matrixX": 22,
+					"matrixY": 1
+				},
+				{
+					"type": "LED",
+					"x": 0.5209522,
+					"y": 0.88691074,
+					"label": "R3",
+					"matrixX": 2,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.17378421,
+					"y": 0.6213333,
+					"label": "L6",
+					"matrixX": 5,
+					"matrixY": 1
+				},
+				{
+					"type": "LED",
+					"x": 0.1548953,
+					"y": 0.68466663,
+					"label": "L4",
+					"matrixX": 3,
+					"matrixY": 1
+				},
+				{
+					"type": "AREA",
+					"x": 0.40534508,
+					"y": 0.78778243,
+					"label": "Lighting"
+				},
+				{
+					"type": "LED",
+					"x": 0.4714306,
+					"y": 0.8312413,
+					"label": "R5",
+					"matrixX": 4,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.46835762,
+					"y": 0.7880544,
+					"label": "R6",
+					"matrixX": 5,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.49270466,
+					"y": 0.86723155,
+					"label": "R4",
+					"matrixX": 3,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.59156233,
+					"y": 0.70966667,
+					"label": "R11",
+					"matrixX": 10,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.31378394,
+					"y": 0.58633333,
+					"label": "L12",
+					"matrixX": 11,
+					"matrixY": 1
+				},
+				{
+					"type": "LED",
+					"x": 0.26378396,
+					"y": 0.58633333,
+					"label": "L10",
+					"matrixX": 9,
+					"matrixY": 1
+				},
+				{
+					"type": "LED",
+					"x": 0.51088226,
+					"y": 0.7336262,
+					"label": "R8",
+					"matrixX": 7,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.6504515,
+					"y": 0.713,
+					"label": "R13",
+					"matrixX": 12,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.68045133,
+					"y": 0.72466666,
+					"label": "R14",
+					"matrixX": 13,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.61934024,
+					"y": 0.70966667,
+					"label": "R12",
+					"matrixX": 11,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.75933945,
+					"y": 0.82633334,
+					"label": "R18",
+					"matrixX": 17,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.38600633,
+					"y": 0.61800003,
+					"label": "L15",
+					"matrixX": 14,
+					"matrixY": 1
+				},
+				{
+					"type": "LED",
+					"x": 0.7371179,
+					"y": 0.7546667,
+					"label": "R16",
+					"matrixX": 15,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.7171174,
+					"y": 0.8846667,
+					"label": "R20",
+					"matrixX": 19,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.68822855,
+					"y": 0.898,
+					"label": "R21",
+					"matrixX": 20,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.7404508,
+					"y": 0.85966665,
+					"label": "R19",
+					"matrixX": 18,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.21600646,
+					"y": 0.738,
+					"label": "L1",
+					"matrixX": 0,
+					"matrixY": 1
+				},
+				{
+					"type": "LED",
+					"x": 0.33600694,
+					"y": 0.7396667,
+					"label": "L20",
+					"matrixX": 19,
+					"matrixY": 1
+				},
+				{
+					"type": "LED",
+					"x": 0.63267297,
+					"y": 0.9113333,
+					"label": "R23",
+					"matrixX": 22,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.17267303,
+					"y": 0.70966667,
+					"label": "L3",
+					"matrixX": 2,
+					"matrixY": 1
+				},
+				{
+					"type": "LED",
+					"x": 0.57701933,
+					"y": 0.9069107,
+					"label": "R1",
+					"matrixX": 0,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.19378425,
+					"y": 0.6063333,
+					"label": "L7",
+					"matrixX": 6,
+					"matrixY": 1
+				},
+				{
+					"type": "LED",
+					"x": 0.23933974,
+					"y": 0.74799997,
+					"label": "L24",
+					"matrixX": 23,
+					"matrixY": 1
+				},
+				{
+					"type": "LED",
+					"x": 0.15822864,
+					"y": 0.648,
+					"label": "L5",
+					"matrixX": 4,
+					"matrixY": 1
+				},
+				{
+					"type": "LED",
+					"x": 0.23933968,
+					"y": 0.58966666,
+					"label": "L9",
+					"matrixX": 8,
+					"matrixY": 1
+				},
+				{
+					"type": "LED",
+					"x": 0.53634024,
+					"y": 0.7198326,
+					"label": "R9",
+					"matrixX": 8,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.33711722,
+					"y": 0.5913333,
+					"label": "L13",
+					"matrixX": 12,
+					"matrixY": 1
+				},
+				{
+					"type": "LED",
+					"x": 0.4868188,
+					"y": 0.75288004,
+					"label": "R7",
+					"matrixX": 6,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.28933948,
+					"y": 0.58466667,
+					"label": "L11",
+					"matrixX": 10,
+					"matrixY": 1
+				},
+				{
+					"type": "LED",
+					"x": 0.3626728,
+					"y": 0.5996667,
+					"label": "L14",
+					"matrixX": 13,
+					"matrixY": 1
+				},
+				{
+					"type": "LED",
+					"x": 0.7604509,
+					"y": 0.7813334,
+					"label": "R17",
+					"matrixX": 16,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.7093402,
+					"y": 0.7363334,
+					"label": "R15",
+					"matrixX": 14,
+					"matrixY": 0
+				}
+			]
+		},
+		{
+			"desaturateImage": false,
+			"imageOpacity": 1.0,
+			"imageScale": 1.0,
+			"position": "MATRIX",
+			"elements": [
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 0,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 1,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 3,
+					"matrixY": 1
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 23,
+					"matrixY": 1
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 13,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 22,
+					"matrixY": 1
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 2,
+					"matrixY": 1
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 11,
+					"matrixY": 1
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 7,
+					"matrixY": 1
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 10,
+					"matrixY": 1
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 9,
+					"matrixY": 1
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 9,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 20,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 8,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 8,
+					"matrixY": 1
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 16,
+					"matrixY": 1
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 13,
+					"matrixY": 1
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 4,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 15,
+					"matrixY": 1
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 17,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 16,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 14,
+					"matrixY": 1
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 21,
+					"matrixY": 1
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 18,
+					"matrixY": 1
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 12,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 20,
+					"matrixY": 1
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 0,
+					"matrixY": 1
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 23,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 19,
+					"matrixY": 1
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 7,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 2,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 6,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 6,
+					"matrixY": 1
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 3,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 5,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 15,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 10,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 14,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 12,
+					"matrixY": 1
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 11,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 22,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 18,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 21,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 17,
+					"matrixY": 1
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 19,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 5,
+					"matrixY": 1
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 1,
+					"matrixY": 1
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"region": "CHROMA",
+					"matrixX": 4,
+					"matrixY": 1
+				}
+			]
+		}
+	]
+}

@@ -2,11 +2,12 @@ package uk.co.bithatch.snake.ui;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Slider;
 import uk.co.bithatch.snake.lib.effects.Reactive;
+import uk.co.bithatch.snake.ui.SchedulerManager.Queue;
 import uk.co.bithatch.snake.ui.effects.ReactiveEffectHandler;
-import uk.co.bithatch.snake.ui.util.JavaFX;
+import uk.co.bithatch.snake.widgets.ColorBar;
+import uk.co.bithatch.snake.widgets.JavaFX;
 
 public class ReactiveOptions extends AbstractBackendEffectController<Reactive, ReactiveEffectHandler> {
 
@@ -14,7 +15,7 @@ public class ReactiveOptions extends AbstractBackendEffectController<Reactive, R
 	private Slider speed;
 
 	@FXML
-	private ColorPicker color;
+	private ColorBar color;
 
 	private boolean adjusting = false;
 
@@ -23,17 +24,17 @@ public class ReactiveOptions extends AbstractBackendEffectController<Reactive, R
 	}
 
 	public int[] getColor() {
-		return JavaFX.toRGB(color.valueProperty().get());
+		return JavaFX.toRGB(color.getColor());
 	}
 
 	@Override
 	protected void onConfigure() throws Exception {
-		color.valueProperty().addListener((e) -> {
+		color.colorProperty().addListener((e) -> {
 			if (!adjusting) {
 				try {
 					Reactive effect = (Reactive) getEffect().clone();
-					effect.setColor(JavaFX.toRGB(color.valueProperty().get()));
-					context.getScheduler().execute(() -> getRegion().setEffect(effect));
+					effect.setColor(JavaFX.toRGB(color.getColor()));
+					context.getSchedulerManager().get(Queue.DEVICE_IO).execute(() -> getRegion().setEffect(effect));
 				} catch (CloneNotSupportedException cnse) {
 					throw new IllegalStateException(cnse);
 				}
@@ -44,7 +45,7 @@ public class ReactiveOptions extends AbstractBackendEffectController<Reactive, R
 				try {
 					Reactive reactive = (Reactive) getEffect().clone();
 					reactive.setSpeed((int) speed.valueProperty().get());
-					context.getScheduler().execute(() -> getRegion().setEffect(reactive));
+					context.getSchedulerManager().get(Queue.DEVICE_IO).execute(() -> getRegion().setEffect(reactive));
 				} catch (CloneNotSupportedException cnse) {
 					throw new IllegalStateException(cnse);
 				}
@@ -58,7 +59,7 @@ public class ReactiveOptions extends AbstractBackendEffectController<Reactive, R
 		adjusting = true;
 		try {
 			speed.valueProperty().set(effect.getSpeed());
-			color.valueProperty().set(JavaFX.toColor(effect.getColor()));
+			color.setColor(JavaFX.toColor(effect.getColor()));
 		} finally {
 			adjusting = false;
 		}

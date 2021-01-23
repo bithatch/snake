@@ -9,7 +9,7 @@ import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.Device.Listener;
 import uk.co.bithatch.snake.lib.binding.Profile;
 import uk.co.bithatch.snake.lib.binding.ProfileMap;
-import uk.co.bithatch.snake.ui.util.JavaFX;
+import uk.co.bithatch.snake.widgets.JavaFX;
 
 public abstract class AbstractDeviceController extends AbstractController implements Listener {
 
@@ -46,7 +46,7 @@ public abstract class AbstractDeviceController extends AbstractController implem
 					brightness.valueProperty().set(device.getBrightness());
 				else
 					brightness.valueProperty().set(0);
-				brightness.valueProperty().addListener((e) -> {
+				brightness.valueProperty().addListener((e, o, n) -> {
 					if (!adjustingBrightness) {
 						updateBrightness();
 					}
@@ -62,7 +62,7 @@ public abstract class AbstractDeviceController extends AbstractController implem
 
 	@Override
 	protected final void onCleanUp() {
-		if (this.device != null)
+		if (device != null)
 			device.removeListener(this);
 		onDeviceCleanUp();
 	}

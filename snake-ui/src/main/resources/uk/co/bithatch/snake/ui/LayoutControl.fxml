@@ -4,8 +4,9 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<BorderPane fx:id="layout" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.LayoutControl">
+<BorderPane fx:id="layout" styleClass="layoutControl" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.LayoutControl">
    <center>
       <StackPane fx:id="layoutContainer" />
    </center>
@@ -14,17 +15,32 @@
          <bottom>
             <HBox alignment="CENTER" BorderPane.alignment="CENTER">
                <children>
-                  <Hyperlink fx:id="customise" onAction="#evtCustomise" text="%customise" />
-                  <Hyperlink fx:id="addCustom" onAction="#evtAddCustom" text="%addCustom" />
-                  <Hyperlink fx:id="removeCustom" onAction="#evtRemoveCustom" text="%removeCustom" />
+                  <Hyperlink fx:id="addCustom" onAction="#evtAddCustom" text="%addCustom">
+                     <graphic>
+                        <FontIcon iconLiteral="fa-plus-circle" iconSize="22" />
+                     </graphic></Hyperlink>
+                  <Hyperlink fx:id="removeCustom" onAction="#evtRemoveCustom" text="%removeCustom">
+                     <graphic>
+                        <FontIcon iconLiteral="fa-trash" iconSize="22" />
+                     </graphic></Hyperlink>
+                  <Hyperlink fx:id="customise" onAction="#evtCustomise" text="%customise">
+                     <graphic>
+                        <FontIcon iconLiteral="fa-gear" iconSize="22" />
+                     </graphic></Hyperlink>
                </children>
             </HBox>
          </bottom></BorderPane>
    </top>
    <left>
-      <Hyperlink fx:id="pageLeft" onAction="#evtPageLeft" styleClass="mediumIcon" text="%pageLeft" BorderPane.alignment="CENTER" />
+      <Hyperlink fx:id="pageLeft" onAction="#evtPageLeft" styleClass="mediumIcon" BorderPane.alignment="CENTER">
+         <graphic>
+            <FontIcon iconLiteral="fa-caret-left" />
+         </graphic></Hyperlink>
    </left>
    <right>
-      <Hyperlink fx:id="pageRight" onAction="#evtPageRight" styleClass="mediumIcon" text="%pageRight" BorderPane.alignment="CENTER" />
+      <Hyperlink fx:id="pageRight" onAction="#evtPageRight" styleClass="mediumIcon" BorderPane.alignment="CENTER">
+         <graphic>
+            <FontIcon iconLiteral="fa-caret-right" />
+         </graphic></Hyperlink>
    </right>
 </BorderPane>

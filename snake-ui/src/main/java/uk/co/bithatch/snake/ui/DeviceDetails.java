@@ -3,12 +3,10 @@ package uk.co.bithatch.snake.ui;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.Property;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.geometry.Orientation;
 import javafx.scene.control.Hyperlink;
@@ -38,10 +36,11 @@ import uk.co.bithatch.snake.lib.layouts.DeviceLayout;
 import uk.co.bithatch.snake.lib.layouts.DeviceLayouts.Listener;
 import uk.co.bithatch.snake.lib.layouts.DeviceView;
 import uk.co.bithatch.snake.lib.layouts.IO;
-import uk.co.bithatch.snake.ui.util.JavaFX;
-import uk.co.bithatch.snake.ui.widgets.Direction;
+import uk.co.bithatch.snake.lib.layouts.ViewPosition;
+import uk.co.bithatch.snake.widgets.Direction;
+import uk.co.bithatch.snake.widgets.JavaFX;
 
-public class DeviceDetails extends AbstractDetailsController implements Listener {
+public class DeviceDetails extends AbstractDetailsController implements Listener, PreferenceChangeListener {
 	final static ResourceBundle bundle = ResourceBundle.getBundle(DeviceDetails.class.getName());
 
 	private static final String PREF_USE_LAYOUT_VIEW = "useLayoutView";
@@ -67,8 +66,8 @@ public class DeviceDetails extends AbstractDetailsController implements Listener
 	@FXML
 	private Hyperlink standardView;
 
-	private List<Controller> controllers = new ArrayList<>();
-	private final BooleanProperty useLayoutView = new SimpleBooleanProperty();
+	private List<Controller> deviceControls = new ArrayList<>();
+	private boolean useLayoutView;
 
 	@Override
 	protected void onConfigure() {
@@ -84,12 +83,8 @@ public class DeviceDetails extends AbstractDetailsController implements Listener
 		Device device = getDevice();
 		JavaFX.bindManagedToVisible(macros, design, decoratedTools, standardView, layoutView, layoutTools);
 
-		Property<Boolean> decProp = context.getConfiguration().decoratedProperty();
-		decoratedTools.visibleProperty().set(decProp.getValue());
-		context.getConfiguration().decoratedProperty()
-				.addListener((e) -> decoratedTools.visibleProperty().set(decProp.getValue()));
-		standardView.visibleProperty().bind(useLayoutView);
-		layoutView.visibleProperty().bind(Bindings.not(useLayoutView));
+		decoratedTools.visibleProperty().set(context.getConfiguration().isDecorated());
+		context.getConfiguration().getNode().addPreferenceChangeListener(this);
 		layoutTools.setVisible(hasLayout());
 		checkLayoutStatus();
 
@@ -97,23 +92,9 @@ public class DeviceDetails extends AbstractDetailsController implements Listener
 		 * Show macros link if device has the capability and there is not a layout that
 		 * has a ACCESSORY of type PROFILES
 		 */
-		if (device.getCapabilities().contains(Capability.MACROS)) {
+		if (device.getCapabilities().contains(Capability.MACROS) || context.getMacroManager().isSupported(device)) {
 			if (context.getLayouts().hasLayout(device)) {
-				DeviceView view = context.getLayouts().getLayout(device).getViewThatHas(ComponentType.ACCESSORY);
-				if (view == null) {
-					macros.setVisible(true);
-				} else {
-					List<IO> els = view.getElements(ComponentType.ACCESSORY);
-					boolean hasProfiles = false;
-					for (IO el : els) {
-						Accessory acc = (Accessory) el;
-						if (acc.getAccessory() == AccessoryType.PROFILES) {
-							hasProfiles = true;
-							break;
-						}
-					}
-					macros.setVisible(!hasProfiles);
-				}
+				macros.setVisible(!hasLayoutProfileAccessory());
 			} else {
 				macros.setVisible(true);
 			}
@@ -122,14 +103,35 @@ public class DeviceDetails extends AbstractDetailsController implements Listener
 		}
 
 		boolean hasLayout = hasLayout();
-		useLayoutView.set(
-				hasLayout && context.getPreferences(getDevice().getName()).getBoolean(PREF_USE_LAYOUT_VIEW, hasLayout));
-		useLayoutView.addListener((c, o, n) -> {
-			createView();
-		});
+		useLayoutView = hasLayout
+				&& context.getPreferences(getDevice().getName()).getBoolean(PREF_USE_LAYOUT_VIEW, hasLayout);
 		createView();
 
 		context.getLayouts().addListener(this);
+
+		if (!context.getMacroManager().isStarted() && !context.peek().equals(this)) {
+			notifyMessage(MessagePersistence.ONCE_PER_RUNTIME, MessageType.WARNING, null,
+					bundle.getString("warning.noUInput"), 60);
+		}
+		updateLayout();
+	}
+
+	protected boolean hasLayoutProfileAccessory() {
+		DeviceView view = context.getLayouts().getLayout(getDevice()).getViewThatHas(ComponentType.ACCESSORY);
+		if (view == null) {
+			return false;
+		} else {
+			List<IO> els = view.getElements(ComponentType.ACCESSORY);
+			boolean hasProfiles = false;
+			for (IO el : els) {
+				Accessory acc = (Accessory) el;
+				if (acc.getAccessory() == AccessoryType.PROFILES) {
+					hasProfiles = true;
+					break;
+				}
+			}
+			return hasProfiles;
+		}
 	}
 
 	protected boolean hasLayout() {
@@ -140,11 +142,11 @@ public class DeviceDetails extends AbstractDetailsController implements Listener
 	protected void createView() {
 		try {
 			cleanUpControllers();
-			controllers.clear();
+			deviceControls.clear();
 
 			Device device = getDevice();
 
-			boolean useLayout = useLayoutView.get();
+			boolean useLayout = useLayoutView;
 			boolean hasEffects = device.getCapabilities().contains(Capability.EFFECTS)
 					&& !device.getSupportedEffects().isEmpty();
 
@@ -160,13 +162,16 @@ public class DeviceDetails extends AbstractDetailsController implements Listener
 				/* The layout takes up the bulk of the space */
 				LayoutControl layoutControl = context.openScene(LayoutControl.class);
 				layoutControl.setDevice(device);
+
 				centre.setCenter(layoutControl.getScene().getRoot());
-				controllers.add(layoutControl);
+				deviceControls.add(layoutControl);
 
 				/* Everything else goes in a scrolled area */
 				controlContainer = new VBox();
-				centre.setRight(scroller);
 				controlContainer.getStyleClass().add("controls-layout");
+				controlContainer.getStyleClass().add("column");
+
+				centre.setRight(scroller);
 			} else {
 				/* No layout, so all controls are in a horizontally flowing scroll pane */
 				scroller.setHbarPolicy(ScrollBarPolicy.NEVER);
@@ -190,14 +195,14 @@ public class DeviceDetails extends AbstractDetailsController implements Listener
 					EffectsControl effectsControl = context.openScene(EffectsControl.class);
 					effectsControl.setDevice(device);
 					controlContainer.getChildren().add(effectsControl.getScene().getRoot());
-					controllers.add(effectsControl);
+					deviceControls.add(effectsControl);
 				}
 
 				if (device.getCapabilities().contains(Capability.BRIGHTNESS)) {
 					BrightnessControl brightnessControl = context.openScene(BrightnessControl.class);
 					brightnessControl.setDevice(device);
 					controlContainer.getChildren().add(brightnessControl.getScene().getRoot());
-					controllers.add(brightnessControl);
+					deviceControls.add(brightnessControl);
 				}
 
 				String imageUrl = context.getCache().getCachedImage(
@@ -224,35 +229,49 @@ public class DeviceDetails extends AbstractDetailsController implements Listener
 				BatteryControl batteryControl = context.openScene(BatteryControl.class);
 				batteryControl.setDevice(device);
 				controlContainer.getChildren().add(batteryControl.getScene().getRoot());
-				controllers.add(batteryControl);
+				deviceControls.add(batteryControl);
 			}
 
 			if (device.getCapabilities().contains(Capability.DPI)) {
 				DPIControl dpiControl = context.openScene(DPIControl.class);
 				dpiControl.setDevice(device);
 				controlContainer.getChildren().add(dpiControl.getScene().getRoot());
-				controllers.add(dpiControl);
+				deviceControls.add(dpiControl);
 			}
 
-			if (!useLayout && device.getCapabilities().contains(Capability.MACRO_PROFILES)) {
-				ProfileControl profileControl = context.openScene(ProfileControl.class);
-				profileControl.setDevice(device);
-				controlContainer.getChildren().add(profileControl.getScene().getRoot());
-				controllers.add(profileControl);
+			if (context.getAudioManager().hasVolume(device)) {
+				VolumeControl volumeControl = context.openScene(VolumeControl.class);
+				volumeControl.setDevice(device);
+				controlContainer.getChildren().add(volumeControl.getScene().getRoot());
+				deviceControls.add(volumeControl);
+			}
+
+			if (!useLayout || !hasLayoutProfileAccessory()) {
+				if (context.getMacroManager().isSupported(device)) {
+					MacroProfileControl profileControl = context.openScene(MacroProfileControl.class);
+					profileControl.setDevice(device);
+					controlContainer.getChildren().add(profileControl.getScene().getRoot());
+					deviceControls.add(profileControl);
+				} else if (device.getCapabilities().contains(Capability.MACRO_PROFILES)) {
+					ProfileControl profileControl = context.openScene(ProfileControl.class);
+					profileControl.setDevice(device);
+					controlContainer.getChildren().add(profileControl.getScene().getRoot());
+					deviceControls.add(profileControl);
+				}
 			}
 
 			if (device.getCapabilities().contains(Capability.POLL_RATE)) {
 				PollRateControl pollRateControl = context.openScene(PollRateControl.class);
 				pollRateControl.setDevice(device);
 				controlContainer.getChildren().add(pollRateControl.getScene().getRoot());
-				controllers.add(pollRateControl);
+				deviceControls.add(pollRateControl);
 			}
 
 			if (device.getCapabilities().contains(Capability.GAME_MODE)) {
 				GameModeControl gameModeControl = context.openScene(GameModeControl.class);
 				gameModeControl.setDevice(device);
 				controlContainer.getChildren().add(gameModeControl.getScene().getRoot());
-				controllers.add(gameModeControl);
+				deviceControls.add(gameModeControl);
 			}
 		} catch (RuntimeException re) {
 			throw re;
@@ -262,40 +281,46 @@ public class DeviceDetails extends AbstractDetailsController implements Listener
 	}
 
 	protected void cleanUpControllers() {
-		for (Controller c : controllers)
+		for (Controller c : deviceControls)
 			c.cleanUp();
 	}
 
 	protected void checkLayoutStatus() {
 		Device device = getDevice();
 		boolean hasLayout = context.getLayouts().hasLayout(device);
-		if (design.visibleProperty().get()) {
-			if (hasLayout) {
-				clearNotifications(MessageType.INFO, false);
-			} else {
-				notifyMessage(MessagePersistence.ONCE_PER_RUNTIME, MessageType.INFO,
-						bundle.getString("info.missingLayout"));
-			}
+		boolean hasUserLayout = context.getLayouts().hasUserLayout(device);
+		boolean hasOfficial = context.getLayouts().hasOfficialLayout(device);
+		if (!hasLayout) {
+			notifyMessage(MessagePersistence.ONCE_PER_RUNTIME, MessageType.INFO,
+					bundle.getString("info.missingLayout"));
+		} else if (hasLayout && hasUserLayout && hasOfficial) {
+			notifyMessage(MessagePersistence.ONCE_PER_RUNTIME, MessageType.INFO,
+					bundle.getString("info.maskingOfficial"));
+		} else {
+			clearNotifications(MessageType.INFO, false);
 		}
 		layoutTools.setVisible(hasLayout());
-		design.visibleProperty().set(!hasLayout || context.getLayouts().hasUserLayout(device));
+		design.visibleProperty().set(!hasLayout || (hasLayout && hasUserLayout));
 	}
 
 	@Override
 	protected void onDeviceCleanUp() {
 		cleanUpControllers();
-		controllers.clear();
+		deviceControls.clear();
 		context.getLayouts().removeListener(this);
+		context.getConfiguration().getNode().removePreferenceChangeListener(this);
 	}
 
 	@FXML
 	void evtStandardView() {
-		useLayoutView.set(false);
+		useLayoutView = false;
+		updateLayout();
 	}
 
 	@FXML
 	void evtLayoutView() {
-		useLayoutView.set(true);
+		useLayoutView = true;
+		updateLayout();
 	}
 
 	@FXML
@@ -304,8 +329,22 @@ public class DeviceDetails extends AbstractDetailsController implements Listener
 	}
 
 	@FXML
-	void evtDesign() {
-		context.push(LayoutDesigner.class, Direction.FROM_BOTTOM);
+	void evtDesign() throws Exception {
+		LayoutDesigner designer = context.push(LayoutDesigner.class, Direction.FROM_BOTTOM);
+		DeviceLayoutManager layouts = context.getLayouts();
+		Device device = getDevice();
+		boolean hasLayout = layouts.hasLayout(device);
+		DeviceLayout layout = null;
+		if (!hasLayout) {
+			layout = new DeviceLayout(device);
+			DeviceView view = new DeviceView();
+			view.setPosition(ViewPosition.TOP);
+			layout.addView(view);
+			layouts.addLayout(layout);
+		} else {
+			layout = layouts.getLayout(device);
+		}
+		designer.setLayout(layout);
 	}
 
 	@FXML
@@ -315,7 +354,11 @@ public class DeviceDetails extends AbstractDetailsController implements Listener
 
 	@FXML
 	void evtMacros() {
-		context.editMacros(this);
+		try {
+			context.editMacros(this);
+		} catch (Exception e) {
+			error(e);
+		}
 	}
 
 	public void configure(Lit lit, EffectHandler<?, ?> configurable) {
@@ -326,6 +369,7 @@ public class DeviceDetails extends AbstractDetailsController implements Listener
 	public void layoutChanged(DeviceLayout layout) {
 		if (Platform.isFxApplicationThread()) {
 			checkLayoutStatus();
+			return;
 		}
 		Platform.runLater(() -> layoutChanged(layout));
 	}
@@ -338,5 +382,18 @@ public class DeviceDetails extends AbstractDetailsController implements Listener
 	@Override
 	public void layoutRemoved(DeviceLayout layout) {
 		layoutChanged(layout);
+	}
+
+	@Override
+	public void preferenceChange(PreferenceChangeEvent evt) {
+		if (evt.getKey().equals(Configuration.PREF_DECORATED)) {
+			decoratedTools.visibleProperty().set(context.getConfiguration().isDecorated());
+		}
+	}
+
+	void updateLayout() {
+		standardView.setVisible(useLayoutView);
+		layoutView.setVisible(!useLayoutView);
+		createView();
 	}
 }

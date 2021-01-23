@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.Group?>
-<?import javafx.scene.control.ColorPicker?>
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.RadioButton?>
@@ -12,8 +11,10 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+<?import uk.co.bithatch.snake.widgets.ColorBar?>
 
-<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.StarlightOptions">
+<BorderPane xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.StarlightOptions">
    <center>
       <VBox styleClass="tools">
          <children>
@@ -22,23 +23,23 @@
                   <ToggleGroup fx:id="mode" />
                </toggleGroup>
             </RadioButton>
-            <HBox alignment="CENTER_LEFT">
+            <HBox alignment="CENTER_LEFT" styleClass="row">
                <children>
                   <Label fx:id="colorLabel" styleClass="emphasis" text="%color" />
-                  <ColorPicker fx:id="color" />
+                  <ColorBar fx:id="color" />
                </children>
             </HBox>
             <RadioButton fx:id="dual" mnemonicParsing="false" text="%dual" toggleGroup="$mode" />
             <HBox alignment="CENTER_LEFT">
                <children>
                   <Label fx:id="color1Label" styleClass="emphasis" text="%color1" />
-                  <ColorPicker fx:id="color1" />
+                  <ColorBar fx:id="color1" />
                   <Label fx:id="color2Label" styleClass="emphasis" text="%color2" />
-                  <ColorPicker fx:id="color2" />
+                  <ColorBar fx:id="color2" />
                </children>
             </HBox>
             <RadioButton fx:id="random" mnemonicParsing="false" text="%random" toggleGroup="$mode" />
-            <HBox>
+            <HBox styleClass="row">
                <children>
                   <Label text="%speed" />
                   <Slider fx:id="speed" max="255.0" />
@@ -74,7 +75,10 @@
          <right>
             <HBox alignment="CENTER" fillHeight="false" BorderPane.alignment="CENTER">
                <children>
-                  <Hyperlink onAction="#evtBack" styleClass="iconButton" text="%back" />
+                  <Hyperlink onAction="#evtBack" styleClass="iconButton">
+                     <graphic>
+                        <FontIcon iconLiteral="fa-arrow-left" iconSize="32" />
+                     </graphic></Hyperlink>
                </children>
             </HBox>
          </right>

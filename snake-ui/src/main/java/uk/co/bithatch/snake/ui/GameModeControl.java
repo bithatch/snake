@@ -20,4 +20,8 @@ public class GameModeControl extends ControlController {
 		gameMode.valueProperty().addListener((e) -> getDevice().setGameMode(gameMode.valueProperty().get() > 0));
 	}
 
+	@Override
+	protected void onDeviceCleanUp() {
+	}
+
 }

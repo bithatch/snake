@@ -97,7 +97,6 @@ public class Bootstrap extends Application {
 		if (controllerCssUrl != null)
 			root.getStylesheets().add(controllerCssUrl.toExternalForm());
 
-		AwesomeIcons.install(root);
 		Scene scene = new Scene(root);
 		controllerInst.setScene(scene); 
 		scene.getRoot().getStyleClass().add("rootPane");

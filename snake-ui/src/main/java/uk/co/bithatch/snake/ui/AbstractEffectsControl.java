@@ -13,8 +13,8 @@ import uk.co.bithatch.snake.ui.effects.EffectAcquisition;
 import uk.co.bithatch.snake.ui.effects.EffectAcquisition.EffectChangeListener;
 import uk.co.bithatch.snake.ui.effects.EffectManager;
 import uk.co.bithatch.snake.ui.effects.EffectManager.Listener;
-import uk.co.bithatch.snake.ui.util.JavaFX;
-import uk.co.bithatch.snake.ui.widgets.Direction;
+import uk.co.bithatch.snake.widgets.Direction;
+import uk.co.bithatch.snake.widgets.JavaFX;
 
 public abstract class AbstractEffectsControl extends ControlController implements Listener, EffectChangeListener {
 	@FXML
@@ -124,7 +124,9 @@ public abstract class AbstractEffectsControl extends ControlController implement
 
 	@Override
 	protected final void onDeviceCleanUp() {
-		context.getEffectManager().getRootAcquisition(getDevice()).removeListener(this);
+		EffectAcquisition root = context.getEffectManager().getRootAcquisition(getDevice());
+		if (root != null)
+			root.removeListener(this);
 		context.getEffectManager().removeListener(this);
 		onEffectsControlCleanUp();
 	}
@@ -144,7 +146,12 @@ public abstract class AbstractEffectsControl extends ControlController implement
 			Platform.runLater(() -> effectChanged(component, effect));
 		else {
 			if (component instanceof Device) {
-				selectEffect(effect);
+				adjustingOverall = true;
+				try {
+					selectEffect(effect);
+				} finally {
+					adjustingOverall = false;
+				}
 			}
 		}
 
@@ -166,12 +173,14 @@ public abstract class AbstractEffectsControl extends ControlController implement
 			 * effect)
 			 */
 			EffectAcquisition aq = context.getEffectManager().getRootAcquisition(getDevice());
-			EffectHandler<?, ?> handler = aq.getEffect(device);
-			adjustingOverall = true;
-			try {
-				selectEffect(handler);
-			} finally {
-				adjustingOverall = false;
+			if (aq != null) {
+				EffectHandler<?, ?> handler = aq.getEffect(device);
+				adjustingOverall = true;
+				try {
+					selectEffect(handler);
+				} finally {
+					adjustingOverall = false;
+				}
 			}
 		}
 

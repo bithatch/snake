@@ -5,6 +5,7 @@ import java.util.prefs.Preferences;
 import uk.co.bithatch.snake.lib.Colors;
 import uk.co.bithatch.snake.lib.Lit;
 import uk.co.bithatch.snake.lib.effects.Static;
+import uk.co.bithatch.snake.ui.SchedulerManager.Queue;
 import uk.co.bithatch.snake.ui.StaticOptions;
 
 public class StaticEffectHandler extends AbstractBackendEffectHandler<Static, StaticOptions> {
@@ -27,7 +28,7 @@ public class StaticEffectHandler extends AbstractBackendEffectHandler<Static, St
 	protected void onStore(Lit component, StaticOptions controller) throws Exception {
 		Static staticEffect = (Static) controller.getEffect().clone();
 		staticEffect.setColor(controller.getColor());
-		getContext().getScheduler().execute(() -> component.setEffect(staticEffect));
+		getContext().getSchedulerManager().get(Queue.DEVICE_IO).execute(() -> component.setEffect(staticEffect));
 		save(component, staticEffect);
 
 	}

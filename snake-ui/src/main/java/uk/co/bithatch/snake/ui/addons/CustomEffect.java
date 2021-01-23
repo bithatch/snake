@@ -10,9 +10,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import uk.co.bithatch.snake.lib.Interpolation;
-import uk.co.bithatch.snake.lib.KeyFrame;
-import uk.co.bithatch.snake.lib.Sequence;
+import uk.co.bithatch.snake.lib.animation.AudioParameters;
+import uk.co.bithatch.snake.lib.animation.Interpolation;
+import uk.co.bithatch.snake.lib.animation.KeyFrame;
+import uk.co.bithatch.snake.lib.animation.KeyFrameCell;
+import uk.co.bithatch.snake.lib.animation.Sequence;
+import uk.co.bithatch.snake.lib.animation.KeyFrame.KeyFrameCellSource;
 import uk.co.bithatch.snake.ui.App;
 import uk.co.bithatch.snake.ui.effects.CustomEffectHandler;
 
@@ -77,6 +80,9 @@ public class CustomEffect extends AbstractJsonAddOn {
 		sequence.setInterpolation(
 				sequenceJson.has("interpolation") ? Interpolation.get(sequenceJson.get("interpolation").getAsString())
 						: Interpolation.linear);
+		if (sequenceJson.has("audio")) {
+			sequence.setAudioParameters(createAudioParametersFromJson(sequenceJson.get("audio").getAsJsonObject()));
+		}
 		JsonArray frames = sequenceJson.get("frames").getAsJsonArray();
 		for (JsonElement frame : frames) {
 
@@ -91,16 +97,37 @@ public class CustomEffect extends AbstractJsonAddOn {
 
 			/* Rows */
 			JsonArray rows = framesObject.get("rows").getAsJsonArray();
-			int[][][] rowsArray = new int[rows.size()][][];
+			KeyFrameCell[][] rowsArray = new KeyFrameCell[rows.size()][];
 			int rowIndex = 0;
 			for (JsonElement row : rows) {
-				List<int[]> colsArray = new ArrayList<>();
+				List<KeyFrameCell> colsArray = new ArrayList<>();
 				JsonArray cols = row.getAsJsonArray();
 				for (JsonElement col : cols) {
-					JsonArray rgb = col.getAsJsonArray();
-					colsArray.add(new int[] { rgb.get(0).getAsInt(), rgb.get(1).getAsInt(), rgb.get(2).getAsInt() });
+					if (col.isJsonArray()) {
+						/* Used versions 1.0-SNAPSHOT-24 and earlier, every cell was a colour */
+						JsonArray rgb = col.getAsJsonArray();
+						KeyFrameCell cell = new KeyFrameCell(
+								new int[] { rgb.get(0).getAsInt(), rgb.get(1).getAsInt(), rgb.get(2).getAsInt() });
+						colsArray.add(cell);
+					} else {
+						/* Newer builds, each cell is an object */
+						JsonObject job = col.getAsJsonObject();
+						JsonArray arr = job.get("value").getAsJsonArray();
+						JsonArray sources = job.get("sources").getAsJsonArray();
+						var srcs = new ArrayList<>();
+						for (JsonElement e : sources) {
+							srcs.add(KeyFrameCellSource.valueOf(e.getAsString()));
+						}
+						KeyFrameCell cell = new KeyFrameCell(
+								new int[] { arr.get(0).getAsInt(), arr.get(1).getAsInt(), arr.get(2).getAsInt() },
+								srcs.toArray(new KeyFrameCellSource[0]));
+						cell.setInterpolation(job.has("interpolation")
+								? Interpolation.fromName(job.get("interpolation").getAsString())
+								: Interpolation.keyframe);
+						colsArray.add(cell);
+					}
 				}
-				rowsArray[rowIndex++] = colsArray.toArray(new int[0][]);
+				rowsArray[rowIndex++] = colsArray.toArray(new KeyFrameCell[0]);
 				rowIndex++;
 			}
 			keyFrame.setFrame(rowsArray);
@@ -116,6 +143,8 @@ public class CustomEffect extends AbstractJsonAddOn {
 		sequenceInfo.addProperty("fps", sequence.getFps());
 		sequenceInfo.addProperty("speed", sequence.getSpeed());
 		sequenceInfo.addProperty("interpolation", sequence.getInterpolation().getName());
+		if (sequence.getAudioParameters() != null)
+			sequenceInfo.add("audio", getAudioParametersJson(sequence.getAudioParameters()));
 
 		JsonArray frameInfo = new JsonArray();
 		for (KeyFrame kf : sequence) {
@@ -125,14 +154,23 @@ public class CustomEffect extends AbstractJsonAddOn {
 
 			JsonArray rowInfo = new JsonArray();
 
-			for (int[][] row : kf.getFrame()) {
+			for (KeyFrameCell[] row : kf.getFrame()) {
 				JsonArray colInfo = new JsonArray();
-				for (int[] col : row) {
+				for (KeyFrameCell col : row) {
+
+					JsonObject keycellJson = new JsonObject();
 					JsonArray rgb = new JsonArray();
-					rgb.add(col[0]);
-					rgb.add(col[1]);
-					rgb.add(col[2]);
-					colInfo.add(rgb);
+					rgb.add(col.getValues()[0]);
+					rgb.add(col.getValues()[1]);
+					rgb.add(col.getValues()[2]);
+					JsonArray srcs = new JsonArray();
+					srcs.add(col.getSources()[0].name());
+					srcs.add(col.getSources()[1].name());
+					srcs.add(col.getSources()[2].name());
+					keycellJson.add("sources", srcs);
+					keycellJson.addProperty("interpolation", col.getInterpolation().getName());
+					keycellJson.add("value", rgb);
+					colInfo.add(keycellJson);
 				}
 				rowInfo.add(colInfo);
 			}
@@ -144,6 +182,22 @@ public class CustomEffect extends AbstractJsonAddOn {
 		sequenceInfo.add("frames", frameInfo);
 
 		addOnJson.add("sequence", sequenceInfo);
+	}
+
+	private AudioParameters createAudioParametersFromJson(JsonObject json) {
+		AudioParameters p = new AudioParameters();
+		p.setLow(json.has("low") ? json.get("low").getAsInt() : 0);
+		p.setHigh(json.has("high") ? json.get("high").getAsInt() : 255);
+		p.setGain(json.has("gain") ? json.get("gain").getAsFloat() : 1.0f);
+		return p;
+	}
+
+	private JsonElement getAudioParametersJson(AudioParameters audioParameters) {
+		JsonObject obj = new JsonObject();
+		obj.addProperty("low", audioParameters.getLow());
+		obj.addProperty("high", audioParameters.getHigh());
+		obj.addProperty("gain", audioParameters.getGain());
+		return obj;
 	}
 
 }

@@ -5,6 +5,7 @@ import java.util.prefs.Preferences;
 import uk.co.bithatch.snake.lib.Lit;
 import uk.co.bithatch.snake.lib.effects.Wave;
 import uk.co.bithatch.snake.lib.effects.Wave.Direction;
+import uk.co.bithatch.snake.ui.SchedulerManager.Queue;
 import uk.co.bithatch.snake.ui.WaveOptions;
 
 public class WaveEffectHandler extends AbstractBackendEffectHandler<Wave, WaveOptions> {
@@ -28,7 +29,7 @@ public class WaveEffectHandler extends AbstractBackendEffectHandler<Wave, WaveOp
 		Wave wave = (Wave) controller.getEffect().clone();
 		Direction dir = controller.getDirection();
 		wave.setDirection(dir);
-		getContext().getScheduler().execute(() -> component.setEffect(wave));
+		getContext().getSchedulerManager().get(Queue.DEVICE_IO).execute(() -> component.setEffect(wave));
 		save(component, wave);
 	}
 

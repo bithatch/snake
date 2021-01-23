@@ -1,6 +1,7 @@
 package uk.co.bithatch.snake.ui;
 
 import java.io.IOException;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -9,6 +10,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.Set;
+
+import org.kordamp.ikonli.fontawesome.FontAwesome;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -28,11 +32,11 @@ import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.Device;
-import uk.co.bithatch.snake.lib.FramePlayer.FrameListener;
-import uk.co.bithatch.snake.lib.KeyFrame;
 import uk.co.bithatch.snake.lib.Lit;
 import uk.co.bithatch.snake.lib.Region;
-import uk.co.bithatch.snake.lib.Sequence;
+import uk.co.bithatch.snake.lib.animation.KeyFrame;
+import uk.co.bithatch.snake.lib.animation.Sequence;
+import uk.co.bithatch.snake.lib.animation.FramePlayer.FrameListener;
 import uk.co.bithatch.snake.lib.layouts.Accessory;
 import uk.co.bithatch.snake.lib.layouts.Accessory.AccessoryType;
 import uk.co.bithatch.snake.lib.layouts.Area;
@@ -48,10 +52,10 @@ import uk.co.bithatch.snake.ui.effects.CustomEffectHandler;
 import uk.co.bithatch.snake.ui.effects.EffectAcquisition;
 import uk.co.bithatch.snake.ui.effects.EffectManager;
 import uk.co.bithatch.snake.ui.util.BasicList;
-import uk.co.bithatch.snake.ui.util.JavaFX;
-import uk.co.bithatch.snake.ui.widgets.AnimPane;
-import uk.co.bithatch.snake.ui.widgets.Direction;
-import uk.co.bithatch.snake.ui.widgets.SlideyStack;
+import uk.co.bithatch.snake.widgets.AnimPane;
+import uk.co.bithatch.snake.widgets.Direction;
+import uk.co.bithatch.snake.widgets.JavaFX;
+import uk.co.bithatch.snake.widgets.SlideyStack;
 
 public class LayoutControl extends AbstractEffectsControl implements Viewer, FrameListener, Listener {
 
@@ -83,17 +87,23 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 	private AnimPane stack;
 	private CustomEffectHandler currentEffect;
 	private List<DeviceView> views = new ArrayList<>();
-
 	private VBox legacyProfileAccessory;
+	private AbstractDeviceController profileAccessory;
 
-	private ProfileControl profileAccessory;
+	private LayoutEditor viewer;
+
+	@Override
+	protected String getControlClassName() {
+		return "layoutControl";
+	}
 
 	@Override
 	protected void onSetEffectsControlDevice() {
 		enabledTypes.set(new BasicList<>());
 		enabledTypes.get().add(ComponentType.AREA);
 		enabledTypes.get().add(ComponentType.ACCESSORY);
-		stack.setContent(Direction.FADE, createEditor(views.get(0)));
+		viewer = createEditor(views.get(0));
+		stack.setContent(Direction.FADE, viewer);
 		layoutContainer.getChildren().add(stack);
 		overallEffect.effect.addListener((e, o, n) -> {
 			if (!adjustingOverall) {
@@ -118,12 +128,15 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 				return regions.get(regionName);
 			} else if (el instanceof Accessory) {
 				Accessory accessory = (Accessory) el;
-				if (accessory.getAccessory() == AccessoryType.PROFILES
-						&& getDevice().getCapabilities().contains(Capability.MACROS)) {
-					if (getDevice().getCapabilities().contains(Capability.MACRO_PROFILES))
-						return createProfileAccessory(accessory);
-					else
-						return createLegacyProfileAccessory(accessory);
+				if (accessory.getAccessory() == AccessoryType.PROFILES) {
+					if (context.getMacroManager().isSupported(getDevice())) {
+						return createMacrolibAccessory(accessory);
+					} else if (getDevice().getCapabilities().contains(Capability.MACROS)) {
+						if (getDevice().getCapabilities().contains(Capability.MACRO_PROFILES))
+							return createProfileAccessory(accessory);
+						else
+							return createLegacyProfileAccessory(accessory);
+					}
 				}
 			}
 			return null;
@@ -133,14 +146,26 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 
 	}
 
+	protected Node createMacrolibAccessory(Accessory accessory) {
+		if (profileAccessory == null) {
+			try {
+				profileAccessory = context.openScene(MacroProfileControl.class);
+				profileAccessory.setDevice(getDevice());
+			} catch (IOException e) {
+				throw new IllegalStateException("Failed to load control.", e);
+			}
+		}
+		return profileAccessory.getScene().getRoot();
+	}
+
 	protected Node createProfileAccessory(Accessory accessory) {
 		if (profileAccessory == null) {
 			try {
 				profileAccessory = context.openScene(ProfileControl.class);
+				profileAccessory.setDevice(getDevice());
 			} catch (IOException e) {
 				throw new IllegalStateException("Failed to load control.", e);
 			}
-			profileAccessory.setDevice(getDevice());
 		}
 		return profileAccessory.getScene().getRoot();
 	}
@@ -151,7 +176,13 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 			Label l = new Label(accessory.getDisplayLabel());
 			l.getStyleClass().add("subtitle");
 			Hyperlink link = new Hyperlink(bundle.getString("macros"));
-			link.setOnAction((e) -> context.editMacros(LayoutControl.this));
+			link.setOnAction((e) -> {
+				try {
+					context.editMacros(LayoutControl.this);
+				} catch (Exception e2) {
+					error(e2);
+				}
+			});
 			legacyProfileAccessory.getChildren().add(l);
 			legacyProfileAccessory.getChildren().add(link);
 		}
@@ -198,7 +229,8 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 	@FXML
 	void evtPageLeft() {
 		DeviceView view = views.get(getCurrentEditorIndex() - 1);
-		LayoutEditor viewer = createEditor(view);
+		cleanUpViewer();
+		viewer = createEditor(view);
 		stack.setContent(Direction.FROM_LEFT, viewer);
 		fireViewChanged(viewer);
 		rebuildRegions();
@@ -207,7 +239,8 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 	@FXML
 	void evtPageRight() {
 		DeviceView view = views.get(getCurrentEditorIndex() + 1);
-		LayoutEditor viewer = createEditor(view);
+		cleanUpViewer();
+		viewer = createEditor(view);
 		stack.setContent(Direction.FROM_RIGHT, viewer);
 		fireViewChanged(viewer);
 		rebuildRegions();
@@ -231,10 +264,22 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 
 	@Override
 	protected void onEffectsControlCleanUp() {
+		cleanUpViewer();
 		if (profileAccessory != null)
 			profileAccessory.cleanUp();
 		deviceLayout.removeListener(this);
 		removeCustomEffectListener();
+	}
+
+	protected void cleanUpViewer() {
+		if (viewer != null) {
+			try {
+				viewer.close();
+			} catch (Exception e) {
+				LOG.log(Level.ERROR, "Failed to close viewer.", e);
+			}
+			viewer = null;
+		}
 	}
 
 	protected void removeCustomEffectListener() {
@@ -245,8 +290,8 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 	}
 
 	protected void checkForCustomEffect() {
-		EffectHandler<?, ?> mainEffect = context.getEffectManager().getRootAcquisition(getDevice())
-				.getEffect(getDevice());
+		EffectAcquisition acq = context.getEffectManager().getRootAcquisition(getDevice());
+		EffectHandler<?, ?> mainEffect = acq == null ? null : acq.getEffect(getDevice());
 		if (mainEffect instanceof CustomEffectHandler) {
 			currentEffect = (CustomEffectHandler) mainEffect;
 			currentEffect.getPlayer().addListener(this);
@@ -284,7 +329,7 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 				effectBar.getStyleClass().add("small");
 
 				for (EffectHandler<?, ?> f : allEffects) {
-					if (!f.isMatrixBased()) {
+					if (f.isRegions()) {
 						effectBar.addEffect(f);
 						if (selectedRegionEffect != null && f == selectedRegionEffect) {
 							effectBar.effect.set(f);
@@ -292,7 +337,8 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 					}
 				}
 
-				Hyperlink customise = new Hyperlink(bundle.getString("customiseRegion"));
+				Hyperlink customise = new Hyperlink();
+				customise.setGraphic(new FontIcon(FontAwesome.GEAR));
 				customise.setOnMouseClicked((e) -> layoutControl.customise(r, effectBar.effect.get()));
 				customise.getStyleClass().add("small");
 				setCustomiseState(customise, r, effectBar.effect.get());
@@ -344,7 +390,7 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 			if (regionList.size() > 1) {
 				EffectHandler<?, ?> selectedDeviceEffect = acq.getEffect(device);
 				if (selectedDeviceEffect == null
-						|| (selectedDeviceEffect != null && !selectedDeviceEffect.isMatrixBased())) {
+						|| (selectedDeviceEffect != null && selectedDeviceEffect.isRegions())) {
 					for (Region r : regionList) {
 						regions.put(r.getName(),
 								new RegionControl(layoutEditor.getView(), r, context, acq, LayoutControl.this));
@@ -509,7 +555,8 @@ public class LayoutControl extends AbstractEffectsControl implements Viewer, Fra
 			fireViewChanged(null);
 		} else {
 			DeviceView view = views.get(0);
-			LayoutEditor viewer = createEditor(view);
+			cleanUpViewer();
+			viewer = createEditor(view);
 			stack.setContent(Direction.FADE, viewer);
 			fireViewChanged(viewer);
 		}

@@ -3,6 +3,7 @@ package uk.co.bithatch.snake.lib.binding;
 import java.util.Map;
 
 import uk.co.bithatch.linuxio.EventCode;
+import uk.co.bithatch.linuxio.EventCode.Type;
 import uk.co.bithatch.snake.lib.effects.Matrix;
 
 public interface ProfileMap {
@@ -47,7 +48,7 @@ public interface ProfileMap {
 
 	@SuppressWarnings("resource")
 	default EventCode getNextFreeKey() {
-		for (EventCode code : getProfile().getDevice().getSupportedInputEvents()) {
+		for (EventCode code : EventCode.filteredForType(getProfile().getDevice().getSupportedInputEvents(), Type.EV_KEY)) {
 			if (!getSequences().containsKey(code))
 				return code;
 		}

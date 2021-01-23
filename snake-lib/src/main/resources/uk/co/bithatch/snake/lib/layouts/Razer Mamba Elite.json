@@ -1,0 +1,424 @@
+{
+	"matrixHeight": 1,
+	"matrixWidth": 20,
+	"deviceType": "MOUSE",
+	"clientProperties": {
+		"includeInputEventDevices": [".*Razer_Mamba_Elite-event-mouse"]
+	},
+	"views": [
+		{
+			"desaturateImage": false,
+			"imageOpacity": 1.0,
+			"imageScale": 1.0,
+			"position": "TOP",
+			"elements": [
+				{
+					"type": "AREA",
+					"x": 0.501703,
+					"y": 0.38693878,
+					"region": "SCROLL"
+				},
+				{
+					"type": "AREA",
+					"x": 0.3037438,
+					"y": 0.58489794,
+					"region": "LEFT"
+				},
+				{
+					"type": "LED",
+					"x": 0.3506826,
+					"y": 0.59959185,
+					"matrixX": 5,
+					"matrixY": 0
+				},
+				{
+					"type": "KEY",
+					"x": 0.4952077,
+					"y": 0.5652174,
+					"label": "DPI Down"
+				},
+				{
+					"type": "KEY",
+					"x": 0.4952077,
+					"y": 0.49885583,
+					"label": "DPI Up"
+				},
+				{
+					"type": "LED",
+					"x": 0.6649683,
+					"y": 0.7016327,
+					"matrixX": 16,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.6608867,
+					"y": 0.7506123,
+					"matrixX": 17,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.64864177,
+					"y": 0.79959196,
+					"matrixX": 18,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.3506826,
+					"y": 0.65061224,
+					"matrixX": 6,
+					"matrixY": 0
+				},
+				{
+					"type": "KEY",
+					"x": 0.5821642,
+					"y": 0.39816934,
+					"label": "Right Click",
+					"eventCode": "BTN_RIGHT"
+				},
+				{
+					"type": "LED",
+					"x": 0.6629275,
+					"y": 0.5465306,
+					"matrixX": 13,
+					"matrixY": 0
+				},
+				{
+					"type": "AREA",
+					"x": 0.49558055,
+					"y": 0.77265304,
+					"region": "LOGO"
+				},
+				{
+					"type": "LED",
+					"x": 0.6261928,
+					"y": 0.8506122,
+					"matrixX": 19,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.33027443,
+					"y": 0.44040817,
+					"matrixX": 2,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.33231524,
+					"y": 0.4934694,
+					"matrixX": 3,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.34251934,
+					"y": 0.5465306,
+					"matrixX": 4,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.6629275,
+					"y": 0.59755105,
+					"matrixX": 14,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.4976214,
+					"y": 0.3955102,
+					"matrixX": 0,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.6649683,
+					"y": 0.6485715,
+					"matrixX": 15,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.34864178,
+					"y": 0.7057143,
+					"matrixX": 7,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.3649683,
+					"y": 0.8526531,
+					"matrixX": 10,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.6670091,
+					"y": 0.43632653,
+					"matrixX": 11,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.6629275,
+					"y": 0.48938775,
+					"matrixX": 12,
+					"matrixY": 0
+				},
+				{
+					"type": "KEY",
+					"x": 0.41282785,
+					"y": 0.395881,
+					"label": "Left Click",
+					"eventCode": "BTN_LEFT"
+				},
+				{
+					"type": "LED",
+					"x": 0.34251934,
+					"y": 0.75265306,
+					"matrixX": 8,
+					"matrixY": 0
+				},
+				{
+					"type": "LED",
+					"x": 0.501703,
+					"y": 0.76693875,
+					"matrixX": 1,
+					"matrixY": 0
+				},
+				{
+					"type": "KEY",
+					"x": 0.49917334,
+					"y": 0.32595038,
+					"label": "Wheel Up",
+					"eventCode": "BTN_WHEEL"
+				},
+				{
+					"type": "KEY",
+					"x": 0.497496,
+					"y": 0.39816934,
+					"label": "Middle Click",
+					"eventCode": "BTN_MIDDLE"
+				},
+				{
+					"type": "KEY",
+					"x": 0.31442967,
+					"y": 0.5034325,
+					"label": "Forward",
+					"eventCode": "BTN_EXTRA"
+				},
+				{
+					"type": "KEY",
+					"x": 0.32815963,
+					"y": 0.6270023,
+					"label": "Back",
+					"eventCode": "BTN_SIDE"
+				},
+				{
+					"type": "AREA",
+					"x": 0.69558054,
+					"y": 0.5930612,
+					"region": "RIGHT"
+				},
+				{
+					"type": "LED",
+					"x": 0.34251934,
+					"y": 0.80163264,
+					"matrixX": 9,
+					"matrixY": 0
+				}
+			]
+		},
+		{
+			"desaturateImage": false,
+			"imageOpacity": 1.0,
+			"imageScale": 1.0,
+			"position": "MATRIX",
+			"elements": [
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"label": "Wheel",
+					"region": "SCROLL",
+					"matrixX": 0,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"label": "Logo",
+					"region": "LOGO",
+					"matrixX": 1,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"label": "R6",
+					"region": "RIGHT",
+					"matrixX": 16,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"label": "R7",
+					"region": "RIGHT",
+					"matrixX": 17,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"label": "R8",
+					"region": "RIGHT",
+					"matrixX": 18,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"label": "R9",
+					"region": "RIGHT",
+					"matrixX": 19,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"label": "L1",
+					"region": "LEFT",
+					"matrixX": 2,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"label": "L2",
+					"region": "LEFT",
+					"matrixX": 3,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"label": "L3",
+					"region": "LEFT",
+					"matrixX": 4,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"label": "L4",
+					"region": "LEFT",
+					"matrixX": 5,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"label": "L5",
+					"region": "LEFT",
+					"matrixX": 6,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"label": "L6",
+					"region": "LEFT",
+					"matrixX": 7,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"label": "L7",
+					"region": "LEFT",
+					"matrixX": 8,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"label": "L8",
+					"region": "LEFT",
+					"matrixX": 9,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"label": "L9",
+					"region": "LEFT",
+					"matrixX": 10,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"label": "R1",
+					"region": "RIGHT",
+					"matrixX": 11,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"label": "R2",
+					"region": "RIGHT",
+					"matrixX": 12,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"label": "R3",
+					"region": "RIGHT",
+					"matrixX": 13,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"label": "R4",
+					"region": "RIGHT",
+					"matrixX": 14,
+					"matrixY": 0
+				},
+				{
+					"type": "MATRIX_CELL",
+					"x": 0.0,
+					"y": 0.0,
+					"label": "R5",
+					"region": "RIGHT",
+					"matrixX": 15,
+					"matrixY": 0
+				}
+			]
+		}
+	]
+}

@@ -9,7 +9,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import com.sshtools.forker.updater.AppManifest.Entry;
+import com.sshtools.forker.updater.Entry;
 import com.sshtools.forker.updater.UpdateHandler;
 import com.sshtools.forker.updater.UpdateSession;
 

@@ -26,11 +26,12 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import uk.co.bithatch.snake.ui.SchedulerManager.Queue;
 import uk.co.bithatch.snake.ui.addons.AbstractAddOn;
 import uk.co.bithatch.snake.ui.addons.AbstractJsonAddOn;
 import uk.co.bithatch.snake.ui.addons.AddOn;
-import uk.co.bithatch.snake.ui.util.JavaFX;
 import uk.co.bithatch.snake.ui.util.Strings;
+import uk.co.bithatch.snake.widgets.JavaFX;
 
 public class Export extends AbstractController implements Modal {
 
@@ -257,7 +258,7 @@ public class Export extends AbstractController implements Modal {
 		getScene().getRoot().disableProperty().set(true);
 		prefs.put(prefix + ".lastExportLocation", new File(outPath).getParentFile().getAbsolutePath());
 
-		context.getLoadQueue().execute(() -> {
+		context.getSchedulerManager().get(Queue.APP_IO).execute(() -> {
 
 			try (OutputStream w = new BufferedOutputStream(new FileOutputStream(outPath))) {
 				if (outputType.getSelectionModel().getSelectedItem().equals(OutputType.BUNDLE)) {

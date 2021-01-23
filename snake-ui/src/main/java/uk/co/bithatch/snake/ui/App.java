@@ -13,11 +13,9 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.ServiceLoader;
-import java.util.Set;
 import java.util.Stack;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -28,34 +26,38 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import uk.co.bithatch.snake.lib.Backend;
+import uk.co.bithatch.snake.lib.Backend.BackendListener;
 import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.DeviceType;
-import uk.co.bithatch.snake.lib.Region;
-import uk.co.bithatch.snake.lib.effects.Off;
 import uk.co.bithatch.snake.ui.Configuration.TrayIcon;
+import uk.co.bithatch.snake.ui.SchedulerManager.Queue;
 import uk.co.bithatch.snake.ui.addons.AddOnManager;
 import uk.co.bithatch.snake.ui.addons.Theme;
-import uk.co.bithatch.snake.ui.effects.EffectAcquisition;
+import uk.co.bithatch.snake.ui.audio.AudioManager;
 import uk.co.bithatch.snake.ui.effects.EffectManager;
-import uk.co.bithatch.snake.ui.util.JavaFX;
-import uk.co.bithatch.snake.ui.widgets.Direction;
-import uk.co.bithatch.snake.ui.widgets.SlideyStack;
+import uk.co.bithatch.snake.ui.macros.LegacyMacroStorage;
+import uk.co.bithatch.snake.ui.macros.MacroManager;
+import uk.co.bithatch.snake.ui.tray.Tray;
+import uk.co.bithatch.snake.ui.util.Strings;
+import uk.co.bithatch.snake.widgets.Direction;
+import uk.co.bithatch.snake.widgets.JavaFX;
+import uk.co.bithatch.snake.widgets.SlideyStack;
 
-public class App extends Application {
+public class App extends Application implements BackendListener {
 
 	static {
-		/* Need to load once so themes can see. TODO move this to theme system */
-		Font.loadFont(AwesomeIcons.class.getResource("fontawesome-webfont.ttf").toExternalForm(), 12);
+		/* For transparent SVG icons (because sadly Swing has to be used to achieve this */
+		System.setProperty("swing.jlf.contentPaneTransparent", "true");
 	}
 	public static int DROP_SHADOW_SIZE = 11;
 
@@ -82,8 +84,7 @@ public class App extends Application {
 		StringBuilder bui = new StringBuilder();
 
 		// Get the base colour. All other colours are derived from this
-		Color backgroundColour = new Color(0, 0, 0,
-				1.0 - ((double) configuration.transparencyProperty().get() / 100.0));
+		Color backgroundColour = new Color(0, 0, 0, 1.0 - ((double) configuration.getTransparency() / 100.0));
 
 		if (backgroundColour.getOpacity() == 0) {
 			// Prevent total opacity, as mouse events won't be received
@@ -108,7 +109,7 @@ public class App extends Application {
 
 	void setColors(Class<? extends Controller> controller, Scene scene) {
 		scene.setFill(new Color(0, 0, 0, 0));
-		addStylesheets(controller, configuration.themeProperty().getValue(), scene.getRoot());
+		addStylesheets(controller, configuration.getTheme(), scene.getRoot());
 	}
 
 	static void writeCSS(Configuration configuration) {
@@ -138,14 +139,12 @@ public class App extends Application {
 
 	private Backend backend;
 	private Stack<Controller> controllers = new Stack<>();
-	private ExecutorService loadQueue = Executors.newSingleThreadExecutor();
 	private Scene primaryScene;
 	private Stage primaryStage;
 	private SlideyStack stackPane;
 	private Tray tray;
 	private boolean waitingForExitChoice;
 	private Window window;
-	private ScheduledExecutorService scheduler;
 	private List<Backend> backends = new ArrayList<>();
 	private AddOnManager addOnManager;
 	private Configuration configuration;
@@ -154,11 +153,10 @@ public class App extends Application {
 	private boolean backendInited;
 	private LegacyMacroStorage legacyMacroStorage;
 	private EffectManager effectManager;
+	private MacroManager macroManager;
+	private AudioManager audioManager;
 
-	public void clearLoadQueue() {
-		loadQueue.shutdownNow();
-		loadQueue = Executors.newSingleThreadExecutor();
-	}
+	private SchedulerManager schedulerManager;
 
 	public DeviceLayoutManager getLayouts() {
 		return layouts;
@@ -173,18 +171,18 @@ public class App extends Application {
 	}
 
 	public void close() {
-		close(configuration.trayIconProperty().getValue() == TrayIcon.OFF);
+		close(configuration.getTrayIcon() == TrayIcon.OFF);
 	}
 
 	public void close(boolean shutdown) {
 		if (shutdown) {
-			if (configuration.turnOffOnExit().getValue()) {
-				try {
-					for (Device dev : backend.getDevices()) {
-						dev.setEffect(new Off());
-					}
-				} catch (Exception e) {
-				}
+			try {
+				macroManager.close();
+			} catch (Exception e) {
+			}
+			try {
+				effectManager.close();
+			} catch (Exception e) {
 			}
 			layouts.saveAll();
 			try {
@@ -200,14 +198,20 @@ public class App extends Application {
 				cache.close();
 			} catch (Exception e) {
 			}
-			scheduler.shutdownNow();
-			loadQueue.shutdownNow();
 			try {
 				tray.close();
 			} catch (Exception e) {
 			}
 			try {
 				backend.close();
+			} catch (Exception e) {
+			}
+			try {
+				schedulerManager.close();
+			} catch (Exception e) {
+			}
+			try {
+				audioManager.close();
 			} catch (Exception e) {
 			}
 			Platform.exit();
@@ -219,16 +223,19 @@ public class App extends Application {
 		}
 	}
 
-	public void editMacros(AbstractDeviceController from) {
+	public void editMacros(AbstractDeviceController from) throws Exception {
 		Device device = from.getDevice();
-		if (!device.getCapabilities().contains(Capability.MACROS))
-			throw new IllegalStateException("Does not support macros.");
-		if (device.getCapabilities().contains(Capability.MACRO_PROFILES)) {
-			push(MacroMap.class, from, Direction.FROM_BOTTOM);
-		} else {
+		if (macroManager.isSupported(device)) {
+			Bank bank = push(Bank.class, from, Direction.FROM_BOTTOM);
+			bank.setBank(macroManager.getMacroSystem().getActiveBank(macroManager.getMacroDevice(device)));
+		} else if (device.getCapabilities().contains(Capability.MACRO_PROFILES)) {
+			MacroMap map = push(MacroMap.class, from, Direction.FROM_BOTTOM);
+			map.setMap(device.getActiveProfile().getActiveMap());
+		} else if (device.getCapabilities().contains(Capability.MACROS)) {
 			/* Legacy method */
 			push(Macros.class, from, Direction.FROM_BOTTOM);
-		}
+		} else
+			throw new IllegalStateException("Does not support macros.");
 	}
 
 	public EffectManager getEffectManager() {
@@ -241,10 +248,6 @@ public class App extends Application {
 
 	public Backend getBackend() {
 		return backend;
-	}
-
-	public ExecutorService getLoadQueue() {
-		return loadQueue;
 	}
 
 	public Window getWindow() {
@@ -292,7 +295,7 @@ public class App extends Application {
 			// Don't care
 		}
 
-		Theme theme = configuration.themeProperty().getValue();
+		Theme theme = configuration.getTheme();
 		// loader.setLocation(resource);
 		loader.setLocation(theme.getResource("App.css"));
 		Parent root = loader.load(resource.openStream());
@@ -317,10 +320,10 @@ public class App extends Application {
 						theme.getParent(), theme.getId()));
 			ss.add(parentTheme.getResource(App.class.getSimpleName() + ".css").toExternalForm());
 		}
-		ss.add(theme.getResource(App.class.getSimpleName() + ".css").toExternalForm());
+		Strings.addIfNotAdded(ss, theme.getResource(App.class.getSimpleName() + ".css").toExternalForm());
 		URL controllerCssUrl = controller.getResource(controller.getSimpleName() + ".css");
 		if (controllerCssUrl != null)
-			ss.add(controllerCssUrl.toExternalForm());
+			Strings.addIfNotAdded(ss, controllerCssUrl.toExternalForm());
 		File tmpFile = getCustomCSSFile();
 		String url = toUri(tmpFile).toExternalForm();
 		ss.remove(url);
@@ -389,8 +392,8 @@ public class App extends Application {
 		stackPane.remove(c.getScene().getRoot());
 	}
 
-	public ScheduledExecutorService getScheduler() {
-		return scheduler;
+	public SchedulerManager getSchedulerManager() {
+		return schedulerManager;
 	}
 
 	@Override
@@ -403,21 +406,34 @@ public class App extends Application {
 			});
 		}
 
-		scheduler = Executors.newScheduledThreadPool(1);
+		schedulerManager = new SchedulerManager();
 		cache = new Cache(this);
 		legacyMacroStorage = new LegacyMacroStorage(this);
 		layouts = new DeviceLayoutManager(this);
 		effectManager = new EffectManager(this);
 		addOnManager = new AddOnManager(this);
 		configuration = new Configuration(PREFS, this);
+		macroManager = new MacroManager(this);
+		audioManager = new AudioManager(this);
 
 		setUserAgentStylesheet(STYLESHEET_MODENA);
 		writeCSS(configuration);
 
-		Platform.setImplicitExit(configuration.trayIconProperty().getValue() == TrayIcon.OFF);
-		configuration.themeProperty().addListener((e) -> recreateScene());
-		configuration.trayIconProperty().addListener(
-				(e) -> Platform.setImplicitExit(configuration.trayIconProperty().getValue() == TrayIcon.OFF));
+		Platform.setImplicitExit(configuration.getTrayIcon() == TrayIcon.OFF);
+		configuration.getNode().addPreferenceChangeListener((evt) -> {
+			Platform.runLater(() -> {
+				if (evt.getKey().equals(Configuration.PREF_THEME))
+					recreateScene();
+				else if (evt.getKey().equals(Configuration.PREF_TRAY_ICON))
+					Platform.setImplicitExit(configuration.getTrayIcon() == TrayIcon.OFF);
+				else if (evt.getKey().equals(Configuration.PREF_TRANSPARENCY)) {
+					writeCSS(configuration);
+					setColors(peek().getClass(), primaryScene);
+				} else if (evt.getKey().equals(Configuration.PREF_DECORATED))
+					recreateScene();
+			});
+
+		});
 
 		String activeBackend = PREFS.get("backend", "");
 		for (Backend possibleBackend : ServiceLoader.load(Backend.class)) {
@@ -439,15 +455,6 @@ public class App extends Application {
 		/* Final configuration of the primary stage (i.e. the desktop window itself) */
 		configureStage(primaryStage);
 
-		/* Listen for configuration changes and update UI accordingly */
-		configuration.transparencyProperty().addListener((o, oldVal, newVal) -> {
-			writeCSS(configuration);
-			setColors(peek().getClass(), primaryScene);
-		});
-		configuration.decoratedProperty().addListener((o, oldVal, newVal) -> {
-			recreateScene();
-		});
-
 		/* Show! */
 		if (!argsList.contains("--no-open"))
 			primaryStage.show();
@@ -462,6 +469,7 @@ public class App extends Application {
 		}
 
 		addOnManager.start();
+		effectManager.open();
 
 		new DesktopNotifications(this);
 	}
@@ -474,28 +482,28 @@ public class App extends Application {
 
 	private void configureStage(Stage primaryStage) {
 		if (configuration.hasBounds()) {
-			primaryStage.setX(configuration.xProperty().get());
-			primaryStage.setY(configuration.yProperty().get());
-			primaryStage.setWidth(configuration.wProperty().get());
-			primaryStage.setHeight(configuration.hProperty().get());
+			primaryStage.setX(configuration.getX());
+			primaryStage.setY(configuration.getY());
+			primaryStage.setWidth(configuration.getW());
+			primaryStage.setHeight(configuration.getH());
 		}
-		primaryStage.xProperty().addListener((e) -> configuration.xProperty().set((int) primaryStage.getX()));
-		primaryStage.yProperty().addListener((e) -> configuration.yProperty().set((int) primaryStage.getY()));
-		primaryStage.widthProperty().addListener((e) -> configuration.wProperty().set((int) primaryStage.getWidth()));
-		primaryStage.heightProperty().addListener((e) -> configuration.hProperty().set((int) primaryStage.getHeight()));
+		primaryStage.xProperty().addListener((e) -> configuration.setX((int) primaryStage.getX()));
+		primaryStage.yProperty().addListener((e) -> configuration.setY((int) primaryStage.getY()));
+		primaryStage.widthProperty().addListener((e) -> configuration.setW((int) primaryStage.getWidth()));
+		primaryStage.heightProperty().addListener((e) -> configuration.setH((int) primaryStage.getHeight()));
 		primaryStage.setTitle(BUNDLE.getString("title"));
-		primaryStage.getIcons().add(
-				new Image(configuration.themeProperty().getValue().getResource("icons/app32.png").toExternalForm()));
-		primaryStage.getIcons().add(
-				new Image(configuration.themeProperty().getValue().getResource("icons/app64.png").toExternalForm()));
-		primaryStage.getIcons().add(
-				new Image(configuration.themeProperty().getValue().getResource("icons/app96.png").toExternalForm()));
-		primaryStage.getIcons().add(
-				new Image(configuration.themeProperty().getValue().getResource("icons/app128.png").toExternalForm()));
-		primaryStage.getIcons().add(
-				new Image(configuration.themeProperty().getValue().getResource("icons/app256.png").toExternalForm()));
-		primaryStage.getIcons().add(
-				new Image(configuration.themeProperty().getValue().getResource("icons/app512.png").toExternalForm()));
+		primaryStage.getIcons()
+				.add(new Image(configuration.getTheme().getResource("icons/app32.png").toExternalForm()));
+		primaryStage.getIcons()
+				.add(new Image(configuration.getTheme().getResource("icons/app64.png").toExternalForm()));
+		primaryStage.getIcons()
+				.add(new Image(configuration.getTheme().getResource("icons/app96.png").toExternalForm()));
+		primaryStage.getIcons()
+				.add(new Image(configuration.getTheme().getResource("icons/app128.png").toExternalForm()));
+		primaryStage.getIcons()
+				.add(new Image(configuration.getTheme().getResource("icons/app256.png").toExternalForm()));
+		primaryStage.getIcons()
+				.add(new Image(configuration.getTheme().getResource("icons/app512.png").toExternalForm()));
 		primaryStage.onCloseRequestProperty().set(we -> {
 			we.consume();
 			close();
@@ -519,6 +527,8 @@ public class App extends Application {
 				initBackend();
 			}
 
+			if (!macroManager.isStarted())
+				macroManager.start();
 			controllers.clear();
 			if (backend.getDevices().size() == 1) {
 				push(DeviceDetails.class, Direction.FADE).setDevice(backend.getDevices().get(0));
@@ -534,7 +544,7 @@ public class App extends Application {
 			controllers.push(fc);
 		}
 
-		if (configuration.decoratedProperty().getValue()) {
+		if (configuration.isDecorated()) {
 			if (primaryStage == null) {
 				primaryStage = new Stage(StageStyle.DECORATED);
 				configureStage(primaryStage);
@@ -574,6 +584,7 @@ public class App extends Application {
 			throw new IllegalStateException(
 					"No backend modules available on the classpath or module path. You need at least one backend. For example, snake-backend-openrazer is the default backend.");
 		backend.init();
+		backend.addListener(this);
 		backendInited = true;
 
 		/* The tray */
@@ -587,39 +598,7 @@ public class App extends Application {
 							&& !dev.getCapabilities().contains(Capability.MACRO_PROFILES))
 						legacyMacroStorage.addDevice(dev);
 
-					/* Acquire an effects controller for this device */
-					EffectAcquisition acq = effectManager.acquire(dev);
-
-					EffectHandler<?, ?> deviceEffect = acq.getEffect(dev);
-					boolean activated = false;
-					if (deviceEffect != null && deviceEffect.isMatrixBased()) {
-						/* Always activates at device level */
-						acq.activate(dev, deviceEffect);
-						activated = true;
-					} else {
-						/* No effect configured for device as a whole, check the regions */
-						for (Region r : dev.getRegions()) {
-							EffectHandler<?, ?> regionEffect = acq.getEffect(r);
-							if (regionEffect != null) {
-								acq.activate(r, regionEffect);
-								activated = true;
-							}
-						}
-					}
-
-					/* Now try at device level */
-					if (!activated && deviceEffect != null) {
-						acq.activate(dev, deviceEffect);
-						activated = true;
-					}
-
-					if (!activated) {
-						/* Get the first effect and activate on whole device */
-						Set<EffectHandler<?, ?>> effects = effectManager.getEffects(dev);
-						if (!effects.isEmpty()) {
-							acq.activate(dev, effects.iterator().next());
-						}
-					}
+					effectManager.addDevice(dev);
 				} catch (Exception e) {
 					LOG.log(Level.ERROR, String.format("Failed to set initial effects fot %s. ", dev.getSerial()), e);
 				}
@@ -663,10 +642,60 @@ public class App extends Application {
 
 	public String getDefaultImage(DeviceType type, String uri) {
 		if (uri == null || uri.equals("")) {
-			uri = configuration.themeProperty().getValue()
-					.getResource("devices/" + type.name().toLowerCase() + "512.png").toExternalForm();
+			uri = configuration.getTheme().getResource("devices/" + type.name().toLowerCase() + "512.png")
+					.toExternalForm();
 		}
 		return uri;
+	}
+
+	public MacroManager getMacroManager() {
+		return macroManager;
+	}
+
+	@Override
+	public void deviceAdded(Device device) {
+	}
+
+	@Override
+	public void deviceRemoved(Device device) {
+		Platform.runLater(() -> {
+			boolean haveDevice = false;
+			for (Controller c : controllers) {
+				if (c instanceof AbstractDeviceController) {
+					if (((AbstractDeviceController) c).getDevice().equals(device)) {
+						haveDevice = true;
+					}
+				}
+			}
+			if (haveDevice) {
+				while (controllers.size() > 1)
+					pop();
+
+				Controller peek = controllers.peek();
+				if (peek instanceof AbstractDeviceController
+						&& ((AbstractDeviceController) peek).getDevice().equals(device)) {
+					/* TODO */
+					LOG.log(Level.WARNING, "TODO! This device is gone.");
+				}
+			}
+		});
+	}
+
+	public AudioManager getAudioManager() {
+		return audioManager;
+	}
+
+	public static void hideyMessage(App context, Node message) {
+		message.visibleProperty().set(true);
+		ScheduledFuture<?> task = context.getSchedulerManager().get(Queue.TIMER).schedule(
+				() -> Platform
+						.runLater(() -> JavaFX.fadeHide(message, 5, (ev) -> message.visibleProperty().set(false))),
+				1, TimeUnit.MINUTES);
+		message.onMouseClickedProperty().set((e) -> {
+			task.cancel(false);
+			JavaFX.fadeHide(message, 5, (ev) -> message.visibleProperty().set(false));
+		});
+
 	}
 
 }

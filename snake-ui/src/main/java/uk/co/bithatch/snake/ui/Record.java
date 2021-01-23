@@ -1,26 +1,21 @@
 package uk.co.bithatch.snake.ui;
 
+import java.util.Iterator;
 import java.util.ResourceBundle;
 
-import javafx.event.EventHandler;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
-import uk.co.bithatch.snake.lib.binding.MapAction;
-import uk.co.bithatch.snake.lib.binding.MapSequence;
+import uk.co.bithatch.macrolib.MacroSystem;
+import uk.co.bithatch.macrolib.MacroSystem.RecordingListener;
+import uk.co.bithatch.macrolib.RecordedEvent;
+import uk.co.bithatch.macrolib.RecordingSession;
 
-public class Record extends AbstractDetailsController {
-
-	public enum State
-	{
-		IDLE,
-		RECORDING,
-		PAUSED
-	}
+public class Record extends AbstractDetailsController implements RecordingListener {
 
 	final static ResourceBundle bundle = ResourceBundle.getBundle(Record.class.getName());
 
@@ -41,44 +36,42 @@ public class Record extends AbstractDetailsController {
 	@FXML
 	private Group headerImageGroup;
 
-	private EventHandler<KeyEvent> handler;
-	private MapSequence sequence;
+	private RecordingSession sequence;
+	private MacroSystem macroSystem;
 
-	public void setMacroSequence(MapSequence sequence) {
-		this.sequence = sequence;
+	@Override
+	protected void onSetDeviceDetails() throws Exception {
+		macroSystem = context.getMacroManager().getMacroSystem();
+		sequence = macroSystem.getRecordingSession();
 
 		empty.managedProperty().bind(empty.visibleProperty());
 
-		handler = new EventHandler<KeyEvent>() {
+		macroSystem.addRecordingListener(this);
+//		headerImageGroup.getChildren().add(MacroMap.iconForMapSequence(sequence));
 
-			@Override
-			public void handle(KeyEvent event) {
-				System.out.println(event);
-			}
-		};
+		updateState();
 
-		headerImageGroup.getChildren().add(MacroMap.iconForMapSequence(sequence));
-
-		if (sequence.isRecording())
-			updateState(State.RECORDING);
-		else
-			updateState(State.IDLE);
-
-		rebuildSeq(sequence);
+		rebuildSeq();
 	}
 
-	private void rebuildSeq(MapSequence seq) {
+	@Override
+	protected void onDeviceCleanUp() {
+		macroSystem.removeRecordingListener(this);
+	}
+
+	private void rebuildSeq() {
 		keys.getChildren().clear();
-		for (MapAction m : seq) {
-			Label l = new Label(MacroMap.textForMapAction(m));
-			l.setGraphic(MacroMap.iconForMacro(m));
-			keys.getChildren().add(l);
+		for (Iterator<RecordedEvent> evtIt = sequence.getEvents(); evtIt.hasNext();) {
+			RecordedEvent evt = evtIt.next();
+//			Label l = new Label(MacroMap.textForMapAction(m));
+//			l.setGraphic(MacroMap.iconForMacro(m));
+//			keys.getChildren().add(l);
 		}
 		empty.visibleProperty().set(keys.getChildren().isEmpty());
 	}
 
-	void updateState(State state) {
-		switch (state) {
+	void updateState() {
+		switch (sequence.getRecordingState()) {
 		case IDLE:
 			status.textProperty().set(bundle.getString("state.IDLE"));
 			status.getStyleClass().remove("danger");
@@ -87,9 +80,9 @@ public class Record extends AbstractDetailsController {
 			startRecord.disableProperty().set(false);
 			stop.disableProperty().set(true);
 			pause.disableProperty().set(true);
-			scene.getRoot().setOnKeyPressed(null);
 			break;
-		case RECORDING:
+		case WAITING_FOR_EVENTS:
+		case WAITING_FOR_TARGET_KEY:
 			status.textProperty().set(bundle.getString("state.RECORDING"));
 			status.getStyleClass().add("danger");
 			status.getStyleClass().remove("warning");
@@ -97,7 +90,6 @@ public class Record extends AbstractDetailsController {
 			startRecord.disableProperty().set(true);
 			stop.disableProperty().set(false);
 			pause.disableProperty().set(false);
-			scene.getRoot().setOnKeyPressed(handler);
 			break;
 		case PAUSED:
 			status.textProperty().set(bundle.getString("state.RECORDING"));
@@ -107,7 +99,10 @@ public class Record extends AbstractDetailsController {
 			startRecord.disableProperty().set(true);
 			stop.disableProperty().set(true);
 			pause.disableProperty().set(true);
-			scene.getRoot().setOnKeyPressed(null);
+			break;
+		case ERROR:
+			notifyMessage(MessageType.DANGER, context.getMacroManager().getMacroSystem().getRecordingSession()
+					.getRecordingError().getLocalizedMessage());
 			break;
 		}
 	}
@@ -115,27 +110,37 @@ public class Record extends AbstractDetailsController {
 	@FXML
 	void evtBack() {
 		context.pop();
-		if (sequence.isRecording())
-			sequence.stopRecording();
+		if (context.getMacroManager().getMacroSystem().isRecording())
+			context.getMacroManager().getMacroSystem().stopRecording();
 	}
 
 	@FXML
 	void evtStartRecord() {
-		updateState(State.RECORDING);
-		sequence.record();
+		context.getMacroManager().getMacroSystem().startRecording();
 	}
 
 	@FXML
 	void evtPause() {
-		updateState(State.PAUSED);
-		sequence.stopRecording();
+		context.getMacroManager().getMacroSystem().togglePauseRecording();
 	}
 
 	@FXML
 	void evtStop() {
-		updateState(State.IDLE);
-		sequence.stopRecording();
+		context.getMacroManager().getMacroSystem().stopRecording();
 		context.pop();
+	}
+
+	@Override
+	public void recordingStateChange(RecordingSession session) {
+		Platform.runLater(() -> {
+			updateState();
+			rebuildSeq();
+		});
+	}
+
+	@Override
+	public void eventRecorded() {
+		Platform.runLater(() -> rebuildSeq());
 	}
 
 }

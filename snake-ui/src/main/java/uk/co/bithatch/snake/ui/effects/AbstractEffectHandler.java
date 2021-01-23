@@ -39,7 +39,7 @@ public abstract class AbstractEffectHandler<E, C extends AbstractEffectControlle
 	@Override
 	public final E activate(Lit component) {
 		select(component);
-		if (component instanceof Device && !isMatrixBased()) {
+		if (component instanceof Device && isRegions()) {
 			/* If device, select the same effect on all of the regions as well */
 			for (Region r : ((Device) component).getRegions())
 				select(r);
@@ -51,6 +51,11 @@ public abstract class AbstractEffectHandler<E, C extends AbstractEffectControlle
 	public final void select(Lit component) {
 		/* Save this as the currently activated effect */
 		getContext().getEffectManager().getPreferences(component).put(EffectManager.PREF_EFFECT, getName());
+
+		if (!(component instanceof Device)) {
+			/* Because switching to individual regions, clear out the saved device effect */
+			getContext().getEffectManager().getPreferences(Lit.getDevice(component)).put(EffectManager.PREF_EFFECT, "");
+		}
 	}
 
 	@Override

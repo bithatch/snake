@@ -3,6 +3,7 @@
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
@@ -10,8 +11,9 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.DeviceDetails">
+<VBox xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.DeviceDetails">
    <children>
       <VBox fx:id="popupMessages" styleClass="popupMessages" />
       <BorderPane VBox.vgrow="ALWAYS">
@@ -38,7 +40,10 @@
                            </graphic>
                         </Label>
                         <Slider fx:id="brightness" />
-                        <Hyperlink fx:id="back" onAction="#evtBack" styleClass="iconButton" text="%back" />
+                        <Hyperlink fx:id="back" onAction="#evtBack" styleClass="iconButton">
+                           <graphic>
+                              <FontIcon iconLiteral="fa-arrow-left" iconSize="32" />
+                           </graphic></Hyperlink>
                      </children>
                   </HBox>
                </right>
@@ -59,14 +64,26 @@
                      <center>
                         <HBox alignment="CENTER_LEFT" styleClass="iconBar">
                            <children>
-                              <Hyperlink fx:id="design" onAction="#evtDesign" text="%design" />
+                              <Hyperlink fx:id="design" onAction="#evtDesign" text="%design">
+                                 <graphic>
+                                    <FontIcon iconLiteral="fa-edit" iconSize="22" />
+                                 </graphic></Hyperlink>
                               <HBox fx:id="layoutTools" alignment="CENTER_LEFT" styleClass="column">
                                  <children>
-                                    <Hyperlink fx:id="standardView" onAction="#evtStandardView" text="%standardView" />
-                                    <Hyperlink fx:id="layoutView" onAction="#evtLayoutView" text="%layoutView" />
+                                    <Hyperlink fx:id="standardView" onAction="#evtStandardView" text="%standardView">
+                                       <graphic>
+                                          <FontIcon iconLiteral="fa-table" iconSize="22" />
+                                       </graphic></Hyperlink>
+                                    <Hyperlink fx:id="layoutView" onAction="#evtLayoutView" text="%layoutView">
+                                       <graphic>
+                                          <FontIcon iconLiteral="fa-bars" iconSize="22" />
+                                       </graphic></Hyperlink>
                                  </children>
                               </HBox>
-                              <Hyperlink fx:id="macros" onAction="#evtMacros" text="%macros" />
+                              <Hyperlink fx:id="macros" onAction="#evtMacros" text="%macros">
+                                 <graphic>
+                                    <FontIcon iconLiteral="fa-keyboard-o" iconSize="22" />
+                                 </graphic></Hyperlink>
                            </children>
                         </HBox>
                      </center>
@@ -75,8 +92,20 @@
                <right>
                   <HBox fx:id="decoratedTools" alignment="CENTER_RIGHT" styleClass="iconBar" BorderPane.alignment="CENTER">
                      <children>
-                        <Hyperlink onAction="#evtAbout" styleClass="smallIconButton" text="%about" />
-                        <Hyperlink onAction="#evtOptions" styleClass="smallIconButton" text="%options" />
+                        <Hyperlink onAction="#evtAbout" styleClass="smallIconButton">
+                           <graphic>
+                              <FontIcon iconColor="LIME" iconLiteral="fa-info-circle" iconSize="24" />
+                           </graphic>
+                           <tooltip>
+                              <Tooltip text="%about" />
+                           </tooltip></Hyperlink>
+                        <Hyperlink onAction="#evtOptions" styleClass="smallIconButton">
+                           <graphic>
+                              <FontIcon iconColor="LIME" iconLiteral="fa-gears" iconSize="24" />
+                           </graphic>
+                           <tooltip>
+                              <Tooltip text="%options" />
+                           </tooltip></Hyperlink>
                      </children>
                   </HBox>
                </right>

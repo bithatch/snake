@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.String?>
-<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import org.controlsfx.control.ToggleSwitch?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<BorderPane fx:id="overviewContent" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.Overview">
+<BorderPane fx:id="overviewContent" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.Overview">
 	<center>
       <BorderPane fx:id="content" BorderPane.alignment="CENTER_LEFT">
          <center>
@@ -30,17 +32,30 @@
    <bottom>
       <BorderPane BorderPane.alignment="CENTER">
          <center>
-            <VBox alignment="CENTER" styleClass="tools">
+            <HBox alignment="CENTER" styleClass="row">
                <children>
-                  <CheckBox fx:id="sync" mnemonicParsing="false" text="%sync" />
+                  <ToggleSwitch fx:id="sync" onDragDetected="#evtSync" />
+                  <Label onMouseClicked="#evtToggleSync" text="%sync" />
                </children>
-            </VBox>
+            </HBox>
          </center>
          <right>
             <HBox fx:id="decoratedTools" alignment="CENTER_RIGHT" fillHeight="false" styleClass="iconBar" BorderPane.alignment="CENTER">
                <children>
-                  <Hyperlink alignment="CENTER" onAction="#evtAbout" styleClass="smallIconButton" text="%about" />
-                  <Hyperlink onAction="#evtOptions" styleClass="smallIconButton" text="%options" />
+                  <Hyperlink alignment="CENTER" onAction="#evtAbout" styleClass="smallIconButton">
+                     <graphic>
+                        <FontIcon iconColor="LIME" iconLiteral="fa-info-circle" iconSize="24" />
+                     </graphic>
+                     <tooltip>
+                        <Tooltip text="%about" />
+                     </tooltip></Hyperlink>
+                  <Hyperlink onAction="#evtOptions" styleClass="smallIconButton">
+                     <tooltip>
+                        <Tooltip text="%options" />
+                     </tooltip>
+                     <graphic>
+                        <FontIcon iconColor="LIME" iconLiteral="fa-gears" iconSize="24" />
+                     </graphic></Hyperlink>
                </children>
             </HBox>
          </right>
@@ -49,7 +64,10 @@
                <styleClass>
                   <String fx:value="warning" />
                   <String fx:value="gapLeft" />
-               </styleClass></Hyperlink>
+               </styleClass>
+               <graphic>
+                  <FontIcon iconColor="LIME" iconLiteral="fa-download" iconSize="16" />
+               </graphic></Hyperlink>
          </left>
       </BorderPane>
    </bottom>
@@ -76,10 +94,16 @@
                <children>
                   <HBox fx:id="types" alignment="CENTER_LEFT" fillHeight="false" styleClass="gapRight" />
                   <TextField fx:id="filter" />
-                  <Hyperlink fx:id="clearFilter" styleClass="smallIconButton" text="%clearFilter" />
+                  <Hyperlink fx:id="clearFilter" alignment="CENTER" contentDisplay="GRAPHIC_ONLY" styleClass="smallIconButton">
+                     <graphic>
+                        <FontIcon iconColor="LIME" iconLiteral="fa-eraser" />
+                     </graphic></Hyperlink>
                </children>
             </HBox>
          </left>
+         <top>
+            <VBox fx:id="popupMessages" styleClass="popupMessages" BorderPane.alignment="CENTER" />
+         </top>
       </BorderPane>
    </top>
 </BorderPane>

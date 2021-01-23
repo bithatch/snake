@@ -55,6 +55,14 @@ public class Input extends AbstractController implements Modal {
 		});
 	}
 
+	public Hyperlink getCancel() {
+		return cancel;
+	}
+
+	public Hyperlink getConfirm() {
+		return confirm;
+	}
+
 	public void confirm(ResourceBundle bundle, String prefix, Runnable onConfirm, String... args) {
 		confirm(bundle, prefix, onConfirm, null, args);
 	}

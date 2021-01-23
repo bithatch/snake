@@ -5,16 +5,21 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.About">
+<BorderPane xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.About">
    <center>
       <VBox alignment="CENTER" fillWidth="false" BorderPane.alignment="CENTER">
          <children>
             <Label styleClass="title" text="%app" />
             <Label fx:id="version" styleClass="small" />
-            <Label text="%copyright" />
+            <Label text="%copyright">
+               <graphic>
+                  <FontIcon iconColor="LIME" iconLiteral="fa-copyright" iconSize="22" />
+               </graphic></Label>
             <VBox alignment="CENTER">
                <children>
                   <GridPane alignment="CENTER_LEFT" styleClass="tools">
@@ -33,13 +38,23 @@
                         <Label fx:id="backendVersion" text="Backend Version" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                      </children>
                   </GridPane>
-                  <Hyperlink onAction="#evtChanges" text="%changes" />
+                  <HBox alignment="CENTER" styleClass="row">
+                     <children>
+                        <Hyperlink onAction="#evtChanges" text="%changes">
+                           <graphic>
+                              <FontIcon iconColor="#00ff00f5" iconLiteral="fa-leanpub" iconSize="22" />
+                           </graphic>
+                        </Hyperlink>
+                        <Hyperlink onAction="#evtBack" text="%close">
+                           <graphic>
+                              <FontIcon iconColor="LIME" iconLiteral="fa-close" iconSize="22" />
+                           </graphic>
+                        </Hyperlink>
+                     </children>
+                  </HBox>
                </children>
             </VBox>
          </children>
       </VBox>
    </center>
-   <bottom>
-      <Hyperlink onAction="#evtBack" styleClass="iconButton" text="%back" BorderPane.alignment="CENTER" />
-   </bottom>
 </BorderPane>

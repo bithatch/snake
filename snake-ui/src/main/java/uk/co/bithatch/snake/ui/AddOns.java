@@ -23,8 +23,8 @@ import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import uk.co.bithatch.snake.ui.addons.AddOn;
-import uk.co.bithatch.snake.ui.util.JavaFX;
-import uk.co.bithatch.snake.ui.widgets.Direction;
+import uk.co.bithatch.snake.widgets.Direction;
+import uk.co.bithatch.snake.widgets.JavaFX;
 
 public class AddOns extends AbstractController {
 	final static Preferences PREFS = Preferences.userNodeForPackage(AddOns.class);

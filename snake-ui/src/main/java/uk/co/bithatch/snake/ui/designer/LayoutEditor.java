@@ -14,6 +14,7 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -37,6 +38,7 @@ import javafx.scene.control.Slider;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.Image;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -61,15 +63,20 @@ import uk.co.bithatch.snake.lib.layouts.ViewPosition;
 import uk.co.bithatch.snake.ui.App;
 import uk.co.bithatch.snake.ui.ListMultipleSelectionModel;
 import uk.co.bithatch.snake.ui.util.BasicList;
-import uk.co.bithatch.snake.ui.util.JavaFX;
 import uk.co.bithatch.snake.ui.util.ListWrapper;
 import uk.co.bithatch.snake.ui.util.Strings;
-import uk.co.bithatch.snake.ui.widgets.SelectableArea;
+import uk.co.bithatch.snake.widgets.JavaFX;
+import uk.co.bithatch.snake.widgets.SelectableArea;
 
-public class LayoutEditor extends SelectableArea implements ViewerView, Listener {
+public class LayoutEditor extends SelectableArea
+		implements ViewerView, Listener, uk.co.bithatch.snake.lib.layouts.DeviceView.Listener {
 
 	public interface LabelFactory {
 		Node createLabel(IO element);
+	}
+
+	public interface ContextMenuCallback {
+		void openContextMenu(Tool tool, ContextMenuEvent e);
 	}
 
 	class DeviceCanvas extends Canvas {
@@ -391,18 +398,18 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 	private ListWrapper<ElementView, IO> items;
 	private DoubleProperty lineWidth;
 	private String loadedImage;
-	private Viewer viewer;
 	private Font font;
 	private DoubleProperty graphicTextGap;
-
+	private ContextMenuCallback menuCallback;
 	private App context;
-
-	DeviceCanvas canvas;
-	Device device;
-	ObjectProperty<ObservableList<ElementView>> elements = new SimpleObjectProperty<>(this, "elements");
-	List<Node> componentTypes = new ArrayList<>();
-	DeviceView view;
-	Pane pane;
+	private DeviceCanvas canvas;
+	private ObjectProperty<ObservableList<ElementView>> elementViews = new SimpleObjectProperty<>(this, "elements");
+	private List<Node> componentTypes = new ArrayList<>();
+	private Device device;
+	private DeviceView view;
+	private Pane pane;
+	private Viewer viewer;
+	private ChangeListener<? super Boolean> readOnlyListener;
 
 	public LayoutEditor(App context) {
 		this.context = context;
@@ -420,14 +427,14 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 			if (pane != null)
 				rebuildComponentTypesPanel();
 		});
-		elements.set(new BasicList<ElementView>());
-		elements.get().addListener(new ListChangeListener<>() {
+		elementViews.set(new BasicList<ElementView>());
+		elementViews.get().addListener(new ListChangeListener<>() {
 			@Override
 			public void onChanged(Change<? extends ElementView> c) {
 				rebuildComponentTypesPanel();
 			}
 		});
-		items = new ListWrapper<ElementView, IO>(elements.get()) {
+		items = new ListWrapper<ElementView, IO>(elementViews.get()) {
 			@Override
 			protected IO doConvertToWrapped(ElementView in) {
 				return in.getElement();
@@ -487,7 +494,7 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 				clearSelection();
 			}
 			if (n != null) {
-				for (ElementView b : elements.get()) {
+				for (ElementView b : elementViews.get()) {
 					if (n.intersects(b.getElementTool().getBoundsInParent())) {
 						addToSelection(b.getElement());
 					}
@@ -553,7 +560,12 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 
 	@Override
 	public void close() throws Exception {
+		view.removeListener(this);
 		device.removeListener(this);
+		snapToGridCheckBox.visibleProperty().unbind();
+		gridSizeSlider.visibleProperty().unbind();
+		selectableProperty().unbind();
+		viewer.readOnly().removeListener(readOnlyListener);
 	}
 
 	public ObjectProperty<ComponentType> componentType() {
@@ -584,10 +596,6 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 
 	public List<ComponentType> getEnabledTypes() {
 		return enabledTypes.get();
-	}
-
-	public ObjectProperty<List<ComponentType>> enabledTypes() {
-		return enabledTypes;
 	}
 
 	public final double getGraphicTextGap() {
@@ -682,9 +690,10 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 		gridSizeSlider.visibleProperty().bind(Bindings.not(viewer.readOnly()));
 		setSelectable(viewer.isSelectableElements());
 		selectableProperty().bind(viewer.selectableElements());
-		viewer.readOnly().addListener((e) -> {
+		readOnlyListener = (e, o, n) -> {
 			rebuildElements();
-		});
+		};
+		viewer.readOnly().addListener(readOnlyListener);
 
 		reloadImage();
 
@@ -700,8 +709,8 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 
 		pane = new Pane();
 		pane.getStyleClass().add("layout");
+		pane.getStyleClass().add("padded");
 		pane.setPickOnBounds(false);
-		/* pane.getStyleClass().add("layout"); */
 		setContent(pane);
 
 		pane.getChildren().add(snapToGridCheckBox);
@@ -711,54 +720,7 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 		widthProperty().addListener((e, o, n) -> layoutDiagram());
 		heightProperty().addListener((e, o, n) -> layoutDiagram());
 
-		view.addListener(new DeviceView.Listener() {
-
-			@Override
-			public void elementRemoved(DeviceView view, IO element) {
-				if (Platform.isFxApplicationThread()) {
-					ElementView ev = forElement(element);
-					if (ev != null) {
-						int indexOf = elements.get().indexOf(ev);
-						getElementSelectionModel().clearSelection(indexOf);
-						elements.get().remove(ev);
-						JavaFX.fadeHide(ev.getElementTool(), 0.25f, (e) -> {
-							pane.getChildren().remove(ev.getElementTool());
-							layoutDiagram();
-						});
-						if (ev.getLabel() != null) {
-							JavaFX.fadeHide(ev.getLabel(), 0.25f, (e) -> {
-								pane.getChildren().remove(ev.getLabel());
-								layoutDiagram();
-							});
-						}
-					}
-				} else
-					Platform.runLater(() -> elementRemoved(view, element));
-			}
-
-			@Override
-			public void elementAdded(DeviceView view, IO element) {
-				elementChanged(view, element);
-			}
-
-			@Override
-			public void elementChanged(DeviceView view, IO element) {
-				if (Platform.isFxApplicationThread()) {
-					retextLabels();
-					layoutLabels();
-				} else
-					Platform.runLater(() -> elementChanged(view, element));
-			}
-
-			@Override
-			public void viewChanged(DeviceView view) {
-				if (Platform.isFxApplicationThread()) {
-					retextLabels();
-					layoutDiagram();
-				} else
-					Platform.runLater(() -> viewChanged(view));
-			}
-		});
+		view.addListener(this);
 		componentType.addListener((e, o, n) -> rebuildElements());
 		snapToGridCheckBox.selectedProperty().addListener((e, o, n) -> layoutDiagram());
 		gridSizeSlider.valueProperty().addListener((e, o, n) -> layoutDiagram());
@@ -812,7 +774,7 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 	public void updateFromMatrix(int[][][] frame) {
 		if (Platform.isFxApplicationThread()) {
 			DeviceView matrixView = null;
-			for (ElementView elementView : elements.get()) {
+			for (ElementView elementView : elementViews.get()) {
 				if (elementView.getElement() instanceof Area) {
 					if (matrixView == null) {
 						matrixView = view.getLayout().getViews().get(ViewPosition.MATRIX);
@@ -922,7 +884,7 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 
 	protected String findBestDefaultLabelText(ComponentType type) {
 		int highest = 0;
-		for (ElementView element : elements.get()) {
+		for (ElementView element : elementViews.get()) {
 			if (element.getType() == type) {
 				int number = -1;
 				try {
@@ -936,7 +898,7 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 	}
 
 	protected ElementView forElement(IO element) {
-		for (ElementView e : elements.get()) {
+		for (ElementView e : elementViews.get()) {
 			if (e.getElement().equals(element))
 				return e;
 		}
@@ -1072,7 +1034,7 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 
 		Point2D imgSize = canvas.calcImageSize();
 		Point2D imgOff = canvas.calcImageOffset();
-		for (ElementView elementView : elements.get()) {
+		for (ElementView elementView : elementViews.get()) {
 			positionElement(imgSize, imgOff, elementView);
 		}
 	}
@@ -1167,7 +1129,7 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 	}
 
 	protected void resnap() {
-		for (ElementView e : elements.get()) {
+		for (ElementView e : elementViews.get()) {
 			IO el = e.getElement();
 			el.setX((float) (el.getX() - (el.getX() % gridSizeSlider.getValue()) + (gridSizeSlider.getValue() / 2.0)));
 			el.setY((float) (el.getY() - (el.getY() % gridSizeSlider.getValue()) + (gridSizeSlider.getValue() / 2.0)));
@@ -1176,7 +1138,7 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 	}
 
 	protected void retextLabels() {
-		for (ElementView elementView : elements.get()) {
+		for (ElementView elementView : elementViews.get()) {
 			if (elementView.getLabel() != null)
 				if (elementView.getLabel() instanceof Label)
 					((Label) elementView.getLabel()).textProperty().set(elementView.getElement().getDisplayLabel());
@@ -1201,7 +1163,7 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 	protected List<ElementView> separateElements(List<ElementView> left, List<ElementView> top,
 			List<ElementView> bottom, List<ElementView> right) {
 		List<ElementView> r = new ArrayList<ElementView>();
-		for (ElementView elementView : elements.get()) {
+		for (ElementView elementView : elementViews.get()) {
 
 			if (getComponentType().isShowByDefault()
 					&& !elementSelectionModel.get().getSelectedItems().contains(elementView.getElement())) {
@@ -1285,14 +1247,14 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 
 	private void rebuildElements() {
 		/* Remove all existing labels and elements */
-		for (ElementView e : elements.get()) {
+		for (ElementView e : elementViews.get()) {
 			pane.getChildren().remove(e.getElementTool());
 			if (e.getLabel() != null)
 				pane.getChildren().remove(e.getLabel());
 
 		}
 		getElementSelectionModel().clearSelection();
-		elements.get().clear();
+		elementViews.get().clear();
 
 		applyCss();
 		layout();
@@ -1311,7 +1273,7 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 				if (ev != null) {
 					ev.setElement(io);
 					ev.setLabel(createLabel(io));
-					elements.get().add(ev);
+					elementViews.get().add(ev);
 					pane.getChildren().add(ev.getLabel());
 					pane.getChildren().add(ev.getElementTool());
 				}
@@ -1331,6 +1293,14 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 		return view;
 	}
 
+	public ContextMenuCallback getMenuCallback() {
+		return menuCallback;
+	}
+
+	public void setMenuCallback(ContextMenuCallback menuCallback) {
+		this.menuCallback = menuCallback;
+	}
+
 	public static String getBestRegionName(DeviceView view, Name name) {
 		IO regionEl = view.getAreaElement(name);
 		if (regionEl != null && regionEl.getLabel() != null)
@@ -1339,7 +1309,7 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 	}
 
 	public void reset() {
-		for (ElementView element : elements.get()) {
+		for (ElementView element : elementViews.get()) {
 			element.reset();
 		}
 	}
@@ -1354,6 +1324,73 @@ public class LayoutEditor extends SelectableArea implements ViewerView, Listener
 
 	@Override
 	public void mapRemoved(ProfileMap profile) {
+	}
+
+	public void contextMenu(Tool tool, ContextMenuEvent e) {
+		if (menuCallback != null)
+			menuCallback.openContextMenu(tool, e);
+	}
+
+	@Override
+	public void elementRemoved(DeviceView view, IO element) {
+		if (Platform.isFxApplicationThread()) {
+			ElementView ev = forElement(element);
+			if (ev != null) {
+				int indexOf = elementViews.get().indexOf(ev);
+				getElementSelectionModel().clearSelection(indexOf);
+				elementViews.get().remove(ev);
+				JavaFX.fadeHide(ev.getElementTool(), 0.25f, (e) -> {
+					pane.getChildren().remove(ev.getElementTool());
+					layoutDiagram();
+				});
+				if (ev.getLabel() != null) {
+					JavaFX.fadeHide(ev.getLabel(), 0.25f, (e) -> {
+						pane.getChildren().remove(ev.getLabel());
+						layoutDiagram();
+					});
+				}
+			}
+		} else
+			Platform.runLater(() -> elementRemoved(view, element));
+	}
+
+	@Override
+	public void elementAdded(DeviceView view, IO element) {
+		elementChanged(view, element);
+	}
+
+	@Override
+	public void elementChanged(DeviceView view, IO element) {
+		if (Platform.isFxApplicationThread()) {
+			retextLabels();
+			layoutLabels();
+		} else
+			Platform.runLater(() -> elementChanged(view, element));
+	}
+
+	@Override
+	public void viewChanged(DeviceView view) {
+		if (Platform.isFxApplicationThread()) {
+			retextLabels();
+			layoutDiagram();
+		} else
+			Platform.runLater(() -> viewChanged(view));
+	}
+
+	List<Node> getComponentTypes() {
+		return componentTypes;
+	}
+
+	DeviceCanvas getCanvas() {
+		return canvas;
+	}
+
+	Pane getPane() {
+		return pane;
+	}
+
+	List<ElementView> getElementViews() {
+		return elementViews.get();
 	}
 
 }

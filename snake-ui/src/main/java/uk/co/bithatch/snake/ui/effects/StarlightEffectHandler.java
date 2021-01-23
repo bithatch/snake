@@ -6,6 +6,7 @@ import uk.co.bithatch.snake.lib.Colors;
 import uk.co.bithatch.snake.lib.Lit;
 import uk.co.bithatch.snake.lib.effects.Starlight;
 import uk.co.bithatch.snake.lib.effects.Starlight.Mode;
+import uk.co.bithatch.snake.ui.SchedulerManager.Queue;
 import uk.co.bithatch.snake.ui.StarlightOptions;
 
 public class StarlightEffectHandler extends AbstractBackendEffectHandler<Starlight, StarlightOptions> {
@@ -40,9 +41,9 @@ public class StarlightEffectHandler extends AbstractBackendEffectHandler<Starlig
 		starlight.setColor1(controller.getColor1());
 		starlight.setColor2(controller.getColor2());
 		starlight.setSpeed(controller.getSpeed());
-		getContext().getScheduler().execute(() -> component.setEffect(starlight));
+		getContext().getSchedulerManager().get(Queue.DEVICE_IO).execute(() -> component.setEffect(starlight));
 		save(component, starlight);
-		
+
 	}
 
 }

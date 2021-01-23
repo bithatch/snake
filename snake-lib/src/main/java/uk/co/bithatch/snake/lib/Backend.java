@@ -113,4 +113,16 @@ public interface Backend extends AutoCloseable, Grouping {
 	}
 
 	void setSync(boolean sync);
+
+	default Device getDevice(String name) {
+		try {
+			for (Device dev : getDevices()) {
+				if (dev.getName().equals(name))
+					return dev;
+			}
+		} catch (Exception e) {
+			throw new IllegalStateException(String.format("Failed to find device with name %s.", name), e);
+		}
+		return null;
+	}
 }

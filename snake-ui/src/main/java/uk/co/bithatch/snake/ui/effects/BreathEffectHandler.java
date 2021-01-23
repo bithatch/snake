@@ -7,6 +7,7 @@ import uk.co.bithatch.snake.lib.Lit;
 import uk.co.bithatch.snake.lib.effects.Breath;
 import uk.co.bithatch.snake.lib.effects.Breath.Mode;
 import uk.co.bithatch.snake.ui.BreathOptions;
+import uk.co.bithatch.snake.ui.SchedulerManager.Queue;
 
 public class BreathEffectHandler extends AbstractBackendEffectHandler<Breath, BreathOptions> {
 
@@ -37,7 +38,7 @@ public class BreathEffectHandler extends AbstractBackendEffectHandler<Breath, Br
 		breath.setColor(controller.getColor());
 		breath.setColor1(controller.getColor1());
 		breath.setColor2(controller.getColor2());
-		getContext().getScheduler().execute(() -> component.setEffect(breath));
+		getContext().getSchedulerManager().get(Queue.DEVICE_IO).execute(() -> component.setEffect(breath));
 		save(component, breath);
 	}
 

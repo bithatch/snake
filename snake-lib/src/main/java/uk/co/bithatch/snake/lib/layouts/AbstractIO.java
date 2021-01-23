@@ -36,7 +36,7 @@ public abstract class AbstractIO implements IO {
 
 	@Override
 	public void removeListener(IOListener listener) {
-		listeners.add(listener);
+		listeners.remove(listener);
 	}
 
 	@Override

@@ -4,9 +4,13 @@ public abstract class ControlController extends AbstractDeviceController {
 
 	@Override
 	protected final void onSetDevice() throws Exception {
-		getScene().getRoot().getStyleClass().add("control");
-		getScene().getRoot().getStyleClass().add("control-" + getClass().getSimpleName().toLowerCase());
+		getScene().getRoot().getStyleClass().add(getControlClassName());
+		getScene().getRoot().getStyleClass().add(getControlClassName() + "-" + getClass().getSimpleName().toLowerCase());
 		onSetControlDevice();
+	}
+
+	protected String getControlClassName() {
+		return "control";
 	}
 
 	protected void onSetControlDevice() throws Exception {

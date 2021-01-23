@@ -38,6 +38,18 @@ public class Confirm extends AbstractController implements Modal {
 		this.onNo = onNo;
 	}
 
+	public Label getTitle() {
+		return title;
+	}
+
+	public Hyperlink getYes() {
+		return yes;
+	}
+
+	public Hyperlink getNo() {
+		return no;
+	}
+
 	@FXML
 	void evtNo() {
 		if (onNo != null) {

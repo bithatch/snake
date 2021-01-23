@@ -1,6 +1,9 @@
 package uk.co.bithatch.snake.ui.effects;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -9,16 +12,21 @@ import com.sshtools.icongenerator.IconBuilder.TextContent;
 
 import javafx.scene.Node;
 import uk.co.bithatch.snake.lib.Device;
-import uk.co.bithatch.snake.lib.FramePlayer;
-import uk.co.bithatch.snake.lib.Interpolation;
-import uk.co.bithatch.snake.lib.KeyFrame;
 import uk.co.bithatch.snake.lib.Lit;
-import uk.co.bithatch.snake.lib.Sequence;
+import uk.co.bithatch.snake.lib.animation.AudioParameters;
+import uk.co.bithatch.snake.lib.animation.FramePlayer;
+import uk.co.bithatch.snake.lib.animation.Interpolation;
+import uk.co.bithatch.snake.lib.animation.KeyFrame;
+import uk.co.bithatch.snake.lib.animation.KeyFrame.KeyFrameCellSource;
+import uk.co.bithatch.snake.lib.animation.KeyFrameCell;
+import uk.co.bithatch.snake.lib.animation.Sequence;
 import uk.co.bithatch.snake.lib.effects.Effect;
 import uk.co.bithatch.snake.lib.effects.Matrix;
 import uk.co.bithatch.snake.ui.CustomOptions;
+import uk.co.bithatch.snake.ui.SchedulerManager.Queue;
 import uk.co.bithatch.snake.ui.util.Prefs;
-import uk.co.bithatch.snake.ui.widgets.GeneratedIcon;
+import uk.co.bithatch.snake.ui.util.Strings;
+import uk.co.bithatch.snake.widgets.GeneratedIcon;
 
 public class CustomEffectHandler extends AbstractEffectHandler<Sequence, CustomOptions> {
 
@@ -102,13 +110,17 @@ public class CustomEffectHandler extends AbstractEffectHandler<Sequence, CustomO
 
 	@Override
 	public URL getEffectImage(int size) {
-		return getContext().getConfiguration().themeProperty().getValue().getEffectImage(size, Matrix.class);
+		return getContext().getConfiguration().getTheme().getEffectImage(size, Matrix.class);
 	}
 
 	public Node getEffectImageNode(int size, int viewSize) {
 		GeneratedIcon ib = new GeneratedIcon();
 		ib.setPrefWidth(viewSize);
 		ib.setPrefHeight(viewSize);
+		ib.setMinWidth(viewSize);
+		ib.setMinHeight(viewSize);
+		ib.setMaxWidth(viewSize);
+		ib.setMaxHeight(viewSize);
 		ib.setText(getDisplayName());
 		ib.setTextContent(TextContent.INITIALS);
 		return ib;
@@ -170,7 +182,7 @@ public class CustomEffectHandler extends AbstractEffectHandler<Sequence, CustomO
 	@Override
 	public void update(Lit component) {
 		Matrix effect = (Matrix) component.getEffect();
-		getContext().getScheduler().execute(() -> component.updateEffect(effect));
+		component.updateEffect(effect);
 	}
 
 	@Override
@@ -195,6 +207,16 @@ public class CustomEffectHandler extends AbstractEffectHandler<Sequence, CustomO
 		sequence.setFps(matrix.getInt(PREF_FPX, 25));
 		sequence.setRepeat(matrix.getBoolean(PREF_REPEAT, true));
 		sequence.setSpeed(matrix.getFloat(PREF_SPEED, 1));
+		int low = matrix.getInt("audioLow", 0);
+		int high = matrix.getInt("audioHigh", 255);
+		float gain = matrix.getFloat("audioGain", 1f);
+		if (low != 0 || high != 255 || gain != 1) {
+			AudioParameters parameters = new AudioParameters();
+			parameters.setLow(low);
+			parameters.setHigh(high);
+			parameters.setGain(gain);
+			sequence.setAudioParameters(parameters);
+		}
 		sequence.setInterpolation(Interpolation.get(matrix.get(PREF_INTERPOLATION, Interpolation.linear.getName())));
 		sequence.clear();
 		try {
@@ -234,11 +256,28 @@ public class CustomEffectHandler extends AbstractEffectHandler<Sequence, CustomO
 		prefs.putBoolean(PREF_REPEAT, sequence.isRepeat());
 		prefs.putInt(PREF_FPX, sequence.getFps());
 		prefs.putFloat(PREF_SPEED, sequence.getSpeed());
+
+		AudioParameters audio = sequence.getAudioParameters();
+		if (audio == null) {
+			prefs.remove("audioLow");
+			prefs.remove("audioHigh");
+			prefs.remove("audioGain");
+		} else {
+			prefs.putInt("audioLow", audio.getLow());
+			prefs.putInt("audioHigh", audio.getHigh());
+			prefs.putFloat("audioGain", audio.getGain());
+		}
+
 		for (KeyFrame frame : sequence) {
 			Preferences framePref = customNode.node(String.valueOf(id++));
 			save(frame, framePref);
 		}
 
+	}
+
+	@Override
+	public boolean isRegions() {
+		return false;
 	}
 
 	@Override
@@ -248,7 +287,8 @@ public class CustomEffectHandler extends AbstractEffectHandler<Sequence, CustomO
 
 	@Override
 	protected void onSetContext() {
-		player = new FramePlayer(getContext().getScheduler());
+		player = new FramePlayer(getContext().getSchedulerManager().get(Queue.DEVICE_IO),
+				getContext().getAudioManager());
 	}
 
 	@Override
@@ -257,27 +297,56 @@ public class CustomEffectHandler extends AbstractEffectHandler<Sequence, CustomO
 	}
 
 	public KeyFrame load(Preferences node) {
-		int rows = node.getInt("rows", 0);
-		int[][][] frame = null;
+		var rows = node.getInt("rows", 0);
+		var cols = node.getInt("cols", -1);
+		KeyFrameCell[][] frame = null;
+
 		if (rows != 0) {
-			frame = new int[rows][][];
-			for (int i = 0; i < rows; i++) {
-				var data = node.get("row" + i, "");
-				if (!data.equals("")) {
-					String[] rowRgb = data.split(":");
-					int[][] row = new int[rowRgb.length][3];
-					int col = 0;
-					for (String rgb : rowRgb) {
-						row[col][0] = Integer.parseInt(rgb.substring(0, 2), 16);
-						row[col][1] = Integer.parseInt(rgb.substring(2, 4), 16);
-						row[col][2] = Integer.parseInt(rgb.substring(4, 6), 16);
-						col++;
+			frame = new KeyFrameCell[rows][];
+			if (cols == -1) {
+				/*
+				 * Used versions 1.0-SNAPSHOT-24 and earlier, there were only rows, with each
+				 * row a long string of colours for each cell
+				 */
+				for (int i = 0; i < rows; i++) {
+					var data = node.get("row" + i, "");
+					if (!data.equals("")) {
+						var rowRgb = data.split(":");
+						var row = new KeyFrameCell[rowRgb.length];
+						int col = 0;
+						for (String rgb : rowRgb) {
+							row[col++] = new KeyFrameCell(new int[] { Integer.parseInt(rgb.substring(0, 2), 16),
+									Integer.parseInt(rgb.substring(2, 4), 16),
+									Integer.parseInt(rgb.substring(4, 6), 16) }, KeyFrameCellSource.COLOR);
+						}
+						frame[i] = row;
+					}
+				}
+			} else {
+				for (int i = 0; i < rows; i++) {
+					var row = new KeyFrameCell[cols];
+					for (int j = 0; j < cols; j++) {
+						var data = node.get("cell" + i + "," + j, "");
+						if (!data.equals("")) {
+							var args = data.split(":");
+							List<KeyFrameCellSource> l = new ArrayList<>();
+							for (String a : args[0].split(",")) {
+								l.add(KeyFrameCellSource.valueOf(a));
+							}
+							var rgb = args[1];
+							row[j] = new KeyFrameCell(
+									new int[] { Integer.parseInt(rgb.substring(0, 2), 16),
+											Integer.parseInt(rgb.substring(2, 4), 16),
+											Integer.parseInt(rgb.substring(4, 6), 16) },
+									l.toArray(new KeyFrameCellSource[0]));
+							row[j].setInterpolation(Interpolation.fromName(args[2]));
+						}
 					}
 					frame[i] = row;
 				}
 			}
 		}
-		KeyFrame keyFrame = new KeyFrame();
+		var keyFrame = new KeyFrame();
 		keyFrame.setInterpolation(
 				Interpolation.get(node.get(PREF_INTERPOLATION, keyFrame.getInterpolation().getName())));
 		keyFrame.setHoldFor(node.getLong(PREF_HOLD_FOR, keyFrame.getHoldFor()));
@@ -288,24 +357,37 @@ public class CustomEffectHandler extends AbstractEffectHandler<Sequence, CustomO
 	void save(KeyFrame keyFrame, Preferences node) {
 		if (readOnly)
 			throw new IllegalStateException("This is a read only effect.");
-		int[][][] frame = keyFrame.getFrame();
+		KeyFrameCell[][] frame = keyFrame.getFrame();
 		node.put(PREF_INTERPOLATION, keyFrame.getInterpolation().getName());
 		node.putLong(PREF_HOLD_FOR, keyFrame.getHoldFor());
 		if (frame != null) {
-			int rowIdx = 0;
-			for (int[][] row : frame) {
-				StringBuilder b = new StringBuilder();
-				if (row != null) {
-					for (int[] rgb : row) {
-						if (b.length() > 0)
-							b.append(":");
-						b.append(String.format("%02x%02x%02x", rgb[0], rgb[1], rgb[2]));
+			int rowCount = 0;
+			int colCount = 0;
+			for (KeyFrameCell[] row : frame) {
+				colCount = 0;
+
+				/* Remove the pre 1.0-SNAPSHOT-24 storage data if there is any */
+				node.remove("row" + rowCount);
+
+				for (KeyFrameCell col : row) {
+					if (col == null) {
+						node.remove("cell" + rowCount + "," + colCount);
+					} else {
+						StringBuilder b = new StringBuilder();
+						b.append(Strings.toSeparatedList(",", Arrays.asList(col.getSources())));
+						b.append(":");
+						b.append(String.format("%02x%02x%02x", col.getValues()[0], col.getValues()[1],
+								col.getValues()[2]));
+						b.append(":");
+						b.append(col.getInterpolation().getName());
+						node.put("cell" + rowCount + "," + colCount, b.toString());
 					}
-					node.put("row" + rowIdx, b.toString());
+					colCount++;
 				}
-				rowIdx++;
+				rowCount++;
 			}
-			node.putInt("rows", rowIdx);
+			node.putInt("rows", rowCount);
+			node.putInt("cols", colCount);
 		}
 	}
 }

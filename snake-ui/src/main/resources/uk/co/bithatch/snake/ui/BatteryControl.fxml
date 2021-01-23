@@ -1,26 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.String?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="300.0" styleClass="control" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.BatteryControl">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="300.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.BatteryControl">
    <children>
       <HBox styleClass="gapBottom">
          <children>
-            <Label styleClass="header" text="%battery" />
-            <Label fx:id="charging" alignment="TOP_RIGHT" styleClass="small" text="%charging">
-               <HBox.margin>
-                  <Insets left="16.0" />
-               </HBox.margin>
-            </Label>
+            <Label maxWidth="1.7976931348623157E308" styleClass="header" text="%battery" HBox.hgrow="ALWAYS" />
          </children>
       </HBox>
       <HBox>
          <children>
-            <VBox alignment="CENTER">
+            <VBox alignment="CENTER" styleClass="column">
                <children>
                   <Label fx:id="batteryStatus" alignment="TOP_CENTER" rotate="-90.0" styleClass="mediumIcon" text="%batteryFull" />
                   <Label fx:id="percentage" alignment="BOTTOM_CENTER" text="99%">
@@ -32,13 +29,25 @@
             </VBox>
             <VBox>
                <children>
+                  <Label fx:id="charging" alignment="TOP_RIGHT" styleClass="small" text="%charging">
+                     <graphic>
+                        <FontIcon iconLiteral="fa-bolt" iconSize="22" />
+                     </graphic></Label>
                   <Label styleClass="emphasis" text="%lowThreshold" />
                   <Spinner fx:id="lowThreshold" editable="true" />
                   <Label styleClass="emphasis" text="%idleTime" />
                   <Spinner fx:id="idleTime" editable="true" />
                </children>
+               <styleClass>
+                  <String fx:value="column" />
+                  <String fx:value="padded" />
+               </styleClass>
             </VBox>
          </children>
       </HBox>
    </children>
+   <styleClass>
+      <String fx:value="control" />
+      <String fx:value="padded" />
+   </styleClass>
 </VBox>

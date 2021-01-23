@@ -77,10 +77,10 @@ import uk.co.bithatch.snake.lib.layouts.Key;
 import uk.co.bithatch.snake.ui.designer.LayoutEditor;
 import uk.co.bithatch.snake.ui.designer.Viewer;
 import uk.co.bithatch.snake.ui.util.BasicList;
-import uk.co.bithatch.snake.ui.util.JavaFX;
 import uk.co.bithatch.snake.ui.util.Strings;
-import uk.co.bithatch.snake.ui.widgets.Direction;
-import uk.co.bithatch.snake.ui.widgets.GeneratedIcon;
+import uk.co.bithatch.snake.widgets.Direction;
+import uk.co.bithatch.snake.widgets.GeneratedIcon;
+import uk.co.bithatch.snake.widgets.JavaFX;
 
 public class MacroMap extends AbstractDetailsController {
 
@@ -573,11 +573,6 @@ public class MacroMap extends AbstractDetailsController {
 	}
 
 	@FXML
-	void evtRecordMacro() {
-		context.push(Record.class, Direction.FROM_LEFT).setMacroSequence(getSelectedSequence());
-	}
-
-	@FXML
 	void evtDelete() {
 		macros.deleteSelected();
 	}
@@ -645,7 +640,7 @@ public class MacroMap extends AbstractDetailsController {
 			if (task != null) {
 				task.cancel(false);
 			}
-			error(null);
+			error((String)null);
 			synchronized (sequencesToSave) {
 				sequencesToSave.add(sequence);
 			}
@@ -674,7 +669,7 @@ public class MacroMap extends AbstractDetailsController {
 			if (task != null) {
 				task.cancel(false);
 			}
-			error(null);
+			error((String)null);
 			synchronized (macrosToSave) {
 				macrosToSave.add(mkey);
 			}

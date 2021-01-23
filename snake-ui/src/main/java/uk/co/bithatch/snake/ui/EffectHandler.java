@@ -3,6 +3,7 @@ package uk.co.bithatch.snake.ui;
 import java.net.URL;
 
 import javafx.scene.Node;
+import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.Lit;
@@ -22,6 +23,10 @@ public interface EffectHandler<E, C extends AbstractEffectController<E, ?>> {
 	Class<? extends Effect> getBackendEffectClass();
 
 	Device getDevice();
+	
+	default boolean isRegions() {
+		return !isMatrixBased();
+	}
 
 	void open(App context, Device component);
 
@@ -46,12 +51,17 @@ public interface EffectHandler<E, C extends AbstractEffectController<E, ?>> {
 	URL getEffectImage(int size);
 
 	default Node getEffectImageNode(int size, int viewSize) {
-		ImageView iv = new ImageView(getEffectImage(size).toExternalForm());
-		iv.setFitHeight(viewSize);
-		iv.setFitWidth(viewSize);
-		iv.setSmooth(true);
-		iv.setPreserveRatio(true);
-		return iv;
+		URL effectImage = getEffectImage(size);
+		if (effectImage == null)
+			return new Label("Missing image " + getClass().getSimpleName());
+		else {
+			ImageView iv = new ImageView(effectImage.toExternalForm());
+			iv.setFitHeight(viewSize);
+			iv.setFitWidth(viewSize);
+			iv.setSmooth(true);
+			iv.setPreserveRatio(true);
+			return iv;
+		}
 	}
 
 	String getDisplayName();

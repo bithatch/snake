@@ -10,6 +10,8 @@ module uk.co.bithatch.snake.updater {
     exports uk.co.bithatch.snake.updater;
     opens uk.co.bithatch.snake.updater; 
     opens uk.co.bithatch.snake.updater.icons;
+	requires transitive org.kordamp.ikonli.fontawesome;
+	requires transitive org.kordamp.ikonli.javafx;
 	provides com.sshtools.forker.updater.UpdateHandler with uk.co.bithatch.snake.updater.JavaFXUpdateHandler;
 	provides com.sshtools.forker.updater.InstallHandler with uk.co.bithatch.snake.updater.JavaFXInstallHandler;
 }

@@ -8,30 +8,49 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" styleClass="control" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.EffectsControl">
+<VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" styleClass="control" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.EffectsControl">
    <children>
-      <HBox alignment="CENTER_LEFT" prefWidth="300.0">
+      <HBox alignment="CENTER_LEFT" prefWidth="300.0" styleClass="gapBottom">
          <children>
-            <Label styleClass="header" text="%effects" />
-            <Hyperlink fx:id="addCustom" alignment="TOP_LEFT" onAction="#evtAddCustom" text="%addCustom" />
-            <Hyperlink fx:id="removeCustom" onAction="#evtRemoveCustom" text="%removeCustom" />
+            <Label contentDisplay="RIGHT" maxWidth="1.7976931348623157E308" styleClass="header" text="%effects" HBox.hgrow="ALWAYS" />
+         </children>
+      </HBox>
+      <VBox>
+         <children>
+            <HBox alignment="CENTER_LEFT">
+               <children>
+                  <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@icons/effects32.png" />
+                     </image>
+                  </ImageView>
+                  <ComboBox fx:id="overallEffect" prefWidth="150.0" />
+                  <Hyperlink fx:id="customise" onAction="#evtCustomise" styleClass="smallIconButton">
+                     <graphic>
+                        <FontIcon iconColor="#04ff1d" iconLiteral="fa-gear" iconSize="22" />
+                     </graphic></Hyperlink>
+               </children>
+            </HBox>
+            <VBox fx:id="regions" alignment="CENTER" prefWidth="280.0" styleClass="regions" />
+            <HBox>
+               <children>
+                  <Hyperlink fx:id="addCustom" alignment="TOP_LEFT" onAction="#evtAddCustom" text="%addCustom">
+                     <graphic>
+                        <FontIcon iconColor="LIME" iconLiteral="fa-plus" iconSize="22" />
+                     </graphic></Hyperlink>
+                  <Hyperlink fx:id="removeCustom" onAction="#evtRemoveCustom" text="%removeCustom">
+                     <graphic>
+                        <FontIcon iconColor="LIME" iconLiteral="fa-trash" iconSize="22" />
+                     </graphic></Hyperlink>
+               </children>
+            </HBox>
          </children>
          <styleClass>
-            <String fx:value="row" />
-            <String fx:value="gapBottom" />
+            <String fx:value="column" />
+            <String fx:value="padded" />
          </styleClass>
-      </HBox>
-      <HBox alignment="CENTER_LEFT">
-         <children>
-            <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
-               <image>
-                  <Image url="@icons/effects32.png" />
-               </image></ImageView>
-            <ComboBox fx:id="overallEffect" prefWidth="150.0" />
-            <Hyperlink fx:id="customise" onAction="#evtCustomise" styleClass="smallIconButton" text="%customise" />
-         </children>
-      </HBox>
-      <VBox fx:id="regions" alignment="CENTER" prefWidth="280.0" styleClass="regions" />
+      </VBox>
    </children>
 </VBox>

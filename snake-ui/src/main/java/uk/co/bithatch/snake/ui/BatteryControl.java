@@ -3,6 +3,9 @@ package uk.co.bithatch.snake.ui;
 import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 
+import org.kordamp.ikonli.fontawesome.FontAwesome;
+import org.kordamp.ikonli.javafx.FontIcon;
+
 import javafx.animation.FadeTransition;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -62,24 +65,18 @@ public class BatteryControl extends ControlController implements Listener {
 		return anim;
 	}
 
-	public static String getBatteryIconText(int level) {
-		return bundle.getString(getBatteryIcon(level));
-	}
-
-	public static String getBatteryIcon(int level) {
-		String t;
+	public static FontAwesome getBatteryIcon(int level) {
 		if (level < 1) {
-			t = "batteryEmpty";
+			return FontAwesome.BATTERY_EMPTY;
 		} else if (level <= 25) {
-			t = "batteryQuarter";
+			return FontAwesome.BATTERY_QUARTER;
 		} else if (level <= 50) {
-			t = "batteryHalf";
+			return FontAwesome.BATTERY_HALF;
 		} else if (level <= 75) {
-			t = "batteryThreeQuarters";
+			return FontAwesome.BATTERY_THREE_QUARTERS;
 		} else {
-			t = "batteryFull";
+			return FontAwesome.BATTERY_FULL;
 		}
-		return bundle.getString(t);
 	}
 
 	public static String getBatteryStyle(int lowest, int level) {
@@ -113,7 +110,7 @@ public class BatteryControl extends ControlController implements Listener {
 		setBatteryStatusStyle(dev.getLowBatteryThreshold(), level, batteryStatus, lowAnim);
 		setBatteryStatusStyle(dev.getLowBatteryThreshold(), level, charging, null);
 		setBatteryStatusStyle(dev.getLowBatteryThreshold(), level, percentage, null);
-		batteryStatus.textProperty().set(getBatteryIcon(level));
+		batteryStatus.graphicProperty().set(new FontIcon(getBatteryIcon(level)));
 		percentage.textProperty().set(String.format("%d%%", level));
 		lowThreshold.getValueFactory().setValue((int) dev.getLowBatteryThreshold());
 		idleTime.getValueFactory().setValue(dev.getIdleTime());

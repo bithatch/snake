@@ -1,7 +1,10 @@
 package uk.co.bithatch.snake.lib.backend.openrazer;
 
 import org.freedesktop.dbus.annotations.DBusInterfaceName;
+import org.freedesktop.dbus.annotations.DBusMemberName;
+import org.freedesktop.dbus.exceptions.DBusException;
 import org.freedesktop.dbus.interfaces.DBusInterface;
+import org.freedesktop.dbus.messages.DBusSignal;
 
 @DBusInterfaceName("razer.device.misc")
 public interface RazerDevice extends DBusInterface {
@@ -17,7 +20,7 @@ public interface RazerDevice extends DBusInterface {
 	String getDriverVersion();
 
 	String getFirmware();
-	
+
 	String getKeyboardLayout();
 
 	int[] getMatrixDimensions();

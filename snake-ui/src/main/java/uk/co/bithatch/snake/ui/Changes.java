@@ -23,6 +23,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.web.WebView;
 import javafx.util.Duration;
+import uk.co.bithatch.snake.widgets.JavaFX;
 
 public class Changes extends AbstractDeviceController {
 	final static ResourceBundle bundle = ResourceBundle.getBundle(Changes.class.getName());
@@ -40,6 +41,8 @@ public class Changes extends AbstractDeviceController {
 
 	@Override
 	protected void onConfigure() throws Exception {
+		JavaFX.bindManagedToVisible(updatesContainer);
+		
 		if (html == null) {
 			Parser parser = Parser.builder().build();
 			File changesFile;
@@ -56,7 +59,8 @@ public class Changes extends AbstractDeviceController {
 				HtmlRenderer renderer = builder.build();
 				html = "<html>";
 				html += "<head>";
-				html += "<link rel=\"stylesheet\" href=\"" + Changes.class.getResource("Changes.html.css") + "\">";
+				html += "<link rel=\"stylesheet\" href=\""
+						+ context.getConfiguration().getTheme().getResource("Changes.html.css") + "\">";
 				html += "</head>";
 				html += "<body>";
 				html += renderer.render(document);
@@ -67,6 +71,8 @@ public class Changes extends AbstractDeviceController {
 		}
 
 		try {
+			changes.getEngine().setUserStyleSheetLocation(
+					context.getConfiguration().getTheme().getResource("Changes.html.css").toExternalForm());
 			changes.getEngine().loadContent(html);
 		} catch (Exception e) {
 			throw new RuntimeException(e);

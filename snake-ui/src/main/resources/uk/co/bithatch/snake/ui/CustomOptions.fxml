@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.String?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.Group?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
-<?import javafx.scene.control.ColorPicker?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
@@ -26,8 +26,10 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+<?import uk.co.bithatch.snake.widgets.ColorBar?>
 
-<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.CustomOptions">
+<VBox xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.CustomOptions">
    <children>
       <VBox fx:id="popupMessages" styleClass="popupMessages" />
       <BorderPane fx:id="header" styleClass="nav">
@@ -66,7 +68,10 @@
                      </graphic>
                   </Label>
                   <Slider fx:id="brightness" />
-                  <Hyperlink onAction="#evtBack" styleClass="iconButton" text="%back" />
+                  <Hyperlink onAction="#evtBack" styleClass="iconButton">
+                     <graphic>
+                        <FontIcon iconLiteral="fa-arrow-left" iconSize="32" />
+                     </graphic></Hyperlink>
                </children>
             </HBox>
          </right>
@@ -89,67 +94,59 @@
                                  <center>
                                     <ToolBar styleClass="transparentBackground">
                                       <items>
-                                          <Button fx:id="reset" mnemonicParsing="false" onAction="#evtReset" styleClass="defaultIconButton" text="%reset">
-                                             <tooltip> 
-                                                <Tooltip text="%reset.toolTip" />
-                                             </tooltip>
-                                          </Button>
-                                          <Button fx:id="selectAll" mnemonicParsing="false" onAction="#evtSelectAll" styleClass="defaultIconButton" text="%selectAll">
-                                             <tooltip>
-                                                <Tooltip text="%selectAll.toolTip" />
-                                             </tooltip>
-                                          </Button>
-                                          <Button fx:id="export" mnemonicParsing="false" onAction="#evtExport" styleClass="defaultIconButton" text="%export">
-                                             <tooltip>
-                                                <Tooltip text="%export.toolTip" />
-                                             </tooltip>
-                                          </Button>
-                                          <Button fx:id="removeEffect" mnemonicParsing="false" onAction="#evtRemoveEffect" styleClass="defaultIconButton" text="%removeEffect">
-                                             <tooltip>
-                                                <Tooltip text="%removeEffect.toolTip" />
-                                             </tooltip>
-                                          </Button>
-                                          <Button fx:id="shiftLeft" mnemonicParsing="false" onAction="#evtShiftLeft" text="%shiftLeft">
+                                          <Button fx:id="shiftLeft" mnemonicParsing="false" onAction="#evtShiftLeft">
                                              <tooltip>
                                                 <Tooltip text="%shiftLeft.toolTip" />
                                              </tooltip>
+                                             <graphic>
+                                                <FontIcon iconLiteral="fa-angle-left" iconSize="22" />
+                                             </graphic>
                                           </Button>
-                                          <Button fx:id="shiftUp" mnemonicParsing="false" onAction="#evtShiftUp" text="%shiftUp">
+                                          <Button fx:id="shiftUp" mnemonicParsing="false" onAction="#evtShiftUp">
                                              <tooltip>
                                                 <Tooltip text="%shiftUp.toolTip" />
                                              </tooltip>
+                                             <graphic>
+                                                <FontIcon iconLiteral="fa-angle-up" iconSize="22" />
+                                             </graphic>
                                           </Button>
-                                          <Button fx:id="shiftDown" mnemonicParsing="false" onAction="#evtShiftDown" text="%shiftDown">
+                                          <Button fx:id="shiftDown" mnemonicParsing="false" onAction="#evtShiftDown">
                                              <tooltip>
                                                 <Tooltip text="%shiftDown.toolTip" />
                                              </tooltip>
+                                             <graphic>
+                                                <FontIcon iconLiteral="fa-angle-down" iconSize="22" />
+                                             </graphic>
                                           </Button>
-                                          <Button fx:id="shiftRight" mnemonicParsing="false" onAction="#evtShiftRight" text="%shiftRight">
+                                          <Button fx:id="shiftRight" mnemonicParsing="false" onAction="#evtShiftRight">
                                              <tooltip>
                                                 <Tooltip text="%shiftRight.toolTip" />
                                              </tooltip>
+                                             <graphic>
+                                                <FontIcon iconLiteral="fa-angle-right" iconSize="22" />
+                                             </graphic>
                                           </Button>
                                       </items>
                                     </ToolBar>
                                  </center>
                                  <right>
-                                    <HBox alignment="CENTER" fillHeight="false" BorderPane.alignment="CENTER">
+                                    <HBox alignment="CENTER_LEFT" BorderPane.alignment="CENTER">
                                        <children>
-                                          <Button mnemonicParsing="false" onAction="#evtRed" style="-fx-background-color: red;" text=" " />
-                                          <Button mnemonicParsing="false" onAction="#evtOrange" style="-fx-background-color: orange;" text=" " />
-                                          <Button mnemonicParsing="false" onAction="#evtYellow" style="-fx-background-color: yellow;" text=" " />
-                                          <Button mnemonicParsing="false" onAction="#evtGreen" style="-fx-background-color: #00ff00;" text=" " />
-                                          <Button mnemonicParsing="false" onAction="#evtBlue" style="-fx-background-color: blue;" text=" " />
-                                          <Button mnemonicParsing="false" onAction="#evtIndigo" style="-fx-background-color: indigo;" text=" " />
-                                          <Button mnemonicParsing="false" onAction="#evtViolet" style="-fx-background-color: violet;" text=" " />
-                                          <Button fx:id="evtWhite" mnemonicParsing="false" onAction="#evtWhite" style="-fx-background-color: white;" text=" " />
-                                          <Label fx:id="colorLabel" text="%customColor" />
-                                          <ColorPicker fx:id="color" onAction="#evtColor" />
+                                          <Hyperlink fx:id="play" onAction="#evtPlay" styleClass="smallIconButton">
+                                             <graphic>
+                                                <FontIcon iconLiteral="fa-play" iconSize="22" />
+                                             </graphic></Hyperlink>
+                                          <Hyperlink fx:id="pause" onAction="#evtPause" styleClass="smallIconButton">
+                                             <graphic>
+                                                <FontIcon iconLiteral="fa-pause" iconSize="22" />
+                                             </graphic></Hyperlink>
+                                          <Hyperlink fx:id="stop" onAction="#evtStop" styleClass="smallIconButton">
+                                             <graphic>
+                                                <FontIcon iconLiteral="fa-stop" iconSize="22" />
+                                             </graphic></Hyperlink>
+                                          <Label alignment="CENTER" styleClass="emphasis" text="%keyFrameNumber" />
+                                          <Spinner fx:id="keyFrameNumber" editable="true" prefWidth="100.0" />
                                        </children>
-                                       <styleClass>
-                                          <String fx:value="row" />
-                                          <String fx:value="small" />
-                                       </styleClass>
                                     </HBox>
                                  </right>
                               </BorderPane>
@@ -157,21 +154,104 @@
                         </VBox>
                      </top>
                      <bottom>
-                        <Hyperlink fx:id="showTimeline" onAction="#evtShowTimeline" text="%showTimeline" BorderPane.alignment="CENTER" />
+                        <GridPane BorderPane.alignment="CENTER">
+                           <columnConstraints>
+                              <ColumnConstraints hgrow="ALWAYS" />
+                              <ColumnConstraints hgrow="ALWAYS" />
+                              <ColumnConstraints hgrow="ALWAYS" />
+                           </columnConstraints>
+                           <rowConstraints>
+                              <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                           </rowConstraints>
+                           <children>
+                              <HBox styleClass="row">
+                                 <children>
+                                    <Hyperlink fx:id="export" onAction="#evtExport" text="%export">
+                                       <graphic>
+                                          <FontIcon iconLiteral="fa-save" iconSize="22" />
+                                       </graphic></Hyperlink>
+                                    <Hyperlink fx:id="removeEffect" onAction="#evtRemoveEffect" text="%removeEffect">
+                                       <graphic>
+                                          <FontIcon iconLiteral="fa-trash" iconSize="22" />
+                                       </graphic></Hyperlink>
+                                 </children>
+                              </HBox>
+                              <Hyperlink fx:id="showTimeline" onAction="#evtShowTimeline" text="%showTimeline" GridPane.columnIndex="1">
+                                 <graphic>
+                                    <FontIcon iconLiteral="fa-clock-o" iconSize="22" />
+                                 </graphic></Hyperlink>
+                           </children>
+                        </GridPane>
                      </bottom>
                      <right>
                         <VBox styleClass="column" BorderPane.alignment="CENTER">
                            <children>
-                              <TabPane>
+                              <TabPane fx:id="customEditorTabs">
                                  <tabs>
-                                    <Tab closable="false" text="%keyFrameOptions">
+                                    <Tab fx:id="properties" closable="false">
+                                      <content>
+                                          <VBox>
+                                             <children>
+                                                <Label styleClass="emphasis" text="%cellInterpolation" />
+                                                <ComboBox fx:id="cellInterpolation" prefWidth="150.0" />
+                                                <Label styleClass="subtitle" text="%source" />
+                                                <GridPane>
+                                                  <columnConstraints>
+                                                    <ColumnConstraints hgrow="SOMETIMES" />
+                                                    <ColumnConstraints hgrow="SOMETIMES" />
+                                                  </columnConstraints>
+                                                  <rowConstraints>
+                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                  </rowConstraints>
+                                                   <children>
+                                                      <Label text="%cellHue" />
+                                                      <Label text="%cellSaturation" GridPane.rowIndex="1" />
+                                                      <Label text="%cellBrightness" GridPane.rowIndex="2" />
+                                                      <ComboBox fx:id="cellHue" prefWidth="150.0" GridPane.columnIndex="1" />
+                                                      <ComboBox fx:id="cellSaturation" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                      <ComboBox fx:id="cellBrightness" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                                   </children>
+                                                </GridPane>
+                                                <Label styleClass="subtitle" text="%cellColor" />
+                                                <VBox>
+                                                   <children>
+                                                      <ColorBar fx:id="colorBar" />
+                                                   </children>
+                                                   <styleClass>
+                                                      <String fx:value="column" />
+                                                      <String fx:value="gapLeft" />
+                                                   </styleClass>
+                                                </VBox>
+                                             </children>
+                                             <styleClass>
+                                                <String fx:value="column" />
+                                                <String fx:value="gapTop" />
+                                             </styleClass>
+                                          </VBox>
+                                      </content>
+                                       <tooltip>
+                                          <Tooltip text="%color.toolTip" />
+                                       </tooltip>
+                                       <graphic>
+                                          <FontIcon iconLiteral="fa-tint" iconSize="22" />
+                                       </graphic>
+                                    </Tab>
+                                    <Tab fx:id="keyFrameOptions" closable="false">
                                        <content>
-                                          <VBox styleClass="column">
+                                          <VBox>
                                              <children>
                                                 <HBox>
                                                    <children>
-                                                      <Hyperlink fx:id="addFrame" onAction="#evtAddFrame" styleClass="small" text="%addFrame" />
-                                                      <Hyperlink fx:id="removeFrame" onAction="#evtRemoveFrame" styleClass="small" text="%removeFrame" />
+                                                      <Hyperlink fx:id="addFrame" onAction="#evtAddFrame" styleClass="small" text="%addFrame">
+                                                         <graphic>
+                                                            <FontIcon iconLiteral="fa-plus" iconSize="22" />
+                                                         </graphic></Hyperlink>
+                                                      <Hyperlink fx:id="removeFrame" onAction="#evtRemoveFrame" styleClass="small" text="%removeFrame">
+                                                         <graphic>
+                                                            <FontIcon iconLiteral="fa-trash" iconSize="22" />
+                                                         </graphic></Hyperlink>
                                                    </children>
                                                 </HBox>
                                                 <Label styleClass="emphasis" text="%keyFrameInterpolation" />
@@ -179,15 +259,22 @@
                                                 <Label styleClass="emphasis" text="%holdKeyFrameFor" />
                                                 <Spinner fx:id="holdKeyFrameFor" editable="true" prefWidth="100.0" />
                                              </children>
+                                             <styleClass>
+                                                <String fx:value="column" />
+                                                <String fx:value="gapTop" />
+                                             </styleClass>
                                           </VBox>
                                        </content>
                                        <tooltip>
                                           <Tooltip text="%keyFrameOptions.toolTip" />
                                        </tooltip>
+                                       <graphic>
+                                          <FontIcon iconLiteral="fa-key" iconSize="22" />
+                                       </graphic>
                                     </Tab>
-                                    <Tab closable="false" text="%animation">
+                                    <Tab fx:id="animation" closable="false">
                                        <content>
-                                          <VBox styleClass="column">
+                                          <VBox>
                                              <children>
                                                 <Label styleClass="emphasis" text="%speed" />
                                                 <Spinner fx:id="speed" editable="true" prefWidth="100.0" />
@@ -196,30 +283,50 @@
                                                 <Label styleClass="emphasis" text="%fps" />
                                                 <Spinner fx:id="fps" editable="true" prefWidth="100.0" />
                                                 <CheckBox fx:id="repeat" mnemonicParsing="false" onAction="#evtRepeat" text="%repeat" />
+                                                
+                                                <Label styleClass="subtitle" text="%audio" />
+                                                <HBox alignment="CENTER_LEFT">
+                                                   <children>
+                                                		<Label text="%low" />
+                                                		<Spinner fx:id="low" editable="true" prefWidth="100.0" />
+                                                   </children>
+                                                </HBox>
+                                                <HBox alignment="CENTER_LEFT">
+                                                   <children>
+                                                		<Label text="%high" />
+                                                		<Spinner fx:id="high" editable="true" prefWidth="100.0" />
+                                                   </children>
+                                                </HBox>
+                                                <HBox alignment="CENTER_LEFT">
+                                                   <children>
+                                                		<Label text="%gain" />
+                                                		<Spinner fx:id="gain" editable="true" prefWidth="100.0" />
+                                                   </children>
+                                                </HBox>
                                              </children>
+                                             <styleClass>
+                                                <String fx:value="column" />
+                                                <String fx:value="gapTop" />
+                                             </styleClass>
+                                             
                                           </VBox>
                                        </content>
                                        <tooltip>
                                           <Tooltip text="%animation.toolTip" />
                                        </tooltip>
+                                       <graphic>
+                                          <FontIcon iconLiteral="fa-video-camera" iconSize="22" />
+                                       </graphic>
                                     </Tab>
                                  </tabs>
+                                 <VBox.margin>
+                                    <Insets />
+                                 </VBox.margin>
                               </TabPane>
-                              <VBox alignment="CENTER" styleClass="column">
-                                 <children>
-                                    <Label alignment="CENTER" styleClass="title" text="%player" textAlignment="CENTER" />
-                                    <HBox alignment="CENTER" styleClass="iconBar">
-                                       <children>
-                                          <Hyperlink fx:id="play" onAction="#evtPlay" styleClass="smallIconButton" text="%play" />
-                                          <Hyperlink fx:id="pause" onAction="#evtPause" styleClass="smallIconButton" text="%pause" />
-                                          <Hyperlink fx:id="stop" onAction="#evtStop" styleClass="smallIconButton" text="%stop" />
-                                       </children>
-                                    </HBox>
-                                    <Label alignment="CENTER" styleClass="emphasis" text="%keyFrameNumber" />
-                                    <Spinner fx:id="keyFrameNumber" editable="true" prefWidth="100.0" />
-                                 </children>
-                              </VBox>
                            </children>
+                           <BorderPane.margin>
+                              <Insets />
+                           </BorderPane.margin>
                         </VBox>
                      </right>
                   </BorderPane>
@@ -238,10 +345,16 @@
                                     <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
                                  </rowConstraints>
                                  <children> 
-                                    <Hyperlink fx:id="hideTimeline" onAction="#evtHideTimeline" text="%hideTimeline" />
+                                    <Hyperlink fx:id="hideTimeline" onAction="#evtHideTimeline" text="%hideTimeline">
+                                       <graphic>
+                                          <FontIcon iconLiteral="fa-close" iconSize="22" />
+                                       </graphic></Hyperlink>
                                     <HBox alignment="CENTER" styleClass="row" GridPane.columnIndex="1" GridPane.columnSpan="2">
                                        <children>
-                                          <Label styleClass="title" text="%timeline" />
+                                          <Label styleClass="title" text="%timeline">
+                                             <graphic>
+                                                <FontIcon iconLiteral="fa-clock-o" iconSize="22" />
+                                             </graphic></Label>
                                           <VBox styleClass="small">
                                              <children>
                                                 <Label fx:id="time" text="Time" />

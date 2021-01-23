@@ -29,9 +29,11 @@ import java.util.zip.ZipEntry;
 import com.google.gson.JsonObject;
 
 import groovy.util.GroovyScriptEngine;
+import uk.co.bithatch.macrolib.MacroProfile;
+import uk.co.bithatch.snake.lib.Backend.BackendListener;
+import uk.co.bithatch.snake.lib.animation.Sequence;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.Json;
-import uk.co.bithatch.snake.lib.Sequence;
 import uk.co.bithatch.snake.lib.layouts.DeviceLayout;
 import uk.co.bithatch.snake.ui.App;
 import uk.co.bithatch.snake.ui.Controller;
@@ -39,7 +41,7 @@ import uk.co.bithatch.snake.ui.DynamicClassLoader;
 import uk.co.bithatch.snake.ui.effects.CustomEffectHandler;
 import uk.co.bithatch.snake.ui.util.Filing;
 
-public class AddOnManager {
+public class AddOnManager implements BackendListener {
 
 	public interface Listener {
 		void addOnAdded(AddOn addOn);
@@ -153,6 +155,25 @@ public class AddOnManager {
 					layout.setBase(addOn.getArchive().toUri().toURL());
 					layout.setReadOnly(true);
 					context.getLayouts().addLayout(layout);
+				} catch (Exception e) {
+					LOG.log(Level.ERROR, String.format("Failed to load layout%s", layoutFile), e);
+				}
+			}
+		} catch (Exception e) {
+			LOG.log(Level.ERROR, "Failed to load scripts", e);
+		}
+
+		try {
+			Path macrosDirectory = getMacrosDirectory();
+			for (File layoutFile : macrosDirectory.toFile()
+					.listFiles((p) -> p.isDirectory() && new File(p, p.getName() + ".json").exists())) {
+				try {
+					Macros addOn = new Macros(layoutFile.toPath().resolve(layoutFile.getName() + ".json"), context);
+					addOns.put(new AddOnKey(addOn.getClass(), addOn.getId()), addOn);
+					MacroProfile macroProfile = addOn.getProfile();
+//					macroProfile.setBase(addOn.getArchive().toUri().toURL());
+//					addOn.setReadOnly(true);
+//					context.getLayouts().addLayout(macroProfile);
 				} catch (Exception e) {
 					LOG.log(Level.ERROR, String.format("Failed to load layout%s", layoutFile), e);
 				}
@@ -353,6 +374,10 @@ public class AddOnManager {
 		listeners.remove(listener);
 	}
 
+	public Path getMacrosDirectory() throws IOException {
+		return getAddOnDirectory("macros");
+	}
+
 	public void start() {
 		for (CustomEffect effect : getCustomEffects()) {
 			try {
@@ -361,6 +386,7 @@ public class AddOnManager {
 				LOG.log(Level.ERROR, "Failed to start script.", e);
 			}
 		}
+		context.getBackend().addListener(this);
 
 		for (Script s : getScripts()) {
 			try {
@@ -409,11 +435,15 @@ public class AddOnManager {
 
 	protected void startDeviceEffects(CustomEffect effect) throws Exception {
 		for (Device dev : context.getBackend().getDevices()) {
-			CustomEffectHandler handler = new CustomEffectHandler(effect.getName(), new Sequence(effect.getSequence()));
-			handler.setReadOnly(true);
-			context.getEffectManager().add(dev, handler);
-			effect.getHandlers().add(handler);
+			startDeviceEffects(effect, dev);
 		}
+	}
+
+	protected void startDeviceEffects(CustomEffect effect, Device dev) {
+		CustomEffectHandler handler = new CustomEffectHandler(effect.getName(), new Sequence(effect.getSequence()));
+		handler.setReadOnly(true);
+		context.getEffectManager().add(dev, handler);
+		effect.getHandlers().add(handler);
 	}
 
 	private <T extends AddOn> void fireAdded(T theme) {
@@ -615,5 +645,20 @@ public class AddOnManager {
 
 			return (A) addOn;
 		}
+	}
+
+	@Override
+	public void deviceAdded(Device device) {
+		for (CustomEffect effect : getCustomEffects()) {
+			try {
+				startDeviceEffects(effect, device);
+			} catch (Exception e) {
+				LOG.log(Level.ERROR, "Failed to start script.", e);
+			}
+		}
+	}
+
+	@Override
+	public void deviceRemoved(Device device) {
 	}
 }

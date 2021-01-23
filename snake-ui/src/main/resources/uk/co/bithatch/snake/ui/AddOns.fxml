@@ -9,14 +9,18 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.AddOns">
+<VBox xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.AddOns">
    <children>
       <BorderPane fx:id="header" styleClass="nav">
          <center>
             <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
                <children>
-                  <Label styleClass="titleIcon" text="%icon" />
+                  <Label styleClass="titleIcon">
+                     <graphic>
+                        <FontIcon iconColor="LIME" iconLiteral="fa-puzzle-piece" iconSize="32" />
+                     </graphic></Label>
                   <Label styleClass="title" text="%addOns" />
                </children>
             </HBox>
@@ -24,7 +28,10 @@
          <right>
             <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
                <children>
-                  <Hyperlink fx:id="back" onAction="#evtBack" styleClass="iconButton" text="%back" />
+                  <Hyperlink fx:id="back" onAction="#evtBack" styleClass="iconButton">
+                     <graphic>
+                        <FontIcon iconColor="LIME" iconLiteral="fa-arrow-down" iconSize="32" />
+                     </graphic></Hyperlink>
                </children>
             </HBox>
          </right>
@@ -52,7 +59,10 @@
                               <Label styleClass="subtitle" text="%installed" />
                               <HBox alignment="CENTER_LEFT" styleClass="row">
                                  <children>
-                                    <Hyperlink fx:id="add" onAction="#evtAdd" text="%add" />
+                                    <Hyperlink fx:id="add" onAction="#evtAdd" text="%add">
+                                       <graphic>
+                                          <FontIcon iconColor="LIME" iconLiteral="fa-plus" iconSize="16" />
+                                       </graphic></Hyperlink>
                                     <Label fx:id="error" styleClass="text-danger" text="Error" visible="false" wrapText="true" />
                                  </children>
                               </HBox>
@@ -76,8 +86,14 @@
                                  </children>
                               </VBox>
                               <Label fx:id="description" styleClass="small" text="Description" wrapText="true" VBox.vgrow="SOMETIMES" />
-                              <Label fx:id="systemAddOn" styleClass="text-warn" text="%systemAddOn" />
-                              <Hyperlink fx:id="deleteAddOn" onAction="#evtDeleteAddOn" text="%deleteAddOn" />
+                              <Label fx:id="systemAddOn" styleClass="text-warn" text="%systemAddOn">
+                                 <graphic>
+                                    <FontIcon iconColor="LIME" iconLiteral="fa-warning" iconSize="16" />
+                                 </graphic></Label>
+                              <Hyperlink fx:id="deleteAddOn" onAction="#evtDeleteAddOn" text="%deleteAddOn">
+                                 <graphic>
+                                    <FontIcon iconColor="LIME" iconLiteral="fa-trash" iconSize="16" />
+                                 </graphic></Hyperlink>
                            </children>
                         </VBox>
                      </right>

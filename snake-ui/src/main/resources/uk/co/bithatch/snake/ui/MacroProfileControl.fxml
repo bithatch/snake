@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import org.controlsfx.control.SearchableComboBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" styleClass="control" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.MacroProfileControl">
+   <children>
+      <HBox>
+         <children>
+            <Label maxWidth="1.7976931348623157E308" styleClass="header" text="%profile" HBox.hgrow="ALWAYS" />
+         </children>
+      </HBox>
+      <VBox>
+         <children>
+            <HBox styleClass="row">
+               <children>
+                  <SearchableComboBox fx:id="profiles" prefWidth="160.0" />
+                  <Hyperlink fx:id="addProfile" onAction="#evtAddProfile">
+                     <tooltip>
+                        <Tooltip text="%addProfile.tooltip" />
+                     </tooltip>
+                     <graphic>
+                        <FontIcon iconLiteral="fa-plus-circle" iconSize="22" styleClass="smallIconButton" />
+                     </graphic>
+                  </Hyperlink>
+                  <Hyperlink fx:id="configure" onAction="#evtConfigure">
+                     <tooltip>
+                        <Tooltip text="%configure.tooltip" />
+                     </tooltip>
+                     <graphic>
+                        <FontIcon iconLiteral="fa-gear" iconSize="22" styleClass="smallIconButton" />
+                     </graphic>
+                  </Hyperlink>
+               </children>
+            </HBox>
+            <Label styleClass="emphasis" text="%bank" />
+            <VBox fx:id="banks" styleClass="column" />
+         </children>
+         <styleClass>
+            <String fx:value="column" />
+            <String fx:value="padded" />
+         </styleClass>
+      </VBox>
+   </children>
+</VBox>

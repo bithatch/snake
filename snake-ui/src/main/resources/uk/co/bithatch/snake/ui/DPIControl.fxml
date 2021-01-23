@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.String?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.image.Image?>
@@ -7,26 +8,26 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" styleClass="control" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.DPIControl">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" styleClass="control" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.DPIControl">
    <children>
       <HBox styleClass="gapBottom">
          <children>
-            <Label styleClass="header" text="%dpi" />
+            <Label maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="header" text="%dpi" HBox.hgrow="ALWAYS" />
          </children>
       </HBox>
       <HBox>
          <children>
             <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
                <image>
-                  <Image url="@icons/mouse-slow32.png" />
-               </image></ImageView>
-            <Slider fx:id="dpi" majorTickUnit="1000.0" minorTickCount="100" snapToTicks="true" />
-            <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
-               <image>
                   <Image url="@icons/mouse-fast32.png" />
                </image></ImageView>
+            <Slider fx:id="dpi" majorTickUnit="1000.0" minorTickCount="100" prefWidth="120.0" snapToTicks="true" />
             <Label fx:id="dpiText" text="DPI" />
          </children>
+         <styleClass>
+            <String fx:value="padded" />
+            <String fx:value="row" />
+         </styleClass>
       </HBox>
    </children>
 </VBox>

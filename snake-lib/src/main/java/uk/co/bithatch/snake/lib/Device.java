@@ -1,6 +1,7 @@
 package uk.co.bithatch.snake.lib;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -75,6 +76,11 @@ public interface Device extends AutoCloseable, Grouping, Lit {
 
 	Map<Key, MacroSequence> getMacros();
 
+	/**
+	 * Matrix size.
+	 * 
+	 * @return height, width
+	 */
 	int[] getMatrixSize();
 
 	int getMaxDPI();
@@ -86,6 +92,10 @@ public interface Device extends AutoCloseable, Grouping, Lit {
 	int getPollRate();
 
 	List<Region> getRegions();
+	
+	boolean[] getProfileRGB();
+	
+	void setProfileRGB(boolean[] rgb);
 
 	String getSerial();
 
@@ -127,14 +137,14 @@ public interface Device extends AutoCloseable, Grouping, Lit {
 		return l;
 	}
 
-	default List<ComponentType> getSupportedComponentTypes() {
-		List<ComponentType> l = new ArrayList<>();
+	default Set<ComponentType> getSupportedComponentTypes() {
+		Set<ComponentType> l = new LinkedHashSet<>();
 		l.add(ComponentType.AREA);
 		if (getCapabilities().contains(Capability.MATRIX))
 			l.add(ComponentType.LED);
 		if (getCapabilities().contains(Capability.DEDICATED_MACRO_KEYS))
 			l.add(ComponentType.KEY);
-		if (getCapabilities().contains(Capability.MACRO_PROFILE_LEDS) || getCapabilities().contains(Capability.MACROS))
+		if (getCapabilities().contains(Capability.PROFILE_LEDS) || getCapabilities().contains(Capability.MACROS))
 			l.add(ComponentType.ACCESSORY);
 		return l;
 	}

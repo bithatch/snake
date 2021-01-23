@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.lang.System.Logger.Level;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
@@ -27,9 +29,9 @@ import uk.co.bithatch.snake.ui.Configuration.TrayIcon;
 import uk.co.bithatch.snake.ui.addons.AddOn;
 import uk.co.bithatch.snake.ui.addons.AddOnManager.Listener;
 import uk.co.bithatch.snake.ui.addons.Theme;
-import uk.co.bithatch.snake.ui.widgets.Direction;
+import uk.co.bithatch.snake.widgets.Direction;
 
-public class Options extends AbstractDeviceController implements Listener {
+public class Options extends AbstractDeviceController implements Listener, PreferenceChangeListener {
 
 	final static System.Logger LOG = System.getLogger(Options.class.getName());
 	final static ResourceBundle bundle = ResourceBundle.getBundle(Options.class.getName());
@@ -172,36 +174,39 @@ public class Options extends AbstractDeviceController implements Listener {
 			}
 		});
 		optionsHeader.setBackground(createHeaderBackground());
-		decorated.selectedProperty().bindBidirectional(cfg.decoratedProperty());
+
+		decorated.setSelected(cfg.isDecorated());
+		decorated.selectedProperty().addListener((e,o,n) -> context.getConfiguration().setDecorated(n));
+
 		theme.itemsProperty().get().addAll(context.getAddOnManager().getThemes());
-		theme.getSelectionModel().select(context.getConfiguration().themeProperty().getValue());
-		context.getConfiguration().themeProperty().addListener((e) -> {
-			theme.getSelectionModel().select(context.getConfiguration().themeProperty().getValue());
-		});
+		theme.getSelectionModel().select(context.getConfiguration().getTheme());
 		transparencyLabel.setLabelFor(transparency);
 		transparency.disableProperty().bind(decorated.selectedProperty());
-		transparency.valueProperty().bindBidirectional(cfg.transparencyProperty());
+		transparency.setValue(cfg.getTransparency());
+		transparency.valueProperty().addListener((e,o,n) -> context.getConfiguration().setTransparency(n.intValue()));
 		if (context.getWindow() != null) {
 			context.getWindow().getOptions().visibleProperty().set(false);
 		}
-		trayIconGroup.selectedToggleProperty().addListener((e) -> {
+		trayIconGroup.selectedToggleProperty().addListener((e,o,n) -> {
 			if (noTrayIcon.selectedProperty().get())
-				cfg.trayIconProperty().setValue(TrayIcon.OFF);
+				cfg.setTrayIcon(TrayIcon.OFF);
 			else if (autoTrayIcon.selectedProperty().get())
-				cfg.trayIconProperty().setValue(TrayIcon.AUTO);
+				cfg.setTrayIcon(TrayIcon.AUTO);
 			else if (darkTrayIcon.selectedProperty().get())
-				cfg.trayIconProperty().setValue(TrayIcon.DARK);
+				cfg.setTrayIcon(TrayIcon.DARK);
 			else if (lightTrayIcon.selectedProperty().get())
-				cfg.trayIconProperty().setValue(TrayIcon.LIGHT);
+				cfg.setTrayIcon(TrayIcon.LIGHT);
 			else if (colorTrayIcon.selectedProperty().get())
-				cfg.trayIconProperty().setValue(TrayIcon.COLOR);
+				cfg.setTrayIcon(TrayIcon.COLOR);
 			setAvailable(cfg);
 			setStartOnLogin(cfg);
 		});
-		showBattery.selectedProperty().bindBidirectional(cfg.showBatteryProperty());
-		whenLow.selectedProperty().bindBidirectional(cfg.whenLowProperty());
+		showBattery.setSelected(cfg.isShowBattery());
+		showBattery.selectedProperty().addListener((e,o,n) -> context.getConfiguration().setShowBattery(n));
+		whenLow.setSelected(cfg.isWhenLow());
 		whenLow.disableProperty().bind(Bindings.not(showBattery.selectedProperty()));
-		switch (cfg.trayIconProperty().getValue()) {
+		whenLow.selectedProperty().addListener((e,o,n) -> context.getConfiguration().setWhenLow(n));
+		switch (cfg.getTrayIcon()) {
 		case OFF:
 			noTrayIcon.selectedProperty().set(true);
 			break;
@@ -219,21 +224,28 @@ public class Options extends AbstractDeviceController implements Listener {
 			break;
 		}
 		context.getAddOnManager().addListener(this);
+		cfg.getNode().addPreferenceChangeListener(this);
 		setAvailable(cfg);
+	}
+
+	@Override
+	protected void onDeviceCleanUp() {
+		super.onDeviceCleanUp();
+		context.getConfiguration().getNode().removePreferenceChangeListener(this);
 	}
 
 	private void setStartOnLogin(Configuration cfg) {
 		try {
-			PlatformService.get().setStartOnLogin(
-					cfg.trayIconProperty().getValue() != TrayIcon.OFF && startOnLogin.selectedProperty().get());
+			PlatformService.get()
+					.setStartOnLogin(cfg.getTrayIcon() != TrayIcon.OFF && startOnLogin.selectedProperty().get());
 		} catch (IOException e) {
 			LOG.log(Level.ERROR, "Failed to set start on login state.", e);
 		}
 	}
 
 	private void setAvailable(Configuration cfg) {
-		showBattery.disableProperty().set(cfg.trayIconProperty().getValue() == TrayIcon.OFF);
-		startOnLogin.disableProperty().set(cfg.trayIconProperty().getValue() == TrayIcon.OFF);
+		showBattery.disableProperty().set(cfg.getTrayIcon() == TrayIcon.OFF);
+		startOnLogin.disableProperty().set(cfg.getTrayIcon() == TrayIcon.OFF);
 	}
 
 	@FXML
@@ -243,7 +255,7 @@ public class Options extends AbstractDeviceController implements Listener {
 
 	@FXML
 	void evtTheme() {
-		context.getConfiguration().themeProperty().setValue(theme.getSelectionModel().getSelectedItem());
+		context.getConfiguration().setTheme(theme.getSelectionModel().getSelectedItem());
 	}
 
 	@FXML
@@ -269,6 +281,22 @@ public class Options extends AbstractDeviceController implements Listener {
 	public void addOnRemoved(AddOn addOn) {
 		if (addOn instanceof Theme)
 			Platform.runLater(() -> theme.itemsProperty().get().remove((Theme) addOn));
+	}
+
+	@Override
+	public void preferenceChange(PreferenceChangeEvent evt) {
+		Configuration cfg = context.getConfiguration();
+		if (evt.getKey().equals(Configuration.PREF_DECORATED))
+			decorated.setSelected(cfg.isDecorated());
+		else if (evt.getKey().equals(Configuration.PREF_THEME))
+			theme.getSelectionModel().select(cfg.getTheme());
+		else if (evt.getKey().equals(Configuration.PREF_TRANSPARENCY))
+			transparency.setValue(cfg.getTransparency());
+		else if (evt.getKey().equals(Configuration.PREF_SHOW_BATTERY))
+			showBattery.setSelected(cfg.isShowBattery());
+		else if (evt.getKey().equals(Configuration.PREF_WHEN_LOW))
+			whenLow.setSelected(cfg.isWhenLow());
+
 	}
 
 }

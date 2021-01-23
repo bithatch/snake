@@ -21,8 +21,15 @@ public abstract class AbstractMatrixIO extends AbstractIO implements MatrixIO {
 	@Override
 	public String getDefaultLabel() {
 		MatrixCell cell = getMatrixCell();
-		if (cell == null || cell == this)
-			return String.format("%d,%d", matrixX, matrixY);
+		if (cell == null || cell == this) {
+			DeviceView view = getView();
+			if(view != null && view.getLayout().getMatrixWidth() == 1)
+				return String.format("%d", matrixY);
+			else if(view != null && view.getLayout().getMatrixHeight() == 1)
+				return String.format("%d", matrixX);
+			else
+				return String.format("%d,%d", matrixX, matrixY);
+		}
 		else
 			return cell.getDisplayLabel();
 	}

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+<?import uk.co.bithatch.snake.widgets.ColorBar?>
+
+<BorderPane xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.AudioOptions">
+   <top>
+      <BorderPane fx:id="header" styleClass="nav" BorderPane.alignment="CENTER_LEFT">
+         <center>
+            <HBox alignment="CENTER_LEFT" fillHeight="false" BorderPane.alignment="CENTER_LEFT">
+               <children>
+                  <Group>
+                     <children>
+                        <ImageView fx:id="deviceImage" fitHeight="96.0" fitWidth="96.0" pickOnBounds="true" preserveRatio="true" />
+                        <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true" styleClass="titleImage" x="60.0" y="6.0">
+                           <image>
+                              <Image url="@effects/static32.png" />
+                           </image>
+                        </ImageView>
+                     </children>
+                  </Group>
+                  <VBox>
+                     <children>
+                        <Label styleClass="title" text="%audio" />
+                        <Label fx:id="deviceName" text="Device Name" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+         </center>
+         <right>
+            <HBox alignment="CENTER" fillHeight="false" BorderPane.alignment="CENTER">
+               <children>
+                  <Hyperlink onAction="#evtBack" styleClass="iconButton">
+                     <graphic>
+                        <FontIcon iconLiteral="fa-arrow-left" iconSize="32" />
+                     </graphic></Hyperlink>
+               </children>
+            </HBox>
+         </right>
+         <top>
+            <VBox fx:id="popupMessages" styleClass="popupMessages" BorderPane.alignment="CENTER" />
+         </top>
+      </BorderPane>
+   </top>
+   <center>
+      <BorderPane BorderPane.alignment="CENTER">
+         <left>
+            <VBox BorderPane.alignment="CENTER">
+               <children>
+                  <Label styleClass="subtitle" text="%source" />
+                  <ComboBox fx:id="source" />
+                  <Label styleClass="emphasis" text="%gain" />
+                  <Slider fx:id="gain" majorTickUnit="1.0" max="20.0" minorTickCount="0" showTickLabels="true" showTickMarks="true" value="1.0" />
+                  <Label styleClass="emphasis" text="%fps" />
+                  <Spinner fx:id="fps" styleClass="split-arrows-horizontal" />
+                  <CheckBox fx:id="fft" mnemonicParsing="false" styleClass="gapTop" text="%fft" />
+               </children>
+               <styleClass>
+                  <String fx:value="column" />
+                  <String fx:value="tools" />
+               </styleClass>
+            </VBox>
+         </left>
+         <bottom>
+            <VBox alignment="CENTER" styleClass="tools" BorderPane.alignment="CENTER">
+               <children>
+                  <Label styleClass="subtitle" text="%preview" />
+                  <VBox fx:id="previewContainer" alignment="CENTER" style="-fx-border-color: -fx-accent;" />
+               </children>
+            </VBox>
+         </bottom>
+         <center>
+            <VBox BorderPane.alignment="CENTER">
+               <children>
+                  <Label styleClass="subtitle" text="%lightingEffect" />
+                  <Label styleClass="emphasis" text="%mode" />
+                  <ComboBox fx:id="mode" onAction="#evtMode" prefWidth="150.0" />
+                  <Label styleClass="emphasis" text="%color1" />
+                  <ColorBar fx:id="color1" />
+                  <Label styleClass="emphasis" text="%color2" />
+                  <ColorBar fx:id="color2" />
+                  <Label styleClass="emphasis" text="%color3" />
+                  <ColorBar fx:id="color3" />
+               </children>
+               <styleClass>
+                  <String fx:value="column" />
+                  <String fx:value="tools" />
+               </styleClass>
+            </VBox>
+         </center>
+      </BorderPane>
+   </center>
+</BorderPane>

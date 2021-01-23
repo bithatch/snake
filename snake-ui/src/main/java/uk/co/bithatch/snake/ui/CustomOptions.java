@@ -2,14 +2,15 @@ package uk.co.bithatch.snake.ui;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.prefs.Preferences;
-
-import com.sshtools.icongenerator.IconBuilder;
 
 import javafx.animation.Transition;
 import javafx.application.Platform;
@@ -19,10 +20,9 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.scene.canvas.Canvas;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Hyperlink;
@@ -35,6 +35,8 @@ import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
 import javafx.scene.control.SplitPane;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.effect.Glow;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -42,84 +44,144 @@ import javafx.scene.paint.Color;
 import javafx.util.Duration;
 import uk.co.bithatch.snake.lib.Colors;
 import uk.co.bithatch.snake.lib.Device;
-import uk.co.bithatch.snake.lib.FramePlayer;
-import uk.co.bithatch.snake.lib.FramePlayer.FrameListener;
-import uk.co.bithatch.snake.lib.Interpolation;
-import uk.co.bithatch.snake.lib.KeyFrame;
-import uk.co.bithatch.snake.lib.Sequence;
+import uk.co.bithatch.snake.lib.Region;
+import uk.co.bithatch.snake.lib.animation.AudioDataProvider;
+import uk.co.bithatch.snake.lib.animation.AudioParameters;
+import uk.co.bithatch.snake.lib.animation.FramePlayer;
+import uk.co.bithatch.snake.lib.animation.FramePlayer.FrameListener;
+import uk.co.bithatch.snake.lib.animation.Interpolation;
+import uk.co.bithatch.snake.lib.animation.KeyFrame;
+import uk.co.bithatch.snake.lib.animation.KeyFrame.KeyFrameCellSource;
+import uk.co.bithatch.snake.lib.animation.KeyFrameCell;
+import uk.co.bithatch.snake.lib.animation.Sequence;
+import uk.co.bithatch.snake.lib.layouts.Area;
 import uk.co.bithatch.snake.lib.layouts.ComponentType;
+import uk.co.bithatch.snake.lib.layouts.DeviceLayout;
+import uk.co.bithatch.snake.lib.layouts.DeviceView;
 import uk.co.bithatch.snake.lib.layouts.IO;
+import uk.co.bithatch.snake.lib.layouts.MatrixCell;
 import uk.co.bithatch.snake.lib.layouts.MatrixIO;
+import uk.co.bithatch.snake.lib.layouts.ViewPosition;
 import uk.co.bithatch.snake.ui.addons.CustomEffect;
 import uk.co.bithatch.snake.ui.designer.MatrixView;
 import uk.co.bithatch.snake.ui.designer.TabbedViewer;
 import uk.co.bithatch.snake.ui.effects.CustomEffectHandler;
-import uk.co.bithatch.snake.ui.util.JavaFX;
 import uk.co.bithatch.snake.ui.util.Strings;
 import uk.co.bithatch.snake.ui.util.Time;
-import uk.co.bithatch.snake.ui.widgets.Direction;
+import uk.co.bithatch.snake.widgets.ColorBar;
+import uk.co.bithatch.snake.widgets.Direction;
+import uk.co.bithatch.snake.widgets.GeneratedIcon;
+import uk.co.bithatch.snake.widgets.JavaFX;
 
 public class CustomOptions extends AbstractEffectController<Sequence, CustomEffectHandler> implements FrameListener {
 
+	final static ResourceBundle bundle = ResourceBundle.getBundle(CustomOptions.class.getName());
+
+	final static String PREF_TIMELINE_DIVIDER = "timelineDivider";
+	final static String PREF_TIMELINE_VISIBLE = "timelineVisible";
+	final static Preferences PREFS = Preferences.userNodeForPackage(CustomOptions.class);
+
 	private static final double MIN_SPEED = 0.001;
 
-	final static Preferences PREFS = Preferences.userNodeForPackage(CustomOptions.class);
-	final static String PREF_TIMELINE_VISIBLE = "timelineVisible";
-	final static String PREF_TIMELINE_DIVIDER = "timelineDivider";
+	final static int[] getRGBAverage(DeviceLayout layout, Collection<IO> elements, KeyFrame frame,
+			AudioDataProvider audio) {
+		DeviceView matrixView = null;
+		int[] rgb = new int[3];
+		int r = 0;
+		for (IO element : elements) {
+			if (element instanceof Area) {
+				if (matrixView == null)
+					matrixView = layout.getViews().get(ViewPosition.MATRIX);
+				Area area = (Area) element;
+				Region.Name region = area.getRegion();
+				for (IO cell : matrixView.getElements()) {
+					MatrixCell mc = (MatrixCell) cell;
+					if (mc.getRegion() == region) {
+						int[] rr = frame.getCell(mc.getMatrixX(), mc.getMatrixY()).getValues();
+						rgb[0] += rr[0];
+						rgb[1] += rr[1];
+						rgb[2] += rr[2];
+						r++;
 
-	final static ResourceBundle bundle = ResourceBundle.getBundle(CustomOptions.class.getName());
+					}
+				}
+			} else if (element instanceof MatrixIO) {
+				MatrixIO matrixIO = (MatrixIO) element;
+				if (matrixIO.isMatrixLED()) {
+					int[] rr = frame.getCell(matrixIO.getMatrixX(), matrixIO.getMatrixY()).getValues();
+					rgb[0] += rr[0];
+					rgb[1] += rr[1];
+					rgb[2] += rr[2];
+					r++;
+				}
+			}
+		}
+		if (r == 0)
+			return Colors.COLOR_BLACK;
+		else
+			return new int[] { rgb[0] / r, rgb[1] / r, rgb[2] / r };
+	}
 
 	@FXML
 	private Hyperlink addFrame;
 	@FXML
-	private ColorPicker color;
+	private Tab animation;
 	@FXML
-	private Label colorLabel;
+	private ComboBox<KeyFrameCellSource> cellBrightness;
+	@FXML
+	private ComboBox<KeyFrameCellSource> cellHue;
+	@FXML
+	private ComboBox<Interpolation> cellInterpolation;
+	@FXML
+	private ComboBox<KeyFrameCellSource> cellSaturation;
+	@FXML
+	private ColorBar colorBar;
 	@FXML
 	private BorderPane container;
 	@FXML
-	private BorderPane timelineContainer;
+	private TabPane customEditorTabs;
 	@FXML
 	private ComboBox<Interpolation> defaultInterpolation;
 	@FXML
 	private Label effectName;
 	@FXML
+	private Hyperlink export;
+	@FXML
 	private Spinner<Integer> fps;
 	@FXML
 	private Label frames;
+	@FXML
+	private Spinner<Double> gain;
+	@FXML
+	private Hyperlink hideTimeline;
+	@FXML
+	private Spinner<Integer> high;
 	@FXML
 	private Spinner<Double> holdKeyFrameFor;
 	@FXML
 	private ComboBox<Interpolation> keyFrameInterpolation;
 	@FXML
+	private Spinner<Integer> keyFrameNumber;
+	@FXML
+	private Tab keyFrameOptions;
+	@FXML
+	private Spinner<Integer> low;
+	@FXML
 	private Hyperlink pause;
 	@FXML
 	private Hyperlink play;
-	private KeyFrame playingFrame;
 	@FXML
 	private Slider progress;
+	@FXML
+	private Tab properties;
+	@FXML
+	private Hyperlink removeEffect;
 	@FXML
 	private Hyperlink removeFrame;
 	@FXML
 	private CheckBox repeat;
 	@FXML
-	private Spinner<Double> speed;
-	@FXML
-	private Spinner<Integer> keyFrameNumber;
-	@FXML
-	private Hyperlink stop;
-	@FXML
-	private Label time;
-	@FXML
-	private HBox timeline;
-	@FXML
-	private Button reset;
-	@FXML
-	private Button selectAll;
-	@FXML
-	private Button export;
-	@FXML
-	private Button removeEffect;
+	private Button shiftDown;
 	@FXML
 	private Button shiftLeft;
 	@FXML
@@ -127,28 +189,54 @@ public class CustomOptions extends AbstractEffectController<Sequence, CustomEffe
 	@FXML
 	private Button shiftUp;
 	@FXML
-	private Button shiftDown;
+	private Hyperlink showTimeline;
+	@FXML
+	private Spinner<Double> speed;
 	@FXML
 	private SplitPane split;
 	@FXML
-	private Hyperlink showTimeline;
+	private Hyperlink stop;
 	@FXML
-	private Hyperlink hideTimeline;
-
+	private Label time;
+	@FXML
+	private HBox timeline;
+	@FXML
+	private BorderPane timelineContainer;
 	@FXML
 	private ScrollPane timelineScrollPane;
 
 	private TabbedViewer deviceViewer;
-	private boolean adjusting;
-	private boolean adjustingProgress;
 	private int deviceX;
 	private int deviceY;
-	private Map<KeyFrame, BorderPane> keyFrames = new HashMap<>();
 	private boolean keyFrameAdjusting;
+	private IntegerSpinnerValueFactory keyFrameNumberFactory;
+	private Map<KeyFrame, BorderPane> keyFrames = new HashMap<>();
+	private KeyFrame playingFrame;
 	private boolean timelineHidden;
+	private boolean adjusting;
+	private boolean adjustingProgress;
 	private ObjectProperty<KeyFrame> currentKeyFrame = new SimpleObjectProperty<>(null, "currentKeyFrame");
 
-	private IntegerSpinnerValueFactory keyFrameNumberFactory;
+	public ObjectProperty<KeyFrame> currentKeyFrame() {
+		return currentKeyFrame;
+	}
+
+	@FXML
+	public void evtReset() {
+		KeyFrame f = getCurrentKeyFrame();
+		List<IO> sel = deviceViewer.getSelectedElements();
+		if (sel.isEmpty()) {
+			deviceViewer.getSelectedView().getElements();
+		}
+		for (IO io : sel) {
+			if (io instanceof MatrixIO) {
+				MatrixIO mio = (MatrixIO) io;
+				f.setCell(mio.getMatrixX(), mio.getMatrixY(), new KeyFrameCell(Colors.COLOR_BLACK));
+			}
+		}
+		deviceViewer.deselectAll();
+		updateState();
+	}
 
 	@Override
 	public void frameUpdate(KeyFrame frame, int[][][] rgb, float fac, long frameNumber) {
@@ -156,6 +244,10 @@ public class CustomOptions extends AbstractEffectController<Sequence, CustomEffe
 			updateFrame(rgb);
 			rebuildTimestats();
 		});
+	}
+
+	public KeyFrame getCurrentKeyFrame() {
+		return currentKeyFrame.get();
 	}
 
 	@Override
@@ -285,6 +377,24 @@ public class CustomOptions extends AbstractEffectController<Sequence, CustomEffe
 		return menu;
 	}
 
+	protected Set<Integer> getSelectedMatrixRows() {
+		Set<Integer> rows = new HashSet<>();
+		for (MatrixIO el : MatrixView.expandMatrixElements(deviceViewer.getLayout(),
+				deviceViewer.getSelectedElements())) {
+			rows.add(el.getMatrixY());
+		}
+		return rows;
+	}
+
+	protected Set<Integer> getSelectedMatrixColumns() {
+		Set<Integer> rows = new HashSet<>();
+		for (MatrixIO el : MatrixView.expandMatrixElements(deviceViewer.getLayout(),
+				deviceViewer.getSelectedElements())) {
+			rows.add(el.getMatrixX());
+		}
+		return rows;
+	}
+
 	@Override
 	protected void onDeviceCleanUp() {
 		CustomEffectHandler fx = getEffectHandler();
@@ -303,12 +413,13 @@ public class CustomOptions extends AbstractEffectController<Sequence, CustomEffe
 		deviceY = dim[0];
 		deviceX = dim[1];
 
-		colorLabel.setLabelFor(color);
-
 		for (Interpolation ip : Interpolation.interpolations()) {
-			if (!ip.equals(Interpolation.sequence))
+			if (!ip.equals(Interpolation.sequence) && !ip.equals(Interpolation.keyframe))
 				defaultInterpolation.itemsProperty().get().add(ip);
-			keyFrameInterpolation.itemsProperty().get().add(ip);
+			if (!ip.equals(Interpolation.keyframe))
+				keyFrameInterpolation.itemsProperty().get().add(ip);
+			if (!ip.equals(Interpolation.sequence))
+				cellInterpolation.itemsProperty().get().add(ip);
 		}
 
 		deviceViewer = new TabbedViewer(context, getDevice());
@@ -322,7 +433,7 @@ public class CustomOptions extends AbstractEffectController<Sequence, CustomEffe
 		deviceViewer.getKeySelectionModel().getSelectedItems().addListener(new ListChangeListener<>() {
 			@Override
 			public void onChanged(Change<? extends IO> c) {
-				setColorForButtons();
+				updateSelection();
 				updateAvailability();
 			}
 		});
@@ -333,6 +444,23 @@ public class CustomOptions extends AbstractEffectController<Sequence, CustomEffe
 		showTimeline.managedProperty().bind(showTimeline.visibleProperty());
 		showTimeline.visibleProperty().bind(Bindings.not(timelineContainer.visibleProperty()));
 
+		cellHue.getItems().addAll(KeyFrameCellSource.values());
+		cellSaturation.getItems().addAll(KeyFrameCellSource.values());
+		cellBrightness.getItems().addAll(KeyFrameCellSource.values());
+
+		cellHue.getSelectionModel().selectedItemProperty().addListener((e, o, n) -> {
+			if (!adjusting) {
+				setSelectedTo(colorBar.getColor(), n, 0);
+			}
+		});
+		cellSaturation.getSelectionModel().selectedItemProperty().addListener((e, o, n) -> {
+			if (!adjusting)
+				setSelectedTo(colorBar.getColor(), n, 1);
+		});
+		cellBrightness.getSelectionModel().selectedItemProperty().addListener((e, o, n) -> {
+			if (!adjusting)
+				setSelectedTo(colorBar.getColor(), n, 2);
+		});
 	}
 
 	@Override
@@ -342,7 +470,8 @@ public class CustomOptions extends AbstractEffectController<Sequence, CustomEffe
 		deviceViewer.setSelectableElements(!player.isActive());
 
 		effectName.textProperty().set(effect.getDisplayName());
-		 keyFrameNumberFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, Math.max(0, effect.getSequence().size() - 1), 1, 1);
+		keyFrameNumberFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0,
+				Math.max(0, effect.getSequence().size() - 1), 1, 1);
 		keyFrameNumber.setValueFactory(keyFrameNumberFactory);
 		keyFrameNumber.valueProperty().addListener((e) -> {
 			if (!keyFrameAdjusting)
@@ -366,6 +495,30 @@ public class CustomOptions extends AbstractEffectController<Sequence, CustomEffe
 			rebuildTimestats();
 			saveSequence();
 		});
+		low.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 255,
+				effect.getSequence().getAudioParameters() == null ? 0
+						: effect.getSequence().getAudioParameters().getLow(),
+				1));
+		low.valueProperty().addListener((e, o, n) -> {
+			if (!adjusting)
+				setSelectedAudioLow(n);
+		});
+		high.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 255,
+				effect.getSequence().getAudioParameters() == null ? 255
+						: effect.getSequence().getAudioParameters().getHigh(),
+				1));
+		high.valueProperty().addListener((e, o, n) -> {
+			if (!adjusting)
+				setSelectedAudioHigh(n);
+		});
+		gain.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(0, 20,
+				effect.getSequence().getAudioParameters() == null ? 1.0
+						: effect.getSequence().getAudioParameters().getGain(),
+				0.1));
+		gain.valueProperty().addListener((e, o, n) -> {
+			if (!adjusting)
+				setSelectedAudioGain(n.floatValue());
+		});
 		repeat.selectedProperty().set(effect.getSequence().isRepeat());
 		defaultInterpolation.selectionModelProperty().get().select(effect.getSequence().getInterpolation());
 		keyFrameInterpolation.selectionModelProperty().addListener((e) -> {
@@ -383,8 +536,14 @@ public class CustomOptions extends AbstractEffectController<Sequence, CustomEffe
 			}
 		});
 		currentKeyFrame.addListener((e, o, n) -> {
-			setColorForButtons();
+			updateSelection();
 		});
+		colorBar.colorProperty().addListener((e, o, n) -> {
+			if (!adjusting)
+				setSelectedTo(n);
+		});
+		cellInterpolation.getSelectionModel().selectedItemProperty()
+				.addListener((e, o, n) -> setSelectedToInterpolation(n));
 
 		rebuildTimeline();
 		updateAvailability();
@@ -394,7 +553,7 @@ public class CustomOptions extends AbstractEffectController<Sequence, CustomEffe
 
 		double pos = PREFS.getDouble(PREF_TIMELINE_DIVIDER, -1);
 		boolean vis = PREFS.getBoolean(PREF_TIMELINE_VISIBLE, true);
-		split.getDividers().get(0).positionProperty().addListener((e,o,n) -> {
+		split.getDividers().get(0).positionProperty().addListener((e, o, n) -> {
 			if (timelineContainer.visibleProperty().get()) {
 				PREFS.putDouble(PREF_TIMELINE_DIVIDER, split.getDividerPositions()[0]);
 			} else if (timelineHidden && n.floatValue() > 1) {
@@ -403,8 +562,7 @@ public class CustomOptions extends AbstractEffectController<Sequence, CustomEffe
 		});
 		if (vis) {
 			split.setDividerPositions(pos == -1 ? 0.75 : pos);
-		}
-		else {
+		} else {
 			timelineHidden = true;
 			timelineContainer.visibleProperty().set(false);
 			split.setDividerPositions(1);
@@ -421,7 +579,7 @@ public class CustomOptions extends AbstractEffectController<Sequence, CustomEffe
 						KeyFrame f = effect.getSequence().getFrameAt(t);
 						if (!player.isPlaying())
 							updateKeyFrameConfiguration(f);
-						updateFrame(f.getFrame());
+						updateFrame(f.getRGBFrame(context.getAudioManager()));
 					}
 				} finally {
 					adjustingProgress = false;
@@ -455,6 +613,100 @@ public class CustomOptions extends AbstractEffectController<Sequence, CustomEffe
 		rebuildTimestats();
 	}
 
+	protected void setCurrentKeyFrame(KeyFrame selection) {
+		this.currentKeyFrame.set(selection);
+	}
+
+	protected void setSelectedAudioGain(float gain) {
+		Sequence seq = getEffectHandler().getSequence();
+		KeyFrame kf = getSelectedFrame();
+		AudioParameters audio = seq.getAudioParameters();
+		if (audio != null && audio.getLow() == 0 && audio.getHigh() == 255 && gain == 1) {
+			/* So we don't export default parameters */
+			seq.setAudioParameters(null);
+		} else if (gain != 1) {
+			if (audio == null) {
+				audio = new AudioParameters();
+				seq.setAudioParameters(audio);
+			}
+			audio.setGain(gain);
+		}
+		deviceViewer.updateFromMatrix(kf.getRGBFrame(context.getAudioManager()));
+		updateState();
+	}
+
+	protected void setSelectedAudioHigh(int high) {
+		Sequence seq = getEffectHandler().getSequence();
+		KeyFrame kf = getSelectedFrame();
+		AudioParameters audio = seq.getAudioParameters();
+		if (audio != null && audio.getLow() == 0 && audio.getGain() == 1 && high == 255) {
+			/* So we don't export default parameters */
+			seq.setAudioParameters(null);
+		} else if (high != 255) {
+			if (audio == null) {
+				audio = new AudioParameters();
+				seq.setAudioParameters(audio);
+			}
+			audio.setHigh(high);
+		}
+		deviceViewer.updateFromMatrix(kf.getRGBFrame(context.getAudioManager()));
+		updateState();
+	}
+
+	protected void setSelectedAudioLow(int low) {
+		Sequence seq = getEffectHandler().getSequence();
+		KeyFrame kf = getSelectedFrame();
+		AudioParameters audio = seq.getAudioParameters();
+		if (audio != null && audio.getHigh() == 255 && audio.getGain() == 1 && low == 0) {
+			/* So we don't export default parameters */
+			seq.setAudioParameters(null);
+		} else if (low != 0) {
+			if (audio == null) {
+				audio = new AudioParameters();
+				seq.setAudioParameters(audio);
+			}
+			audio.setLow(low);
+		}
+		deviceViewer.updateFromMatrix(kf.getRGBFrame(context.getAudioManager()));
+		updateState();
+	}
+
+	protected void setSelectedTo(Color col) {
+		int[] rrgb = JavaFX.toRGB(col);
+		KeyFrame kf = getSelectedFrame();
+		for (MatrixIO el : MatrixView.expandMatrixElements(deviceViewer.getLayout(),
+				deviceViewer.getSelectedElements())) {
+			kf.setRGB(el.getMatrixX(), el.getMatrixY(), rrgb);
+		}
+		colorBar.setColor(col);
+		deviceViewer.updateFromMatrix(kf.getRGBFrame(context.getAudioManager()));
+		updateState();
+	}
+
+	protected void setSelectedTo(Color col, KeyFrameCellSource source, int index) {
+		KeyFrame kf = getSelectedFrame();
+		for (MatrixIO el : MatrixView.expandMatrixElements(deviceViewer.getLayout(),
+				deviceViewer.getSelectedElements())) {
+			KeyFrameCell kfc = kf.getCell(el.getMatrixX(), el.getMatrixY());
+			kfc.getSources()[index] = source;
+			kfc.setValues(JavaFX.toRGB(col));
+		}
+		deviceViewer.updateFromMatrix(kf.getRGBFrame(context.getAudioManager()));
+		updateState();
+	}
+
+	protected void setSelectedToInterpolation(Interpolation n) {
+		if (n != null) {
+			KeyFrame kf = getSelectedFrame();
+			for (MatrixIO el : MatrixView.expandMatrixElements(deviceViewer.getLayout(),
+					deviceViewer.getSelectedElements())) {
+				kf.getCell(el.getMatrixX(), el.getMatrixY()).setInterpolation(n);
+			}
+			deviceViewer.updateFromMatrix(kf.getRGBFrame(context.getAudioManager()));
+			updateState();
+		}
+	}
+
 	protected void updateFrame(int[][][] rgb) {
 		deviceViewer.updateFromMatrix(rgb);
 	}
@@ -471,19 +723,23 @@ public class CustomOptions extends AbstractEffectController<Sequence, CustomEffe
 		}
 	}
 
-	Canvas buildFrameIcon(KeyFrame frame) {
-		IconBuilder builder = new IconBuilder();
-		builder.width(64);
-		builder.height(64);
-		builder.roundRect(32);
-		builder.text(Time.formatTime(frame.getIndex()));
-		int[] rgb = frame.getOverallColor();
-		int cval = JavaFX.encodeRGB(rgb[0], rgb[1], rgb[2]);
-		builder.autoTextColorPreferWhite();
-		builder.color(cval);
-		builder.fontSize(8);
-		Canvas icon = builder.build(Canvas.class);
-		return icon;
+	protected void updateState() {
+		updateMatrix();
+		updateAvailability();
+		updateSelection();
+	}
+
+	GeneratedIcon buildFrameIcon(KeyFrame frame) {
+		GeneratedIcon gi = new GeneratedIcon();
+		gi.setPrefHeight(64);
+		gi.setPrefWidth(64);
+		int[] rgb = frame.getOverallColor(context.getAudioManager());
+		gi.getStyleClass().add("keyframe-button");
+		gi.setStyle("-icon-color: " + Colors.toHex(rgb));
+		gi.setText(Time.formatTime(frame.getIndex()));
+		gi.setFontSize(10);
+		return gi;
+
 	}
 
 	@FXML
@@ -497,116 +753,8 @@ public class CustomOptions extends AbstractEffectController<Sequence, CustomEffe
 	}
 
 	@FXML
-	void evtColor() {
-		if (!adjusting)
-			setSelectedTo(color.valueProperty().get());
-	}
-
-	public ObjectProperty<KeyFrame> currentKeyFrame() {
-		return currentKeyFrame;
-	}
-
-	public KeyFrame getCurrentKeyFrame() {
-		return currentKeyFrame.get();
-	}
-
-	protected void setCurrentKeyFrame(KeyFrame selection) {
-		this.currentKeyFrame.set(selection);
-	}
-
-	protected void setSelectedTo(Color col) {
-		int[] rrgb = JavaFX.toRGB(col);
-		KeyFrame kf = getSelectedFrame();
-		for (MatrixIO el : MatrixView.expandMatrixElements(deviceViewer.getLayout(),
-				deviceViewer.getSelectedElements())) {
-			kf.getFrame()[el.getMatrixY()][el.getMatrixX()] = rrgb;
-		}
-		deviceViewer.updateFromMatrix(kf.getFrame());
-		updateMatrix();
-		updateAvailability();
-	}
-
-	@FXML
 	void evtDefaultInterpolation() {
 		getEffectHandler().getSequence().setInterpolation(defaultInterpolation.getValue());
-	}
-
-	@FXML
-	void evtKeyFrameInterpolation() {
-		getSelectedFrame().setInterpolation(keyFrameInterpolation.getValue());
-	}
-
-	@FXML
-	void evtPause() {
-		getEffectHandler().getPlayer().setPaused(!getEffectHandler().getPlayer().isPaused());
-	}
-
-	@FXML
-	void evtPlay() {
-		getEffectHandler().getPlayer().play();
-	}
-
-	@FXML
-	void evtRed() {
-		if (!adjusting)
-			setSelectedTo(Color.RED);
-	}
-
-	@FXML
-	void evtOrange() {
-		if (!adjusting)
-			setSelectedTo(Color.ORANGE);
-	}
-
-	@FXML
-	void evtYellow() {
-		if (!adjusting)
-			setSelectedTo(Color.YELLOW);
-	}
-
-	@FXML
-	void evtGreen() {
-		if (!adjusting)
-			setSelectedTo(Color.LIME);
-	}
-
-	@FXML
-	void evtBlue() {
-		if (!adjusting)
-			setSelectedTo(Color.BLUE);
-	}
-
-	@FXML
-	void evtIndigo() {
-		if (!adjusting)
-			setSelectedTo(Color.INDIGO);
-	}
-
-	@FXML
-	void evtViolet() {
-		if (!adjusting)
-			setSelectedTo(Color.VIOLET);
-	}
-
-	@FXML
-	void evtWhite() {
-		if (!adjusting)
-			setSelectedTo(Color.WHITE);
-	}
-
-	@FXML
-	void evtRemoveFrame() {
-		KeyFrame frame = getSelectedFrame();
-		removeFrame(frame);
-	}
-
-	@FXML
-	void evtRemoveEffect() {
-		Confirm confirm = context.push(Confirm.class, Direction.FADE);
-		confirm.confirm(bundle, "removeEffect", () -> {
-			context.getEffectManager().remove(getEffectHandler());
-			context.pop();
-		}, getEffectHandler().getName());
 	}
 
 	@FXML
@@ -620,75 +768,6 @@ public class CustomOptions extends AbstractEffectController<Sequence, CustomEffe
 		addOn.setSequence(effect.getSequence());
 		Export confirm = context.push(Export.class, Direction.FADE);
 		confirm.export(addOn, bundle, "exportEffect", effect.getName());
-	}
-
-	@FXML
-	void evtShiftLeft() {
-		// TODO
-	}
-
-	@FXML
-	void evtShiftRight() {
-		// TODO
-	}
-
-	@FXML
-	void evtShiftUp() {
-		// TODO
-	}
-
-	@FXML
-	void evtShiftDown() {
-		// TODO
-	}
-
-	@FXML
-	void evtRepeat() {
-		getEffectHandler().getSequence().setRepeat(repeat.selectedProperty().get());
-		rebuildTimeline();
-		saveSequence();
-	}
-
-	@FXML
-	public void evtReset() {
-		KeyFrame f = getCurrentKeyFrame();
-		List<IO> sel = deviceViewer.getSelectedElements();
-		if (sel.isEmpty()) {
-			deviceViewer.getSelectedView().getElements();
-		}
-		int[][][] frame = f.getFrame();
-		for (IO io : sel) {
-			if (io instanceof MatrixIO) {
-				MatrixIO mio = (MatrixIO) io;
-				frame[mio.getMatrixY()][mio.getMatrixX()] = Colors.COLOR_BLACK;
-			}
-		}
-		deviceViewer.deselectAll();
-		updateMatrix();
-		setColorForButtons();
-		updateAvailability();
-	}
-
-	@FXML
-	void evtShowTimeline() {
-		timelineHidden = false;
-		PREFS.putBoolean(PREF_TIMELINE_VISIBLE, true);
-		double pos = PREFS.getDouble(PREF_TIMELINE_DIVIDER, 0.75);
-		Transition slideTransition = new Transition() {
-			{
-				setCycleDuration(Duration.millis(200));
-			}
-
-			@Override
-			protected void interpolate(double frac) {
-				double p = 1 - ((1 - pos) * frac);
-				split.setDividerPositions(p);
-			}
-		};
-		slideTransition.onFinishedProperty().set((e) -> timelineContainer.visibleProperty().set(true));
-		slideTransition.setAutoReverse(false);
-		slideTransition.setCycleCount(1);
-		slideTransition.play();
 	}
 
 	@FXML
@@ -716,31 +795,175 @@ public class CustomOptions extends AbstractEffectController<Sequence, CustomEffe
 	}
 
 	@FXML
+	void evtKeyFrameInterpolation() {
+		getSelectedFrame().setInterpolation(keyFrameInterpolation.getValue());
+	}
+
+	@FXML
+	void evtNone() {
+		if (!adjusting)
+			setSelectedTo(Color.BLACK);
+	}
+
+	@FXML
+	void evtPause() {
+		getEffectHandler().getPlayer().setPaused(!getEffectHandler().getPlayer().isPaused());
+	}
+
+	@FXML
+	void evtPlay() {
+		getEffectHandler().getPlayer().play();
+	}
+
+	@FXML
+	void evtRemoveEffect() {
+		Confirm confirm = context.push(Confirm.class, Direction.FADE);
+		confirm.confirm(bundle, "removeEffect", () -> {
+			context.getEffectManager().remove(getEffectHandler());
+			context.pop();
+		}, getEffectHandler().getName());
+	}
+
+	@FXML
+	void evtRemoveFrame() {
+		KeyFrame frame = getSelectedFrame();
+		removeFrame(frame);
+	}
+
+	@FXML
+	void evtRepeat() {
+		getEffectHandler().getSequence().setRepeat(repeat.selectedProperty().get());
+		rebuildTimeline();
+		saveSequence();
+	}
+
+	@FXML
 	void evtSelectAll() {
 		deviceViewer.selectAll();
-		setColorForButtons();
+		updateSelection();
 		updateAvailability();
+	}
+
+	@FXML
+	void evtShiftDown() {
+		KeyFrame f = getCurrentKeyFrame();
+		for (Integer x : getSelectedMatrixRows()) {
+			KeyFrameCell endCell = null, cell = null, otherCell = null;
+			for (int y = deviceY - 1; y >= 0; y--) {
+				cell = f.getCell(x, y);
+				if (endCell == null) {
+					endCell = new KeyFrameCell(cell);
+				}
+				otherCell = f.getCell(x - 1, y);
+				cell.copyFrom(otherCell);
+				f.setCell(x, y, cell);
+			}
+			cell = f.getCell(x, 0);
+			cell.copyFrom(endCell);
+			f.setCell(x, 0, cell);
+		}
+		deviceViewer.updateFromMatrix(f.getRGBFrame(context.getAudioManager()));
+		updateState();
+	}
+
+	@FXML
+	void evtShiftLeft() {
+		KeyFrame f = getCurrentKeyFrame();
+		for (Integer y : getSelectedMatrixRows()) {
+			KeyFrameCell endCell = null, cell = null, otherCell = null;
+			for (int x = 0; x < deviceX - 1; x++) {
+				cell = f.getCell(x, y);
+				if (endCell == null) {
+					endCell = new KeyFrameCell(cell);
+				}
+				otherCell = f.getCell(x + 1, y);
+				cell.copyFrom(otherCell);
+				f.setCell(x, y, cell);
+			}
+			cell = f.getCell(deviceX - 1, y);
+			cell.copyFrom(endCell);
+			f.setCell(deviceX - 1, y, cell);
+		}
+		deviceViewer.updateFromMatrix(f.getRGBFrame(context.getAudioManager()));
+		updateState();
+	}
+
+	@FXML
+	void evtShiftRight() {
+		KeyFrame f = getCurrentKeyFrame();
+		for (Integer y : getSelectedMatrixRows()) {
+			KeyFrameCell endCell = null, cell = null, otherCell = null;
+			for (int x = deviceX - 1; x > 0; x--) {
+				cell = f.getCell(x, y);
+				if (endCell == null) {
+					endCell = new KeyFrameCell(cell);
+				}
+				otherCell = f.getCell(x - 1, y);
+				cell.copyFrom(otherCell);
+				f.setCell(x, y, cell);
+			}
+			cell = f.getCell(0, y);
+			cell.copyFrom(endCell);
+			f.setCell(0, y, cell);
+		}
+		deviceViewer.updateFromMatrix(f.getRGBFrame(context.getAudioManager()));
+		updateState();
+	}
+
+	@FXML
+	void evtShiftUp() {
+		KeyFrame f = getCurrentKeyFrame();
+		for (Integer x : getSelectedMatrixRows()) {
+			KeyFrameCell endCell = null, cell = null, otherCell = null;
+			for (int y = 0; y < deviceY - 1; y++) {
+				cell = f.getCell(x, y);
+				if (endCell == null) {
+					endCell = new KeyFrameCell(cell);
+				}
+				otherCell = f.getCell(x + 1, y);
+				cell.copyFrom(otherCell);
+				f.setCell(x, y, cell);
+			}
+			cell = f.getCell(x, deviceY - 1);
+			cell.copyFrom(endCell);
+			f.setCell(x, deviceY - 1, cell);
+		}
+		deviceViewer.updateFromMatrix(f.getRGBFrame(context.getAudioManager()));
+		updateState();
+	}
+
+	@FXML
+	void evtShowTimeline() {
+		timelineHidden = false;
+		PREFS.putBoolean(PREF_TIMELINE_VISIBLE, true);
+		double pos = PREFS.getDouble(PREF_TIMELINE_DIVIDER, 0.75);
+		Transition slideTransition = new Transition() {
+			{
+				setCycleDuration(Duration.millis(200));
+			}
+
+			@Override
+			protected void interpolate(double frac) {
+				double p = 1 - ((1 - pos) * frac);
+				split.setDividerPositions(p);
+			}
+		};
+		slideTransition.onFinishedProperty().set((e) -> timelineContainer.visibleProperty().set(true));
+		slideTransition.setAutoReverse(false);
+		slideTransition.setCycleCount(1);
+		slideTransition.play();
 	}
 
 	@FXML
 	void evtStop() {
 		FramePlayer player = getEffectHandler().getPlayer();
-		if (player.isPlaying())
+		if (player.isPlaying()) {
 			player.stop();
-	}
-
-	void setColorForButtons() {
-		adjusting = true;
-		try {
-			color.valueProperty().set(JavaFX.toColor(MatrixView.getRGBAverage(deviceViewer.getLayout(),
-					deviceViewer.getSelectedElements(), getSelectedFrame().getFrame())));
-		} finally {
-			adjusting = false;
 		}
 	}
 
 	BorderPane frameButton(KeyFrame frame, boolean last) {
-		Canvas icon = buildFrameIcon(frame);
+		Node icon = buildFrameIcon(frame);
 		Hyperlink button = new Hyperlink();
 		button.onActionProperty().set((e) -> {
 			selectFrame(frame);
@@ -855,20 +1078,59 @@ public class CustomOptions extends AbstractEffectController<Sequence, CustomEffe
 	}
 
 	void updateMatrix() {
-//		int[][][] rgb = new int[deviceY][deviceX][3];
-//		for (Cell cell : this.buttons.keySet()) {
-//			rgb[cell.getY()][cell.getX()] = buttons.get(cell).getRgb();
-//		}
-//		getSelectedFrame().setFrame(rgb);
-//		Matrix matrix = new Matrix();
-//		matrix.setCells(rgb);
-//		context.getScheduler().execute(() -> getDevice().updateEffect(matrix));
-//		updateFrameInTimeline();
-//		saveSequence();
-
 		updateFrameInTimeline();
 		saveSequence();
 		getEffectHandler().update(getDevice());
+	}
+
+	void updateSelection() {
+		adjusting = true;
+		try {
+			List<IO> sel = deviceViewer.getSelectedElements();
+			if (sel.isEmpty()) {
+				cellInterpolation.setDisable(true);
+				cellHue.setDisable(true);
+				cellSaturation.setDisable(true);
+				cellBrightness.setDisable(true);
+				colorBar.disableProperty().set(true);
+			} else {
+				cellInterpolation.setDisable(false);
+				cellHue.setDisable(false);
+				cellSaturation.setDisable(false);
+				cellBrightness.setDisable(false);
+				KeyFrame frame = getSelectedFrame();
+
+				Color col = JavaFX
+						.toColor(getRGBAverage(deviceViewer.getLayout(), sel, frame, context.getAudioManager()));
+
+				KeyFrameCellSource thisHueSrc = null;
+				KeyFrameCellSource thisSaturationSrc = null;
+				KeyFrameCellSource thisBrightnessSrc = null;
+				Interpolation thisInterpol = null;
+				for (IO io : sel) {
+					MatrixIO mio = (MatrixIO) io;
+					KeyFrameCell keyFrameCell = frame.getCell(mio.getMatrixX(), mio.getMatrixY());
+					if (thisHueSrc == null || thisHueSrc != keyFrameCell.getSources()[0])
+						thisHueSrc = keyFrameCell.getSources()[0];
+					if (thisSaturationSrc == null || thisSaturationSrc != keyFrameCell.getSources()[1])
+						thisSaturationSrc = keyFrameCell.getSources()[1];
+					if (thisBrightnessSrc == null || thisBrightnessSrc != keyFrameCell.getSources()[2])
+						thisBrightnessSrc = keyFrameCell.getSources()[2];
+					if (thisInterpol == null || thisInterpol != keyFrameCell.getInterpolation())
+						thisInterpol = keyFrameCell.getInterpolation();
+				}
+				colorBar.disableProperty()
+						.set(thisHueSrc != KeyFrameCellSource.COLOR && thisSaturationSrc != KeyFrameCellSource.COLOR
+								&& thisBrightnessSrc != KeyFrameCellSource.COLOR);
+				cellHue.getSelectionModel().select(thisHueSrc);
+				cellSaturation.getSelectionModel().select(thisSaturationSrc);
+				cellBrightness.getSelectionModel().select(thisBrightnessSrc);
+				cellInterpolation.getSelectionModel().select(thisInterpol);
+				colorBar.setColor(col);
+			}
+		} finally {
+			adjusting = false;
+		}
 	}
 
 	private void updateAvailability() {
@@ -877,9 +1139,6 @@ public class CustomOptions extends AbstractEffectController<Sequence, CustomEffe
 		stop.disableProperty().set(!player.isPlaying());
 		pause.disableProperty().set(!player.isPlaying());
 		progress.disableProperty().set(player.isPlaying() && !player.isPaused());
-//		for (Map.Entry<Cell, MatrixCellButton> en : buttons.entrySet()) {
-//			en.getValue().disableProperty().set(player.isPaused());
-//		}
 		progress.onMouseReleasedProperty().set((e) -> {
 			if (!player.isPlaying()) {
 				KeyFrame frame = getEffectHandler().getSequence()
@@ -891,14 +1150,12 @@ public class CustomOptions extends AbstractEffectController<Sequence, CustomEffe
 		removeFrame.disableProperty().set(player.isPlaying() || player.getSequence().size() < 2);
 		keyFrameInterpolation.disableProperty().set(player.isPlaying());
 		holdKeyFrameFor.disableProperty().set(player.isPlaying());
-		reset.disableProperty().set(player.isPlaying());
-		selectAll.disableProperty().set(player.isPlaying());
 		removeEffect.disableProperty().set(player.isPlaying());
-//		List<ToggleButton> selectedButtons = getSelectedButtons();
-//		shiftLeft.disableProperty().set(player.isPlaying() || selectedButtons.size() == 0);
-//		shiftRight.disableProperty().set(player.isPlaying() || selectedButtons.size() == 0);
-//		shiftUp.disableProperty().set(player.isPlaying() || selectedButtons.size() == 0);
-//		shiftDown.disableProperty().set(player.isPlaying() || selectedButtons.size() == 0);
+		List<IO> sel = deviceViewer.getSelectedElements();
+		shiftLeft.disableProperty().set(player.isPlaying() || sel.size() == 0 || deviceX < 2);
+		shiftRight.disableProperty().set(player.isPlaying() || sel.size() == 0 || deviceX < 2);
+		shiftUp.disableProperty().set(player.isPlaying() || sel.size() == 0 || deviceY < 2);
+		shiftDown.disableProperty().set(player.isPlaying() || sel.size() == 0 || deviceY < 2);
 	}
 
 }

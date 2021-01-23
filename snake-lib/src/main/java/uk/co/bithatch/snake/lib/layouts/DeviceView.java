@@ -62,7 +62,7 @@ public class DeviceView implements IOListener {
 	}
 
 	public void removeListener(Listener listener) {
-		listeners.add(listener);
+		listeners.remove(listener);
 	}
 
 	public DeviceLayout getLayout() {

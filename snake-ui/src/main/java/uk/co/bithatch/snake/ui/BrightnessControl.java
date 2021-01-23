@@ -11,6 +11,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.Region;
+import uk.co.bithatch.snake.widgets.JavaFX;
 
 public class BrightnessControl extends ControlController {
 	@FXML
@@ -25,6 +26,8 @@ public class BrightnessControl extends ControlController {
 
 	@Override
 	protected void onSetControlDevice() {
+		
+		JavaFX.bindManagedToVisible(regions);
 
 		List<Slider> others = new ArrayList<>();
 
@@ -57,7 +60,8 @@ public class BrightnessControl extends ControlController {
 					if (r.getCapabilities().contains(Capability.BRIGHTNESS_PER_REGION)) {
 						HBox hbox = new HBox();
 
-						ImageView iv = new ImageView(context.getConfiguration().themeProperty().getValue().getRegionImage(24, r.getName()).toExternalForm());
+						ImageView iv = new ImageView(
+								context.getConfiguration().getTheme().getRegionImage(24, r.getName()).toExternalForm());
 						iv.setFitHeight(22);
 						iv.setFitWidth(22);
 						iv.setSmooth(true);
@@ -89,7 +93,11 @@ public class BrightnessControl extends ControlController {
 					}
 				}
 			}
+			else
+				regions.setVisible(false);
 		}
+		else
+			regions.setVisible(false);
 	}
 
 	void setBrightness(short brightness) {

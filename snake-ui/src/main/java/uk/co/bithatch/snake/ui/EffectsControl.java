@@ -8,6 +8,9 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 
+import org.kordamp.ikonli.fontawesome.FontAwesome;
+import org.kordamp.ikonli.javafx.FontIcon;
+
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
@@ -22,6 +25,7 @@ import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.Region;
 import uk.co.bithatch.snake.ui.effects.EffectAcquisition;
 import uk.co.bithatch.snake.ui.effects.EffectManager;
+import uk.co.bithatch.snake.widgets.JavaFX;
 
 public class EffectsControl extends AbstractEffectsControl {
 	@FXML
@@ -38,6 +42,8 @@ public class EffectsControl extends AbstractEffectsControl {
 
 	@Override
 	protected void onSetEffectsControlDevice() {
+		JavaFX.bindManagedToVisible(addCustom, removeCustom, regions);
+
 		var device = getDevice();
 
 		Callback<ListView<EffectHandler<?, ?>>, ListCell<EffectHandler<?, ?>>> cellFactory = createEffectCellFactory();
@@ -46,9 +52,11 @@ public class EffectsControl extends AbstractEffectsControl {
 
 		overallEffect.getSelectionModel().selectedItemProperty().addListener((e) -> {
 			if (!adjustingOverall) {
-				setCustomiseState(customise, device, overallEffect.getSelectionModel().getSelectedItem());
-				context.getEffectManager().getRootAcquisition(device).activate(device,
-						overallEffect.getSelectionModel().getSelectedItem());
+				EffectHandler<?, ?> selected = overallEffect.getSelectionModel().getSelectedItem();
+				if(selected != null) {
+					setCustomiseState(customise, device, selected);
+					context.getEffectManager().getRootAcquisition(device).activate(device, selected);
+				}
 			}
 		});
 	}
@@ -97,7 +105,7 @@ public class EffectsControl extends AbstractEffectsControl {
 		}
 
 		if (regionList.size() > 1) {
-			if (selectedDeviceEffect != null && !selectedDeviceEffect.isMatrixBased()) {
+			if (selectedDeviceEffect != null && selectedDeviceEffect.isRegions()) {
 				for (Region r : regionList) {
 					Set<EffectHandler<?, ?>> supported = fx.getEffects(r);
 
@@ -106,14 +114,15 @@ public class EffectsControl extends AbstractEffectsControl {
 					EffectHandler<?, ?> selectedRegionEffect = acq.getEffect(r);
 					HBox hbox = new HBox();
 
-					ImageView iv = new ImageView(context.getConfiguration().themeProperty().getValue()
-							.getRegionImage(24, r.getName()).toExternalForm());
+					ImageView iv = new ImageView(
+							context.getConfiguration().getTheme().getRegionImage(24, r.getName()).toExternalForm());
 					iv.setFitHeight(22);
 					iv.setFitWidth(22);
 					iv.setSmooth(true);
 					iv.setPreserveRatio(true);
 
-					Hyperlink customise = new Hyperlink(bundle.getString("customise"));
+					Hyperlink customise = new Hyperlink();
+					customise.setGraphic(new FontIcon(FontAwesome.GEAR));
 					ComboBox<EffectHandler<?, ?>> br = new ComboBox<>();
 					Callback<ListView<EffectHandler<?, ?>>, ListCell<EffectHandler<?, ?>>> cellFactory = createEffectCellFactory();
 					br.setButtonCell(cellFactory.call(null));
@@ -122,7 +131,7 @@ public class EffectsControl extends AbstractEffectsControl {
 					br.getStyleClass().add("small");
 
 					for (EffectHandler<?, ?> f : allEffects) {
-						if (!f.isMatrixBased()) {
+						if (f.isRegions()) {
 							br.itemsProperty().get().add(f);
 							if (selectedRegionEffect != null && f == selectedRegionEffect) {
 								br.getSelectionModel().select(f);
@@ -157,8 +166,10 @@ public class EffectsControl extends AbstractEffectsControl {
 					hbox.getChildren().add(customise);
 					regions.getChildren().add(hbox);
 				}
-			}
-		}
+			} else
+				regions.setVisible(false);
+		} else
+			regions.setVisible(false);
 	}
 
 	protected void onRebuildOverallEffects() {

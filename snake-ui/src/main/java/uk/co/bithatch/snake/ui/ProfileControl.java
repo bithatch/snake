@@ -1,5 +1,6 @@
 package uk.co.bithatch.snake.ui;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -15,9 +16,10 @@ import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.binding.Profile;
 import uk.co.bithatch.snake.lib.binding.ProfileMap;
-import uk.co.bithatch.snake.ui.util.JavaFX;
-import uk.co.bithatch.snake.ui.widgets.Direction;
-import uk.co.bithatch.snake.ui.widgets.MapProfileLEDs;
+import uk.co.bithatch.snake.ui.widgets.MapProfileLEDHelper;
+import uk.co.bithatch.snake.widgets.Direction;
+import uk.co.bithatch.snake.widgets.JavaFX;
+import uk.co.bithatch.snake.widgets.ProfileLEDs;
 
 public class ProfileControl extends ControlController {
 
@@ -26,8 +28,6 @@ public class ProfileControl extends ControlController {
 	@FXML
 	private VBox profiles;
 	@FXML
-	private HBox rgbs;
-	@FXML
 	private Hyperlink addProfile;
 	@FXML
 	private Hyperlink setDefault;
@@ -35,15 +35,25 @@ public class ProfileControl extends ControlController {
 	private Hyperlink remove;
 	@FXML
 	private Hyperlink configure;
+	@FXML
+	private ProfileLEDs rgbs;
 
-	private MapProfileLEDs profileLEDs;
+	private MapProfileLEDHelper profileLEDHelper;
 
 	@Override
 	protected void onSetControlDevice() {
 		buildProfiles();
-		profileLEDs = new MapProfileLEDs(getDevice());
-		rgbs.getChildren().add(profileLEDs);
+		profileLEDHelper = new MapProfileLEDHelper(rgbs);
 		configureForProfile();
+	}
+
+	@Override
+	protected void onDeviceCleanUp() {
+		super.onDeviceCleanUp();
+		try {
+			profileLEDHelper.close();
+		} catch (IOException e) {
+		}
 	}
 
 	protected void buildProfiles() {
@@ -96,9 +106,7 @@ public class ProfileControl extends ControlController {
 
 		/* RGBs */
 		if (getDevice().getCapabilities().contains(Capability.MACRO_PROFILE_LEDS)) {
-			ProfileMap map = profile.getActiveMap();
-			boolean[] rgb = map.getLEDs();
-			profileLEDs.setRGB(rgb);
+			profileLEDHelper.setMap(profile.getActiveMap());
 		}
 
 		setDefault.disableProperty().set(profileMap == null || profileMap.isDefault());

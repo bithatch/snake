@@ -3,160 +3,69 @@ package uk.co.bithatch.snake.ui;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.prefs.BackingStoreException;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.Property;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.scene.paint.Color;
 import uk.co.bithatch.snake.ui.addons.Theme;
 
-public class Configuration {
+public class Configuration implements PreferenceChangeListener {
+
+	public static final String PREF_THEME = "theme";
+	public static final String PREF_TRANSPARENCY = "transparency";
+	public static final String PREF_H = "h";
+	public static final String PREF_W = "w";
+	public static final String PREF_Y = "y";
+	public static final String PREF_X = "x";
+	public static final String PREF_AUDIO_GAIN = "audioGain";
+	public static final String PREF_AUDIO_FFT = "audioFFT";
+	public static final String PREF_AUDIO_FPS = "audioFPS";
+	public static final String PREF_AUDIO_SOURCE = "audioSource";
+	public static final String PREF_TURN_OFF_ON_EXIT = "turnOffOnExit";
+	public static final String PREF_DECORATED = "decorated";
+	public static final String PREF_TRAY_ICON = "trayIcon";
+	public static final String PREF_WHEN_LOW = "whenLow";
+	public static final String PREF_SHOW_BATTERY = "showBattery";
 
 	public enum TrayIcon {
 		OFF, AUTO, DARK, LIGHT, COLOR
 	}
 
-	private Property<Theme> theme = new SimpleObjectProperty<>();
-	private BooleanProperty decorated = new SimpleBooleanProperty();
-	private BooleanProperty turnOffOnExit = new SimpleBooleanProperty();
-	private IntegerProperty x = new SimpleIntegerProperty();
-	private IntegerProperty y = new SimpleIntegerProperty();
-	private IntegerProperty w = new SimpleIntegerProperty();
-	private IntegerProperty h = new SimpleIntegerProperty();
-	private IntegerProperty transparency = new SimpleIntegerProperty();
-	private BooleanProperty showBattery = new SimpleBooleanProperty();
-	private BooleanProperty whenLow = new SimpleBooleanProperty();
-	private Property<TrayIcon> trayIcon = new SimpleObjectProperty<>();
 	private Preferences node;
-
-	class ColorPreferenceUpdateChangeListener implements ChangeListener<Color> {
-
-		private Preferences node;
-		private String key;
-
-		ColorPreferenceUpdateChangeListener(Preferences node, String key) {
-			this.node = node;
-			this.key = key;
-		}
-
-		@Override
-		public void changed(ObservableValue<? extends Color> observable, Color oldValue, Color newValue) {
-			putColor(key, node, newValue);
-		}
-
-	}
-
-	class ThemePreferenceUpdateChangeListener implements ChangeListener<Theme> {
-
-		private Preferences node;
-		private String key;
-
-		ThemePreferenceUpdateChangeListener(Preferences node, String key) {
-			this.node = node;
-			this.key = key;
-		}
-
-		@Override
-		public void changed(ObservableValue<? extends Theme> observable, Theme oldValue, Theme newValue) {
-			node.put(key, newValue.getId());
-		}
-
-	}
-
-	class BooleanPreferenceUpdateChangeListener implements ChangeListener<Boolean> {
-
-		private Preferences node;
-		private String key;
-
-		BooleanPreferenceUpdateChangeListener(Preferences node, String key) {
-			this.node = node;
-			this.key = key;
-		}
-
-		@Override
-		public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-			node.putBoolean(key, newValue);
-		}
-
-	}
-
-	class IntegerPreferenceUpdateChangeListener implements ChangeListener<Number> {
-
-		private Preferences node;
-		private String key;
-
-		IntegerPreferenceUpdateChangeListener(Preferences node, String key) {
-			this.node = node;
-			this.key = key;
-		}
-
-		@Override
-		public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-			node.putInt(key, newValue.intValue());
-		}
-
-	}
-
-	class TrayIconPreferenceUpdateChangeListener implements ChangeListener<TrayIcon> {
-
-		private Preferences node;
-		private String key;
-
-		TrayIconPreferenceUpdateChangeListener(Preferences node, String key) {
-			this.node = node;
-			this.key = key;
-		}
-
-		@Override
-		public void changed(ObservableValue<? extends TrayIcon> observable, TrayIcon oldValue, TrayIcon newValue) {
-			node.put(key, newValue.name());
-		}
-
-	}
+	private Theme theme;
+	private boolean decorated;
+	private boolean turnOffOnExit;
+	private int x, y, w, h;
+	private String audioSource;
+	private int audioFPS;
+	private boolean audioFFT;
+	private float audioGain;
+	private int transparency;
+	private boolean showBattery;
+	private boolean whenLow;
+	private TrayIcon trayIcon;
 
 	Configuration(Preferences node, App context) {
 		this.node = node;
 
-		showBattery.setValue(node.getBoolean("showBattery", true));
-		showBattery.addListener(new BooleanPreferenceUpdateChangeListener(node, "showBattery"));
+		showBattery = node.getBoolean(PREF_SHOW_BATTERY, true);
+		whenLow = node.getBoolean(PREF_WHEN_LOW, true);
+		trayIcon = TrayIcon.valueOf(node.get(PREF_TRAY_ICON, TrayIcon.AUTO.name()));
+		decorated = node.getBoolean(PREF_DECORATED, false);
+		turnOffOnExit = node.getBoolean(PREF_TURN_OFF_ON_EXIT, true);
+		audioSource = node.get(PREF_AUDIO_SOURCE, "");
+		audioFPS = node.getInt(PREF_AUDIO_FPS, 10);
+		audioFFT = node.getBoolean(PREF_AUDIO_FFT, false);
+		audioGain = node.getFloat(PREF_AUDIO_GAIN, 1);
 
-		whenLow.setValue(node.getBoolean("whenLow", true));
-		whenLow.addListener(new BooleanPreferenceUpdateChangeListener(node, "whenLow"));
+		x = node.getInt(PREF_X, 0);
+		y = node.getInt(PREF_Y, 0);
+		w = node.getInt(PREF_W, 0);
+		h = node.getInt(PREF_H, 0);
+		transparency = node.getInt(PREF_TRANSPARENCY, 0);
 
-		trayIcon.setValue(TrayIcon.valueOf(node.get("trayIcon", TrayIcon.AUTO.name())));
-		trayIcon.addListener(new TrayIconPreferenceUpdateChangeListener(node, "trayIcon"));
-
-		decorated.setValue(node.getBoolean("decorated", false));
-		decorated.addListener(new BooleanPreferenceUpdateChangeListener(node, "decorated"));
-		decorated.addListener((e) -> {
-			if (decorated.get()) {
-				transparency.setValue(0);
-			}
-		});
-		turnOffOnExit.setValue(node.getBoolean("turnOffOnExit", true));
-		turnOffOnExit.addListener(new BooleanPreferenceUpdateChangeListener(node, "turnOffOnExit"));
-
-		x.setValue(node.getInt("x", 0));
-		x.addListener(new IntegerPreferenceUpdateChangeListener(node, "x"));
-
-		y.setValue(node.getInt("y", 0));
-		y.addListener(new IntegerPreferenceUpdateChangeListener(node, "y"));
-
-		w.setValue(node.getInt("w", 0));
-		w.addListener(new IntegerPreferenceUpdateChangeListener(node, "w"));
-
-		h.setValue(node.getInt("h", 0));
-		h.addListener(new IntegerPreferenceUpdateChangeListener(node, "h"));
-
-		transparency.setValue(node.getInt("transparency", 0));
-		transparency.addListener(new IntegerPreferenceUpdateChangeListener(node, "transparency"));
-		String themeName = node.get("theme", "");
+		String themeName = node.get(PREF_THEME, "");
 		Collection<Theme> themes = context.getAddOnManager().getThemes();
 		if (themes.isEmpty())
 			throw new IllegalStateException("No themes. Please add a theme module to the classpath or modulepath.");
@@ -167,60 +76,156 @@ public class Configuration {
 		Theme selTheme = context.getAddOnManager().getTheme(themeName);
 		if (selTheme == null && !themeName.equals(firstTheme.getId()))
 			selTheme = firstTheme;
-		theme.setValue(selTheme);
-		theme.addListener(new ThemePreferenceUpdateChangeListener(node, "theme"));
+		theme = selTheme;
+
+		node.addPreferenceChangeListener(this);
 	}
 
 	public boolean hasBounds() {
 		try {
-			return Arrays.asList(node.keys()).contains("x");
+			return Arrays.asList(node.keys()).contains(PREF_X);
 		} catch (BackingStoreException e) {
 			return false;
 		}
 	}
 
-	public IntegerProperty xProperty() {
-		return x;
+	public Theme getTheme() {
+		return theme;
 	}
 
-	public IntegerProperty yProperty() {
-		return y;
+	public void setTheme(Theme theme) {
+		this.theme = theme;
+		node.put(PREF_THEME, theme.getId());
 	}
 
-	public IntegerProperty wProperty() {
-		return w;
-	}
-
-	public IntegerProperty hProperty() {
-		return h;
-	}
-
-	public IntegerProperty transparencyProperty() {
-		return transparency;
-	}
-
-	public Property<TrayIcon> trayIconProperty() {
-		return trayIcon;
-	}
-
-	public Property<Boolean> showBatteryProperty() {
-		return showBattery;
-	}
-
-	public Property<Boolean> whenLowProperty() {
-		return whenLow;
-	}
-
-	public Property<Boolean> decoratedProperty() {
+	public boolean isDecorated() {
 		return decorated;
 	}
 
-	public Property<Boolean> turnOffOnExit() {
+	public void setDecorated(boolean decorated) {
+		this.decorated = decorated;
+		node.putBoolean(PREF_DECORATED, decorated);
+	}
+
+	public boolean isTurnOffOnExit() {
 		return turnOffOnExit;
 	}
 
-	public Property<Theme> themeProperty() {
-		return theme;
+	public void setTurnOffOnExit(boolean turnOffOnExit) {
+		this.turnOffOnExit = turnOffOnExit;
+		node.putBoolean(PREF_TURN_OFF_ON_EXIT, turnOffOnExit);
+	}
+
+	public int getX() {
+		return x;
+	}
+
+	public void setX(int x) {
+		this.x = x;
+		node.putInt(PREF_X, x);
+	}
+
+	public int getY() {
+		return y;
+	}
+
+	public void setY(int y) {
+		this.y = y;
+		node.putInt(PREF_Y, y);
+	}
+
+	public int getW() {
+		return w;
+	}
+
+	public void setW(int w) {
+		this.w = w;
+		node.putInt(PREF_W, w);
+	}
+
+	public int getH() {
+		return h;
+	}
+
+	public void setH(int h) {
+		this.h = h;
+		node.putInt(PREF_H, h);
+	}
+
+	public String getAudioSource() {
+		return audioSource;
+	}
+
+	public void setAudioSource(String audioSource) {
+		this.audioSource = audioSource;
+		node.put(PREF_AUDIO_SOURCE, audioSource);
+	}
+
+	public int getAudioFPS() {
+		return audioFPS;
+	}
+
+	public void setAudioFPS(int audioFPS) {
+		this.audioFPS = audioFPS;
+		node.putInt(PREF_AUDIO_FPS, audioFPS);
+	}
+
+	public boolean isAudioFFT() {
+		return audioFFT;
+	}
+
+	public void setAudioFFT(boolean audioFFT) {
+		this.audioFFT = audioFFT;
+		node.putBoolean(PREF_AUDIO_FFT, audioFFT);
+	}
+
+	public float getAudioGain() {
+		return audioGain;
+	}
+
+	public void setAudioGain(float audioGain) {
+		this.audioGain = audioGain;
+		node.putFloat(PREF_AUDIO_GAIN, audioGain);
+	}
+
+	public int getTransparency() {
+		return transparency;
+	}
+
+	public void setTransparency(int transparency) {
+		this.transparency = transparency;
+		node.putInt(PREF_TRANSPARENCY, transparency);
+	}
+
+	public boolean isShowBattery() {
+		return showBattery;
+	}
+
+	public void setShowBattery(boolean showBattery) {
+		this.showBattery = showBattery;
+		node.putBoolean(PREF_SHOW_BATTERY, showBattery);
+	}
+
+	public boolean isWhenLow() {
+		return whenLow;
+	}
+
+	public void setWhenLow(boolean whenLow) {
+		this.whenLow = whenLow;
+		node.putBoolean(PREF_WHEN_LOW, whenLow);
+	}
+
+	public TrayIcon getTrayIcon() {
+		return trayIcon;
+	}
+	
+	public Preferences getNode() {
+		return node;
+	}
+
+	public void setTrayIcon(TrayIcon trayIcon) {
+		this.trayIcon = trayIcon;
+		node.put(PREF_TRAY_ICON, trayIcon.name());
 	}
 
 	static void putColor(String key, Preferences p, Color color) {
@@ -235,5 +240,14 @@ public class Configuration {
 				p.getDouble(key + "_g", defaultColour == null ? 1.0 : defaultColour.getGreen()),
 				p.getDouble(key + "_b", defaultColour == null ? 1.0 : defaultColour.getBlue()),
 				p.getDouble(key + "_a", defaultColour == null ? 1.0 : defaultColour.getOpacity()));
+	}
+
+	@Override
+	public void preferenceChange(PreferenceChangeEvent evt) {
+		if (evt.getKey().equals(PREF_DECORATED)) {
+			if (evt.getNewValue().equals("true")) {
+				node.putInt(PREF_TRANSPARENCY, 0);
+			}
+		}
 	}
 }

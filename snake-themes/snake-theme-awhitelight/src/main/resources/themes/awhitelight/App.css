@@ -4,9 +4,13 @@
 @font-face {
     src: url('Roboto-Light.ttf');
 }
+/*
 @font-face {
+    font-family: FontAwesome;
     src: url('/uk/co/bithatch/snake/ui/fontawesome-webfont.ttf');
 }
+*  
+*/
 
 * {
 	-fx-background: #000000;
@@ -14,10 +18,14 @@
 	-fx-base: #000000;
 	-fx-inner-background: #0f0f0f;
 	-fx-default-background: #000000;
+	-fx-transparent-background: #00000000;
+	-fx-highlight-background: #20202040;
 	-fx-focus-color: #ffffff;
 	-fx-dark-text-color: #d3d3d3;
 	-fx-mid-text-color: #ffffff;
 	-fx-light-text-color: #a9a9a9;
+	-fx-icon-color: -fx-dark-text-color;
+    -fx-icon-size: 22;
 }
 
 /* Context menus */
@@ -68,25 +76,19 @@
     -fx-font-size: 10.0px;
 }
 
-.padded {
+.padded, .iconBar {
     -fx-padding: 4.0px;
+}
+
+.section, .tools {
+    -fx-padding: 1.0em 1.0em 1.0em 1.0em;
 }
 
 .iconBar {
-    -fx-padding: 4.0px;
     -fx-spacing: 4.0px;
 }
 
-.tools {
-    -fx-padding: 1.0em 1.0em 1.0em 1.0em;
-    -fx-spacing: 1.0em;
-}
-
-.row {
-    -fx-spacing: 1.0em;
-}
-
-.column {
+.row, .tools, .column {
     -fx-spacing: 1.0em;
 }
 
@@ -102,11 +104,7 @@
 
 /* Some components we hide the focus (such as ListView used for devices ) */
 
-.focusless:focused {
-    -fx-background-color: -fx-box-border, -fx-control-inner-background;
-    -fx-background-insets: 0.0, 1.0;
-    -fx-padding: 1.0;
-}
+
 
 /* Logical text styles for anything that needs mild emphasis  */
 
@@ -115,7 +113,7 @@
 }
 
 .small {
-    -fx-font-size: 10.0px;
+    -fx-font-size: 12.0px;
 }
 
 .title {
@@ -131,8 +129,11 @@
 }
 
 .header {
+	-fx-padding: 4px;
     -fx-font-size: 18.0px;
-    -fx-text-fill: -fx-accent;
+    -fx-background-color: -fx-accent;
+    -fx-text-fill: -fx-default-background;
+    -fx-font-family: 'FROSTBITE Narrow';
 }
 
 .titleBar {
@@ -158,6 +159,16 @@ GeneratedIcon {
     -icon-text-font-size: 12pt;
 }
 
+GeneratedIcon.filled {
+    -icon-opacity: 1; 
+    -icon-text-color: -fx-mid-text-color;
+}
+
+GeneratedIcon.keyframe-button, GeneratedIcon.color-bar-icon {
+	-icon-opacity: 1; 
+	-icon-text-color: -fx-accent;
+}
+
 GeneratedIcon.cell {
 	-icon-border-width: 2;
     -icon-text-font-size: 8pt;
@@ -171,45 +182,122 @@ GeneratedIcon.mapSequenceButton {
 	-icon-shape: 'ROUND';
 }
 
-.control {
-	-fx-padding: 1.0em 0.0 0.0 0.0;
+Hyperlink FontIcon, Hyperlink:visited FontIcon {
+    -fx-icon-color: -fx-accent;
 }
 
-.icon, .defaultIconButton, .iconButton, .smallIcon, .smallIconButton, .largeIconButton, .iconButton:visited, .defaultIconButton:visited, .smallIconButton:visited, .largeIconButton:visited {
+Hyperlink:hover FontIcon, Hyperlink:pressed FontIcon {
+    -fx-icon-color: -fx-dark-text-color;
+}
+
+.icon, 
+.defaultIconButton, 
+.iconButton, 
+.smallIcon, 
+.smallIconButton, 
+.largeIconButton, 
+.iconButton:visited, 
+.defaultIconButton:visited, 
+.smallIconButton:visited, 
+.largeIconButton:visited {
 	-fx-underline: false;
     -fx-border-width: 0.0;
     -fx-text-fill: -fx-dark-text-color;
 }
 
-.iconButton:pressed, .ic-snake-outline-coloronButton:hover, .defaultIconButton:pressed, .defaultIconButton:hover, .smallIconButton:pressed, .smallIconButton:hover, .largeIconButton:pressed, .largeIconButton:hover {
+.icon FontIcon, 
+.defaultIconButton FontIcon, 
+.iconButton FontIcon, 
+.smallIcon FontIcon, 
+.smallIconButton FontIcon, 
+.largeIconButton FontIcon, 
+.iconButton FontIcon, 
+.iconButton:visited FontIcon, 
+.defaultIconButton:visited FontIcon, 
+.smallIconButton:visited FontIcon, 
+.largeIconButton:visited FontIcon {
+    -fx-icon-color: -fx-dark-text-color;
+}
+
+.ic-snake-outline-coloronButton:hover, 
+.defaultIconButton:pressed, 
+.defaultIconButton:hover,  
+.iconButton:pressed, 
+.iconButton:hover, 
+.smallIconButton:pressed, 
+.smallIconButton:hover, 
+.largeIconButton:pressed, 
+.largeIconButton:hover {
     -fx-text-fill: -fx-accent;
 }
 
+.iconButton:pressed FontIcon, 
+.iconButton:hover:visited FontIcon,
+.iconButton:hover FontIcon, 
+.ic-snake-outline-coloronButton:hover FontIcon, 
+.defaultIconButton:pressed FontIcon, 
+.defaultIconButton:hover:visited FontIcon,
+.defaultIconButton:hover FontIcon,  
+.smallIconButton:pressed FontIcon, 
+.smallIconButton:visited:hover FontIcon, 
+.smallIconButton:hover FontIcon, 
+.largeIconButton:pressed FontIcon, 
+.largeIconButton:hover FontIcon {
+    -fx-icon-color: -fx-accent;
+}
+
 .icon, .iconButton {
-    -fx-font-size: 32.0px;
+    -fx-font-size: 32.0px; /* DEPRECATED */
+}
+
+.icon FontIcon, .iconButton  FontIcon {
+    -fx-icon-size: 32;
 }
 
 .smallIcon, .smallIconButton {
-    -fx-font-size: 22.0px;
+    -fx-font-size: 22.0px; /* DEPRECATED */
+}
+
+.smallIcon FontIcon, .smallIconButton FontIcon {
+    -fx-icon-size: 22;
 }
 
 .largeIconButton, .largeIcon, .titleIcon {
     -fx-text-fill: -fx-accent;
-    -fx-font-size: 72.0px;
+    -fx-font-size: 72.0px; /* DEPRECATED */
+}
+
+.largeIconButton FontIcon, .largeIcon FontIcon, .titleIcon FontIcon {
+    -fx-icon-color: -fx-accent;
+    -fx-icon-size: 72;
 }
 
 .icon, .smallIcon {
     -fx-text-fill: -fx-accent;
 }
 
+.icon FontIcon , .smallIcon  FontIcon  {
+    -fx-icon-color: -fx-accent;
+}
+
 .hugeIcon {
     -fx-text-fill: -fx-accent;
-    -fx-font-size: 256.0px;
+    -fx-font-size: 256.0px; /* Deprecated */
+}
+
+.hugeIcon FontIcon {
+    -fx-icon-size: 256;
+    -fx-icon-color: -fx-accent;
 }
 
 .mediumIcon {
     -fx-text-fill: -fx-accent;
-    -fx-font-size: 48.0px;
+    -fx-font-size: 48.0px; /* DEPRECATED */
+}
+
+.mediumIcon FontIcon {
+    -fx-icon-color: -fx-accent;
+    -fx-icon-size: 72;
 }
 
 .titleIcon {
@@ -231,7 +319,11 @@ GeneratedIcon.mapSequenceButton {
     -fx-text-fill: white;
 }
 
-.deemphasis {
+.popupMessages .icon FontIcon {  
+    -fx-icon-color: white;
+}
+
+.deemphasis, .deemphasis FontIcon {
     -fx-opacity: 0.4;
 }
 
@@ -239,22 +331,66 @@ GeneratedIcon.mapSequenceButton {
     -fx-text-fill: red;
 }
 
+.danger FontIcon {
+    -fx-icon-color: red;
+}
+
 .popupMessages .danger {
     -fx-text-fill: white;
     -fx-background-color: #aa0000;
+}
+
+.popupMessages .danger FontIcon {
+    -fx-icon-color: white;
+}
+
+GeneratedIcon.danger {
+    -icon-text-color: red;
+    -icon-border-color: red;
+}
+
+GeneratedIcon.warning {
+    -icon-text-color: orange;
+    -icon-border-color: orange;
+}
+
+GeneratedIcon.info {
+    -icon-text-color: blue;
+    -icon-border-color: blue;
+}
+
+GeneratedIcon.success {
+    -icon-text-color: green;
+    -icon-border-color: green;
 }
 
 .warning {
     -fx-text-fill: orange;
 }
 
+.warning FontIcon {
+    -fx-icon-color: orange;
+}
+
 .popupMessages .warning {
-    -fx-text-fill: white;
+    -fx-text-fill: black;
     -fx-background-color: orange;
+}
+
+.popupMessages .warning FontIcon {
+    -fx-icon-color: black;
+}
+
+.popupMessages .warning Label {
+    -fx-text-fill: black;
 }
 
 .success {
     -fx-text-fill: green;
+}
+
+.success FontIcon {
+    -fx-icon-color: green;
 }
 
 .popupMessages .success {
@@ -266,9 +402,17 @@ GeneratedIcon.mapSequenceButton {
     -fx-text-fill: #003bd0;
 }
 
+.info FontIcon {
+    -fx-icon-color: #003bd0;
+}
+
 .popupMessages .info {
     -fx-text-fill: white;
     -fx-background-color: #003bd0;
+}
+
+.popupMessages .info FontIcon {
+    -fx-icon-color: white;
 }
 
 /* Nav areas, i.e the bar at the top of the UI that contains back icon, filters and device image / title etc */
@@ -295,9 +439,14 @@ GeneratedIcon.mapSequenceButton {
 
 /* Some components we want to explicitly add transparent backgrounds to  */
 
-.control, .transparentBackground, .transparentBackground .viewport, 
+.control, .transparentBackground, .transparentBackground > .list-cell, .transparentBackground .viewport, 
 .transparentBackground:focused, .transparentBackground:focused .viewport, .deviceOverview {
 	-fx-background-color: transparent;
+}
+
+.list-view.transparentBackground .list-cell:focused {
+    -fx-background-color: -fx-background, -fx-cell-focus-inner-border, -fx-background;
+    -fx-background-insets: 0, 1, 2;
 }
 
 /* Matrix UI */
@@ -367,29 +516,45 @@ GeneratedIcon.mapSequenceButton {
 	-fx-pref-width: 340.0px;	
 }
 
+.options .tools {
+	-fx-pref-width: 400px;
+}
+
 /* Controls */
+.control {
+    -fx-background-color: -fx-highlight-background;
+    -fx-border-color: -fx-accent;
+    -fx-padding: 0;
+}
+
+.layoutControl {
+    -fx-background-color: -fx-transparent-background;
+}
+
 .controls-nolayout {
 	-fx-column-halignment: left;	
 	-fx-row-valignment: top;
 }
 
-.control {
+.controls-nolayout .control {
 	-fx-pref-width: 256px;
 }
 
-.controls-layout .control {
-    -fx-padding: 0em 0em 2em 0em;	
+.controls-layout {
 }
 
-.control-layoutcontrol {
-	-fx-pref-width: 500px;
-	-fx-pref-height: 500px;
+.controls-layout .control {
+	-fx-pref-width: 256px;
 }
 
 /* Additional generic component styles */
 Hyperlink, Hyperlink:visited {
     -fx-text-fill: -fx-accent;
 	-fx-underline: false;
+}
+
+TextFlow {
+    -fx-text-fill: #a9a9a9;
 }
 
 Hyperlink:hover {
@@ -435,7 +600,6 @@ LayoutEditor {
 }
 
 LayoutEditor .layout {
-	-fx-padding: 10px 10px 10px 10px;
 }
 
 LayoutEditor .layout-label {
@@ -456,7 +620,8 @@ LayoutEditor .layout-label {
 }
 
 LEDGraphic, AreaGraphic, KeyGraphic, AccessoryGraphic {
-	-snake-outline-color: -fx-light-text-color;
+	/*-snake-outline-color: -fx-transparent-background;*/
+	-snake-outline-color: -fx-accent;
 }
 
 LEDGraphic:selected, AreaGraphic:selected, KeyGraphic:selected {

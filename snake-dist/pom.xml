@@ -81,7 +81,7 @@
 										<forkerArg>jvmarg -Dforker.betaChannel=${snakeRemoteSnapshot}</forkerArg>
 										<forkerArg>jvmarg -Djava.system.class.loader=uk.co.bithatch.snake.ui.DynamicClassLoader</forkerArg>
 										<forkerArg>restart-on 90</forkerArg>
-										<forkerArg>single-instance</forkerArg>
+										<forkerArg>single-instance-per-user</forkerArg>
 										<forkerArg>install-location ${installer.home}/snake-razer</forkerArg>
 										<forkerArg>jvmarg --add-modules</forkerArg>
 										<forkerArg>jvmarg themes.awhitelight,themes.agreenfuture,themes.aredsky,themes.abluelife,themes.ayellowdwarf,themes.anorangetwist,themes.apinkburst,themes.apurplehaze</forkerArg>
@@ -106,6 +106,9 @@
 										<bootstrapModule>javafx-graphics</bootstrapModule>
 										<bootstrapModule>javafx-graphics-linux</bootstrapModule>
 										<bootstrapModule>FX-BorderlessScene</bootstrapModule>
+                                        <bootstrapModule>ikonli-core</bootstrapModule>
+                                        <bootstrapModule>ikonli-javafx</bootstrapModule>
+                                        <bootstrapModule>ikonli-fontawesome-pack</bootstrapModule>
 									</bootstrapModules>
 									<bootstrapOnlyModules>
 										<bootstrapOnlyModule>snake-updater</bootstrapOnlyModule>
@@ -140,20 +143,10 @@
 									</systemModules>
 									<classpathJars>
 										<classpathJar>asm</classpathJar>
-										<classpathJar>slf4j-api</classpathJar>
-										<classpathJar>slf4j-simple</classpathJar>
 									</classpathJars>
 									<automaticModules>
-										<automaticModule>dbus-java</automaticModule>
 										<automaticModule>java-utils</automaticModule>
-										<automaticModule>jnr-ffi</automaticModule>
-										<automaticModule>jnr-unixsocket</automaticModule>
-										<automaticModule>jnr-a64asm</automaticModule>
-										<automaticModule>jnr-x86asm</automaticModule>
-										<automaticModule>jnr-enxio</automaticModule>
-										<automaticModule>jnr-posix</automaticModule>
-										<automaticModule>icon-generator-common</automaticModule>
-										<automaticModule>icon-generator-javafx</automaticModule>
+										<automaticModule>svgSalamander</automaticModule>
 									</automaticModules>
 								</configuration>
 							</execution>
@@ -183,7 +176,7 @@
 										<forkerArg>jvmarg -Dforker.betaChannel=${snakeRemoteNoRuntimeSnapshot}</forkerArg>
 										<forkerArg>jvmarg -Djava.system.class.loader=uk.co.bithatch.snake.ui.DynamicClassLoader</forkerArg>
 										<forkerArg>restart-on 90</forkerArg>
-										<forkerArg>single-instance</forkerArg>
+										<forkerArg>single-instance-per-user</forkerArg>
 										<forkerArg>install-location ${installer.home}/snake-razer</forkerArg>
 										<forkerArg>jvmarg --add-modules</forkerArg>
 										<forkerArg>jvmarg themes.awhitelight,themes.agreenfuture,themes.aredsky,themes.abluelife,themes.ayellowdwarf,themes.anorangetwist,themes.apinkburst,themes.apurplehaze</forkerArg>
@@ -208,6 +201,9 @@
 										<bootstrapModule>javafx-graphics</bootstrapModule>
 										<bootstrapModule>javafx-graphics-linux</bootstrapModule>
 										<bootstrapModule>FX-BorderlessScene</bootstrapModule>
+                                        <bootstrapModule>ikonli-core</bootstrapModule>
+                                        <bootstrapModule>ikonli-javafx</bootstrapModule>
+                                        <bootstrapModule>ikonli-fontawesome-pack</bootstrapModule>
 									</bootstrapModules>
 									<bootstrapOnlyModules>
 										<bootstrapOnlyModule>snake-updater</bootstrapOnlyModule>
@@ -243,16 +239,8 @@
 										<classpathJar>asm</classpathJar>
 									</classpathJars>
 									<automaticModules>
-										<automaticModule>dbus-java</automaticModule>
 										<automaticModule>java-utils</automaticModule>
-										<automaticModule>jnr-ffi</automaticModule>
-										<automaticModule>jnr-unixsocket</automaticModule>
-										<automaticModule>jnr-a64asm</automaticModule>
-										<automaticModule>jnr-x86asm</automaticModule>
-										<automaticModule>jnr-enxio</automaticModule>
-										<automaticModule>jnr-posix</automaticModule>
-										<automaticModule>icon-generator-common</automaticModule>
-										<automaticModule>icon-generator-javafx</automaticModule>
+										<automaticModule>svgSalamander</automaticModule>
 									</automaticModules>
 								</configuration>
 							</execution>

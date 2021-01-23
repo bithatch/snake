@@ -4,7 +4,6 @@ import java.util.Set;
 
 import uk.co.bithatch.snake.lib.Device;
 import uk.co.bithatch.snake.lib.Lit;
-import uk.co.bithatch.snake.lib.Region;
 import uk.co.bithatch.snake.lib.effects.Effect;
 import uk.co.bithatch.snake.ui.EffectHandler;
 
@@ -13,7 +12,7 @@ public interface EffectAcquisition extends AutoCloseable {
 	public interface EffectChangeListener {
 		void effectChanged(Lit component, EffectHandler<?, ?> effect);
 	}
-	
+
 	<E extends Effect> E getEffectInstance(Lit component);
 
 	Device getDevice();
@@ -22,9 +21,13 @@ public interface EffectAcquisition extends AutoCloseable {
 
 	void activate(Lit lit, EffectHandler<?, ?> effect);
 
+	void deactivate(Lit lit);
+
+	void remove(Lit lit);
+
 	void update(Lit lit);
 
-	Set<Region> getLitAreas();
+	Set<Lit> getLitAreas();
 
 	void addListener(EffectChangeListener listener);
 

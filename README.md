@@ -2,19 +2,46 @@
 
 ![Snake Overview](images/overview.png  "Overview")
 
-Snake is application to control and configure your Razer devices on Linux. Making use of the awesome OpenRazer drivers, *Snake* provides access to most features the drivers provides.
+Snake is application to control and configure your Razer devices on Linux. Making use of the awesome OpenRazer drivers, *Snake* provides access to most features the drivers provides and lots of extra stuff you won't find in other clients.
 
  * Stylised user interface with animations and effects
  * Simple installation, and self updating.
- * Supports all devices supported by OpenRazer.
+ * Provides basic support from all devices supported by OpenRazer.
+ * Layouts feature. Design and use labelled diagrams of your device showing lighting areas, keys and individual LEDs. If a device has a layout, it is used for controls, macros and custom effects instead of the basic generated user interface.
  * Supports multiple concurrent devices.
  * Set and configure Razer effects such as Breath, Wave, Static and more.
- * Control over individual LEDs using the Matrix feature.  *(incomplete)*
+ * Create custom effects using the timeline based editor. Configurable with different interpolations types, FPS and speed.
  * Battery status.
+ * Audio analysis lighting effects. Monitors a channel PulseAudio and makes your lighting react in different ways.
+   Requires a device that has Matrix support.
  * Integrated System Tray icon (or indicator)
  * Global brightness controls the brightness of all devices at once.
- * Macro support. *(incomplete, awaiting Driver changes)*
+ * Macro support. *(work in progress, 3 competing systems!)*
  * Themes
+  
+![A device with a layout](images/device-using-layout.png  "Device With Layout")
+
+## Compatibility
+
+Snake tries to be completely compatible with whatever OpenRazer supports. However, there are some features OpenRazer does not yet provide itself, snake such as detailed lighting and key layouts.
+
+Snake includes a very small set of built in layouts, only for hardware I have access to. If you create a high quality layout for your device, please submit it to the project and I will add it as a default.
+
+| Device                      | Macros  | Layouts           | 
+| --------------------------- | --------| ----------------- |
+| *Keyboards*                      |   |            | 
+| Other OpenRazer Keyboards | 1,2   | None            |
+| *Mice*                      |   |            |
+|  <img src="https://assets.razerzone.com/eeimages/support/products/1390/1390_mamba_elite.png" width="64" />Mamba Elite                 | 3   | MATRIX, TOP       |
+| Other OpenRazer Mice |  | None            | None            | 
+| *Accessories*                      |   |            |
+| <img src="https://assets.razerzone.com/eeimages/support/products/1255/1255_tartarus_v2.png" width="64" /> Tartarus V2				  | 3   | MATRIX,TOP        | 26              |
+| <img src="https://assets2.razerzone.com/images/pnx.assets/132a2c378c62416d4d0634306f04bf01/connectivity-nommo-pro.jpg" width="64" /> Nommo Chroma                | 3   | MATRIX, THREE_D_1 | 2               |
+| Other OpenRazer Accessories |   | None            | None            | 
+
+1. OpenRazer default macro/key binding system. Only supports keyboards. Works at X11 / device driver levels. Works without a layout.
+2. Chabad360's OpenRazer macro/key binding improvements  [https://github.com/chabad360/openrazer/tree/keybinding](branch). Currently only supports keyboards. Requires UInput permissions. Works without a layout.
+3. Snakes own key binding system. Supports all device types. Requires UInput permissions. Requires a layout.
  
 ## Install
 

@@ -11,8 +11,9 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.updater.Install">
+<BorderPane xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.updater.Install">
 	<top>
 		<BorderPane fx:id="titleBar" BorderPane.alignment="CENTER_RIGHT">
 			<left>
@@ -21,8 +22,14 @@
 			<right>
 				<HBox alignment="CENTER_RIGHT" styleClass="iconBar" BorderPane.alignment="CENTER">
 					<children>
-						<Hyperlink onAction="#evtMin" styleClass="smallIconButton" text="%min" />
-						<Hyperlink onAction="#evtClose" styleClass="smallIconButton" text="%close" />
+						<Hyperlink onAction="#evtMin" styleClass="smallIconButton">
+                     <graphic>
+                        <FontIcon iconLiteral="fa-window-minimize" iconSize="24" />
+                     </graphic></Hyperlink>
+						<Hyperlink onAction="#evtClose" styleClass="smallIconButton">
+                     <graphic>
+                        <FontIcon iconLiteral="fa-window-close" iconSize="24" />
+                     </graphic></Hyperlink>
 					</children>
 				</HBox>
 			</right>
@@ -61,7 +68,10 @@
                   </BorderPane>
                </center>
                <bottom>
-                  <Hyperlink fx:id="install" onAction="#evtInstall" styleClass="largeIconButton" text="%install" BorderPane.alignment="CENTER" />
+                  <Hyperlink fx:id="install" onAction="#evtInstall" styleClass="largeIconButton" BorderPane.alignment="CENTER">
+                     <graphic>
+                        <FontIcon iconLiteral="fa-download" iconSize="64" />
+                     </graphic></Hyperlink>
                </bottom>
             </BorderPane>
             <VBox fx:id="progressContainer" alignment="CENTER" styleClass="tools">

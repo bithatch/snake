@@ -3,7 +3,6 @@ package uk.co.bithatch.snake.ui;
 import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Slider;
@@ -11,8 +10,9 @@ import uk.co.bithatch.snake.lib.Capability;
 import uk.co.bithatch.snake.lib.effects.Ripple;
 import uk.co.bithatch.snake.lib.effects.Ripple.Mode;
 import uk.co.bithatch.snake.ui.effects.RippleEffectHandler;
-import uk.co.bithatch.snake.ui.util.JavaFX;
-import uk.co.bithatch.snake.ui.widgets.Direction;
+import uk.co.bithatch.snake.widgets.ColorBar;
+import uk.co.bithatch.snake.widgets.Direction;
+import uk.co.bithatch.snake.widgets.JavaFX;
 
 public class RippleOptions extends AbstractBackendEffectController<Ripple, RippleEffectHandler> {
 
@@ -20,7 +20,7 @@ public class RippleOptions extends AbstractBackendEffectController<Ripple, Rippl
 	private Slider refreshRate;
 
 	@FXML
-	private ColorPicker color;
+	private ColorBar color;
 
 	@FXML
 	private Label colorLabel;
@@ -45,7 +45,7 @@ public class RippleOptions extends AbstractBackendEffectController<Ripple, Rippl
 	}
 
 	public int[] getColor() {
-		return JavaFX.toRGB(color.valueProperty().get());
+		return JavaFX.toRGB(color.getColor());
 	}
 
 	@Override
@@ -67,7 +67,7 @@ public class RippleOptions extends AbstractBackendEffectController<Ripple, Rippl
 			if (random.isSelected())
 				update();
 		});
-		color.valueProperty().addListener((e) -> update());
+		color.colorProperty().addListener((e) -> update());
 		refreshRate.valueProperty().addListener((e) -> update());
 	}
 
@@ -95,7 +95,7 @@ public class RippleOptions extends AbstractBackendEffectController<Ripple, Rippl
 				break;
 			}
 			refreshRate.valueProperty().set(effect.getRefreshRate());
-			color.valueProperty().set(JavaFX.toColor(effect.getColor()));
+			color.setColor(JavaFX.toColor(effect.getColor()));
 			random.visibleProperty().set(getRegion().getCapabilities().contains(Capability.RIPPLE_RANDOM));
 			single.visibleProperty().set(getRegion().getCapabilities().contains(Capability.RIPPLE_SINGLE));
 		} finally {

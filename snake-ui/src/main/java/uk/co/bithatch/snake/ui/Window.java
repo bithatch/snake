@@ -19,7 +19,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
-import uk.co.bithatch.snake.ui.widgets.Direction;
+import uk.co.bithatch.snake.widgets.Direction;
 
 public class Window extends AbstractController {
 
@@ -52,13 +52,14 @@ public class Window extends AbstractController {
 
 	@Override
 	protected void onConfigure() throws Exception {
-		titleBarImage.setImage(new Image(context.getConfiguration().themeProperty().getValue().getResource("icons/app64.png")
-				.toExternalForm(), true));
-		titleBar.setBackground(new Background(new BackgroundImage(
-				new Image(context.getConfiguration().themeProperty().getValue().getResource("titleBar.png")
-						.toExternalForm(), true),
-				BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
-				new BackgroundSize(100d, 100d, true, true, false, true))));
+		titleBarImage.setImage(
+				new Image(context.getConfiguration().getTheme().getResource("icons/app64.png").toExternalForm(), true));
+		titleBar.setBackground(
+				new Background(new BackgroundImage(
+						new Image(context.getConfiguration().getTheme().getResource("titleBar.png").toExternalForm(),
+								true),
+						BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
+						new BackgroundSize(100d, 100d, true, true, false, true))));
 	}
 
 	public Hyperlink getOptions() {

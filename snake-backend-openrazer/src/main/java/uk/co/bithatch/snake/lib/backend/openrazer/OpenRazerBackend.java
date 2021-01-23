@@ -2,9 +2,12 @@ package uk.co.bithatch.snake.lib.backend.openrazer;
 
 import java.lang.System.Logger.Level;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -28,9 +31,11 @@ public class OpenRazerBackend implements Backend {
 	private DBusConnection conn;
 	private RazerDaemon daemon;
 	private List<Device> deviceList;
+	private Map<String, Device> deviceMap = new HashMap<>();
 	private RazerDevices devices;
-
+	private Object lock = new Object();
 	private List<BackendListener> listeners = new ArrayList<>();
+	private String[] currentDevices;
 
 	@Override
 	public void addListener(BackendListener listener) {
@@ -51,17 +56,23 @@ public class OpenRazerBackend implements Backend {
 
 	@Override
 	public List<Device> getDevices() throws Exception {
-		if (deviceList == null) {
-			List<Device> newDeviceList = new ArrayList<>();
-			try {
-				for (String d : devices.getDevices()) {
-					newDeviceList.add(new NativeRazerDevice(d, conn, this));
+		synchronized (lock) {
+			if (deviceList == null) {
+				deviceMap.clear();
+				List<Device> newDeviceList = new ArrayList<>();
+				try {
+					currentDevices = devices.getDevices();
+					for (String d : currentDevices) {
+						NativeRazerDevice dev = new NativeRazerDevice(d, conn, this);
+						deviceMap.put(d, dev);
+						newDeviceList.add(dev);
+					}
+					Collections.sort(newDeviceList, (c1, c2) -> c1.getSerial().compareTo(c2.getSerial()));
+				} catch (ServiceUnknown se) {
+					throw new BackendException("OpenRazer not available", se);
 				}
-				Collections.sort(newDeviceList, (c1, c2) -> c1.getSerial().compareTo(c2.getSerial()));
-			} catch (ServiceUnknown se) {
-				throw new BackendException("OpenRazer not available", se);
+				deviceList = newDeviceList;
 			}
-			deviceList = newDeviceList;
 		}
 		return deviceList;
 	}
@@ -92,7 +103,53 @@ public class OpenRazerBackend implements Backend {
 	public void init() throws Exception {
 		conn = DBusConnection.getConnection(DBusConnection.DBusBusType.SESSION);
 		devices = conn.getRemoteObject("org.razer", "/org/razer", RazerDevices.class);
+		conn.addSigHandler(RazerDevices.DeviceAdded.class, devices, (sig) -> {
+			synchronized (lock) {
+				List<String> was = Arrays.asList(currentDevices);
+				try {
+					String[] nowArr = devices.getDevices();
+					List<String> now = new ArrayList<>(Arrays.asList(nowArr));
+					now.removeAll(was);
+					for (String newDevice : now) {
+						NativeRazerDevice dev = new NativeRazerDevice(newDevice, conn, this);
+						deviceMap.put(newDevice, dev);
+						deviceList.add(dev);
+						for (int i = listeners.size() - 1; i >= 0; i--) {
+							listeners.get(i).deviceAdded(dev);
+						}
+					}
+					currentDevices = nowArr;
+				} catch (Exception e) {
+					LOG.log(Level.ERROR, "Failed to get newly added device.", e);
+				}
+			}
+		});
+		conn.addSigHandler(RazerDevices.DeviceRemoved.class, devices, (sig) -> {
+			synchronized (lock) {
+				List<String> was = new ArrayList<>(Arrays.asList(currentDevices));
+				try {
+					String[] nowArr = devices.getDevices();
+					List<String> now = Arrays.asList(nowArr);
+					was.removeAll(now);
+					for (String removedDevice : was) {
+						Device dev = deviceMap.get(removedDevice);
+						if (dev != null) {
+							deviceList.remove(dev);
+							deviceMap.remove(removedDevice);
+							for (int i = listeners.size() - 1; i >= 0; i--) {
+								listeners.get(i).deviceRemoved(dev);
+							}
+						}
+					}
+					currentDevices = nowArr;
+				} catch (Exception e) {
+					LOG.log(Level.ERROR, "Failed to get newly remove device.", e);
+				}
+			}
+		});
 		daemon = conn.getRemoteObject("org.razer", "/org/razer", RazerDaemon.class);
+		getDevices();
+
 	}
 
 	@Override

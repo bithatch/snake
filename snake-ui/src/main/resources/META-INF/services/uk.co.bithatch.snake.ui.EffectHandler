@@ -9,3 +9,4 @@ uk.co.bithatch.snake.ui.effects.StarlightEffectHandler
 uk.co.bithatch.snake.ui.effects.StaticEffectHandler
 uk.co.bithatch.snake.ui.effects.WaveEffectHandler
 uk.co.bithatch.snake.ui.effects.StaticEffectHandler
+uk.co.bithatch.snake.ui.effects.AudioEffectHandler

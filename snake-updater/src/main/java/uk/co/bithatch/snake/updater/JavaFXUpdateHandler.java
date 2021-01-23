@@ -1,11 +1,10 @@
 package uk.co.bithatch.snake.updater;
 
-import com.sshtools.forker.updater.AppManifest.Entry;
-
 import java.net.URL;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 
+import com.sshtools.forker.updater.Entry;
 import com.sshtools.forker.updater.UpdateHandler;
 import com.sshtools.forker.updater.UpdateSession;
 

@@ -7,6 +7,7 @@
 	<version>1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<modules>
+		<module>snake-widgets</module>
 		<module>snake-ui</module>
 		<module>snake-lib</module>
 		<module>snake-backend-openrazer</module>

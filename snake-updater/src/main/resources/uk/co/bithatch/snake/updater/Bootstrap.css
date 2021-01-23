@@ -69,31 +69,131 @@
 
 /* Various icon, image and icon button styles */
 
-.icon, .iconButton, .smallIconButton, .largeIconButton, .iconButton:visited, .smallIconButton:visited, .largeIconButton:visited {
-	-fx-underline: false;
-    -fx-border-width: 0;
+
+Hyperlink FontIcon, Hyperlink:visited FontIcon {
+    -fx-icon-color: -fx-accent;
+}
+
+Hyperlink:hover FontIcon, Hyperlink:pressed FontIcon {
+    -fx-icon-color: -fx-dark-text-color;
+}
+
+.icon, 
+.defaultIconButton, 
+.iconButton, 
+.smallIcon, 
+.smallIconButton, 
+.largeIconButton, 
+.iconButton:visited, 
+.defaultIconButton:visited, 
+.smallIconButton:visited, 
+.largeIconButton:visited {
+    -fx-underline: false;
+    -fx-border-width: 0.0;
     -fx-text-fill: -fx-dark-text-color;
 }
 
-.iconButton:pressed, .iconButton:hover, .smallIconButton:pressed, .smallIconButton:hover, .largeIconButton:pressed, .largeIconButton:hover {
+.icon FontIcon, 
+.defaultIconButton FontIcon, 
+.iconButton FontIcon, 
+.smallIcon FontIcon, 
+.smallIconButton FontIcon, 
+.largeIconButton FontIcon, 
+.iconButton FontIcon, 
+.iconButton:visited FontIcon, 
+.defaultIconButton:visited FontIcon, 
+.smallIconButton:visited FontIcon, 
+.largeIconButton:visited FontIcon {
+    -fx-icon-color: -fx-dark-text-color;
+}
+
+.ic-snake-outline-coloronButton:hover, 
+.defaultIconButton:pressed, 
+.defaultIconButton:hover,  
+.iconButton:pressed, 
+.iconButton:hover, 
+.smallIconButton:pressed, 
+.smallIconButton:hover, 
+.largeIconButton:pressed, 
+.largeIconButton:hover {
     -fx-text-fill: -fx-accent;
 }
 
-.icon, .iconButton {
-    -fx-font-size: 32px;
+.iconButton:pressed FontIcon, 
+.iconButton:hover:visited FontIcon,
+.iconButton:hover FontIcon, 
+.ic-snake-outline-coloronButton:hover FontIcon, 
+.defaultIconButton:pressed FontIcon, 
+.defaultIconButton:hover:visited FontIcon,
+.defaultIconButton:hover FontIcon,  
+.smallIconButton:pressed FontIcon, 
+.smallIconButton:visited:hover FontIcon, 
+.smallIconButton:hover FontIcon, 
+.largeIconButton:pressed FontIcon, 
+.largeIconButton:hover FontIcon {
+    -fx-icon-color: -fx-accent;
 }
 
-.smallIconButton {
-    -fx-font-size: 22px;
+.icon, .iconButton {
+    -fx-font-size: 32.0px; /* DEPRECATED */
+}
+
+.icon FontIcon, .iconButton  FontIcon {
+    -fx-icon-size: 32;
+}
+
+.smallIcon, .smallIconButton {
+    -fx-font-size: 22.0px; /* DEPRECATED */
+}
+
+.smallIcon FontIcon, .smallIconButton FontIcon {
+    -fx-icon-size: 22;
 }
 
 .largeIconButton, .largeIcon, .titleIcon {
     -fx-text-fill: -fx-accent;
-    -fx-font-size: 72px;
+    -fx-font-size: 72.0px; /* DEPRECATED */
+}
+
+.largeIconButton FontIcon, .largeIcon FontIcon, .titleIcon FontIcon {
+    -fx-icon-color: -fx-accent;
+    -fx-icon-size: 72;
+}
+
+.icon, .smallIcon {
+    -fx-text-fill: -fx-accent;
+}
+
+.icon FontIcon , .smallIcon  FontIcon  {
+    -fx-icon-color: -fx-accent;
+}
+
+.hugeIcon {
+    -fx-text-fill: -fx-accent;
+    -fx-font-size: 256.0px; /* Deprecated */
+}
+
+.hugeIcon FontIcon {
+    -fx-icon-size: 256;
+    -fx-icon-color: -fx-accent;
+}
+
+.mediumIcon {
+    -fx-text-fill: -fx-accent;
+    -fx-font-size: 48.0px; /* DEPRECATED */
+}
+
+.mediumIcon FontIcon {
+    -fx-icon-color: -fx-accent;
+    -fx-icon-size: 72;
+}
+
+.titleIcon {
+    -fx-padding: 0.0 0.25em 0.0 0.0;
 }
 
 .titleImage {
-	-fx-fit-height: 96px;
-	-fx-fit-width: 96px;
-    -fx-padding: 0 0.25em 0 0;
+    -fx-fit-height: 96.0px;
+    -fx-fit-width: 96.0px;
+    -fx-padding: 0.0 0.25em 0.0 0.0;
 }

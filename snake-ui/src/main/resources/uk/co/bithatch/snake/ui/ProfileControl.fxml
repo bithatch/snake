@@ -6,36 +6,49 @@
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import uk.co.bithatch.snake.widgets.ProfileLEDs?>
 
 <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.ui.ProfileControl">
    <children>
       <HBox fx:id="rgbs">
          <children>
-            <Label styleClass="header" text="%profile" />
+            <Label maxWidth="1.7976931348623157E308" styleClass="header" text="%profile" HBox.hgrow="ALWAYS" />
          </children>
       </HBox>
-      <VBox fx:id="profiles" />
-      <HBox>
+      <VBox>
          <children>
-            <Hyperlink fx:id="addProfile" onAction="#evtAddProfile" text="%addProfile">
-               <tooltip>
-                  <Tooltip text="%addProfile.tooltip" />
-               </tooltip></Hyperlink>
-            <Hyperlink fx:id="configure" onAction="#evtConfigure" text="%configure">
-               <tooltip>
-                  <Tooltip text="%configure.tooltip" />
-               </tooltip>
-            </Hyperlink>
-            <Hyperlink fx:id="setDefault" onAction="#evtSetDefault" text="%setDefault">
-               <tooltip>
-                  <Tooltip text="%setDefault.tooltip" />
-               </tooltip></Hyperlink>
-            <Hyperlink fx:id="remove" onAction="#evtRemove" text="%remove">
-               <tooltip>
-                  <Tooltip text="%remove.tooltip" />
-               </tooltip></Hyperlink>
+            <VBox fx:id="profiles" />
+            <HBox>
+               <children>
+                  <Hyperlink fx:id="addProfile" onAction="#evtAddProfile" text="%addProfile">
+                     <tooltip>
+                        <Tooltip text="%addProfile.tooltip" />
+                     </tooltip>
+                  </Hyperlink>
+                  <Hyperlink fx:id="configure" onAction="#evtConfigure" text="%configure">
+                     <tooltip>
+                        <Tooltip text="%configure.tooltip" />
+                     </tooltip>
+                  </Hyperlink>
+                  <Hyperlink fx:id="setDefault" onAction="#evtSetDefault" text="%setDefault">
+                     <tooltip>
+                        <Tooltip text="%setDefault.tooltip" />
+                     </tooltip>
+                  </Hyperlink>
+                  <Hyperlink fx:id="remove" onAction="#evtRemove" text="%remove">
+                     <tooltip>
+                        <Tooltip text="%remove.tooltip" />
+                     </tooltip>
+                  </Hyperlink>
+                  <ProfileLEDs fx:id="rgbs" />
+               </children>
+            </HBox>
          </children>
-      </HBox>
+         <styleClass>
+            <String fx:value="padded" />
+            <String fx:value="column" />
+         </styleClass>
+      </VBox>
    </children>
    <styleClass>
       <String fx:value="control" />

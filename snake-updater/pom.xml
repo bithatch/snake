@@ -9,7 +9,7 @@
 		<artifactId>snake</artifactId>
 	</parent>
 	<properties>
-		<javafx.version>15</javafx.version>
+		<javafx.version>15.0.1</javafx.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -36,6 +36,16 @@
 			<artifactId>forker-updater</artifactId>
 			<version>1.7-SNAPSHOT</version>
 		</dependency>
+        <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-javafx</artifactId>
+            <version>12.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-fontawesome-pack</artifactId>
+            <version>12.0.0</version>
+        </dependency>
 	</dependencies>
 	<build>
 		<plugins>
