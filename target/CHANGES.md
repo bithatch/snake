@@ -1,4 +1,4 @@
-# 1.0.0-SNAPSHOT-77
+# 1.0.0-SNAPSHOT-137
  
  * Audio lighting effects. Requires `libpulse` and `libfftw-3` to be installed. 
 

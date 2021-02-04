@@ -86,6 +86,10 @@ public class Install implements Controller, InstallHandler {
 	}
 
 	@Override
+	public void installDone() {
+	}
+
+	@Override
 	public void complete() {
 		bootstrap.setInstalled();
 
@@ -155,12 +159,11 @@ public class Install implements Controller, InstallHandler {
 	}
 
 	@Override
-	public void installFile(Path file, Path d) throws Exception {
+	public void installFile(Path file, Path d, int index) throws Exception {
 		Platform.runLater(() -> {
 			bootstrap.getStage().show();
 			message("installFile", file.getFileName().toString());
 		});
-
 	}
 
 	@Override

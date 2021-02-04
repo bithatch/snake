@@ -159,11 +159,15 @@ public class Update implements Controller, UpdateHandler {
 	}
 
 	@Override
-	public void startDownloadFile(Entry file) throws Exception {
+	public void startDownloadFile(Entry file, int index) throws Exception {
 		Platform.runLater(() -> {
 			bootstrap.getStage().show();
 			message("startDownloadFile", file.path().getFileName().toString());
 		});
+	}
+
+	@Override
+	public void updateDone(boolean upgradeError) {
 	}
 
 	@Override

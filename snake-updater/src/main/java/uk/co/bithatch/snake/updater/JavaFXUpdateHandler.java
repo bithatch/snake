@@ -109,13 +109,17 @@ public class JavaFXUpdateHandler implements UpdateHandler {
 	}
 
 	@Override
-	public void startDownloadFile(Entry file) throws Exception {
+	public void startDownloadFile(Entry file, int index) throws Exception {
 		flag.acquireUninterruptibly();
 		try {
-			delegate.startDownloadFile(file);
+			delegate.startDownloadFile(file, index);
 		} finally {
 			flag.release();
 		}
+	}
+
+	@Override
+	public void updateDone(boolean upgradeError) {
 	}
 
 	@Override

@@ -96,23 +96,30 @@
 											<target>docs</target>
 										</bootstrapFile>
 									</bootstrapFiles>
-									<bootstrapModules>
-										<bootstrapModule>javafx-base</bootstrapModule>
-										<bootstrapModule>javafx-base-linux</bootstrapModule>
-										<bootstrapModule>javafx-controls</bootstrapModule>
-										<bootstrapModule>javafx-controls-linux</bootstrapModule>
-										<bootstrapModule>javafx-fxml</bootstrapModule>
-										<bootstrapModule>javafx-fxml-linux</bootstrapModule>
-										<bootstrapModule>javafx-graphics</bootstrapModule>
-										<bootstrapModule>javafx-graphics-linux</bootstrapModule>
-										<bootstrapModule>FX-BorderlessScene</bootstrapModule>
-                                        <bootstrapModule>ikonli-core</bootstrapModule>
-                                        <bootstrapModule>ikonli-javafx</bootstrapModule>
-                                        <bootstrapModule>ikonli-fontawesome-pack</bootstrapModule>
-									</bootstrapModules>
-									<bootstrapOnlyModules>
-										<bootstrapOnlyModule>snake-updater</bootstrapOnlyModule>
-									</bootstrapOnlyModules>
+									<sharedArtifacts>
+										<sharedArtifact>javafx-base</sharedArtifact>
+										<sharedArtifact>javafx-base-linux</sharedArtifact>
+										<sharedArtifact>javafx-controls</sharedArtifact>
+										<sharedArtifact>javafx-controls-linux</sharedArtifact>
+										<sharedArtifact>javafx-fxml</sharedArtifact>
+										<sharedArtifact>javafx-fxml-linux</sharedArtifact>
+										<sharedArtifact>javafx-graphics</sharedArtifact>
+										<sharedArtifact>javafx-graphics-linux</sharedArtifact>
+										<sharedArtifact>FX-BorderlessScene</sharedArtifact>
+                                        <sharedArtifact>ikonli-core</sharedArtifact>
+                                        <sharedArtifact>ikonli-javafx</sharedArtifact>
+                                        <sharedArtifact>ikonli-fontawesome-pack</sharedArtifact>
+									</sharedArtifacts>
+									<bootstrapArtifacts>
+										<bootstrapArtifact>snake-updater</bootstrapArtifact>
+									</bootstrapArtifacts>
+                                    <classpathArtifacts>
+                                        <classpathArtifact>asm</classpathArtifact>
+                                    </classpathArtifacts>
+                                    <automaticArtifacts>
+                                        <automaticArtifact>java-utils</automaticArtifact>
+                                        <automaticArtifact>svgSalamander</automaticArtifact>
+                                    </automaticArtifacts>
 									<systemModules>
 										<systemModule>java.prefs</systemModule>
 										<systemModule>java.xml</systemModule>
@@ -127,12 +134,10 @@
 										<systemModule>jdk.xml.dom</systemModule>
 										<systemModule>jdk.jsobject</systemModule>
 										<systemModule>java.net.http</systemModule>
+                                        <systemModule>java.scripting</systemModule>
 
 										<!-- TODO separate this in forker? -->
 										<systemModule>java.desktop</systemModule>
-
-										<!-- TODO separate this in forker? -->
-										<systemModule>java.scripting</systemModule>
 
 										<!-- TODO separate this in forker? -->
 										<systemModule>java.management</systemModule>
@@ -141,13 +146,6 @@
 											link to SQL -->
 										<systemModule>java.sql</systemModule>
 									</systemModules>
-									<classpathJars>
-										<classpathJar>asm</classpathJar>
-									</classpathJars>
-									<automaticModules>
-										<automaticModule>java-utils</automaticModule>
-										<automaticModule>svgSalamander</automaticModule>
-									</automaticModules>
 								</configuration>
 							</execution>
 
@@ -191,23 +189,30 @@
 											<target>docs</target>
 										</bootstrapFile>
 									</bootstrapFiles>
-									<bootstrapModules>
-										<bootstrapModule>javafx-base</bootstrapModule>
-										<bootstrapModule>javafx-base-linux</bootstrapModule>
-										<bootstrapModule>javafx-controls</bootstrapModule>
-										<bootstrapModule>javafx-controls-linux</bootstrapModule>
-										<bootstrapModule>javafx-fxml</bootstrapModule>
-										<bootstrapModule>javafx-fxml-linux</bootstrapModule>
-										<bootstrapModule>javafx-graphics</bootstrapModule>
-										<bootstrapModule>javafx-graphics-linux</bootstrapModule>
-										<bootstrapModule>FX-BorderlessScene</bootstrapModule>
-                                        <bootstrapModule>ikonli-core</bootstrapModule>
-                                        <bootstrapModule>ikonli-javafx</bootstrapModule>
-                                        <bootstrapModule>ikonli-fontawesome-pack</bootstrapModule>
-									</bootstrapModules>
-									<bootstrapOnlyModules>
-										<bootstrapOnlyModule>snake-updater</bootstrapOnlyModule>
-									</bootstrapOnlyModules>
+									<sharedArtifacts>
+										<sharedArtifact>javafx-base</sharedArtifact>
+										<sharedArtifact>javafx-base-linux</sharedArtifact>
+										<sharedArtifact>javafx-controls</sharedArtifact>
+										<sharedArtifact>javafx-controls-linux</sharedArtifact>
+										<sharedArtifact>javafx-fxml</sharedArtifact>
+										<sharedArtifact>javafx-fxml-linux</sharedArtifact>
+										<sharedArtifact>javafx-graphics</sharedArtifact>
+										<sharedArtifact>javafx-graphics-linux</sharedArtifact>
+										<sharedArtifact>FX-BorderlessScene</sharedArtifact>
+                                        <sharedArtifact>ikonli-core</sharedArtifact>
+                                        <sharedArtifact>ikonli-javafx</sharedArtifact>
+                                        <sharedArtifact>ikonli-fontawesome-pack</sharedArtifact>
+									</sharedArtifacts>
+									<bootstrapArtifacts>
+										<bootstrapArtifact>snake-updater</bootstrapArtifact>
+									</bootstrapArtifacts>
+                                    <classpathArtifacts>
+                                        <classpathArtifact>asm</classpathArtifact>
+                                    </classpathArtifacts>
+                                    <automaticArtifacts>
+                                        <automaticArtifact>java-utils</automaticArtifact>
+                                        <automaticArtifact>svgSalamander</automaticArtifact>
+                                    </automaticArtifacts>
 									<systemModules>
 										<systemModule>java.prefs</systemModule>
 										<systemModule>java.xml</systemModule>
@@ -221,12 +226,10 @@
 										<systemModule>jdk.xml.dom</systemModule>
 										<systemModule>jdk.jsobject</systemModule>
 										<systemModule>java.net.http</systemModule>
+                                        <systemModule>java.scripting</systemModule>
 
 										<!-- TODO separate this in forker? -->
 										<systemModule>java.desktop</systemModule>
-
-										<!-- TODO separate this in forker? -->
-										<systemModule>java.scripting</systemModule>
 
 										<!-- TODO separate this in forker? -->
 										<systemModule>java.management</systemModule>
@@ -235,13 +238,6 @@
 											link to SQL -->
 										<systemModule>java.sql</systemModule>
 									</systemModules>
-									<classpathJars>
-										<classpathJar>asm</classpathJar>
-									</classpathJars>
-									<automaticModules>
-										<automaticModule>java-utils</automaticModule>
-										<automaticModule>svgSalamander</automaticModule>
-									</automaticModules>
 								</configuration>
 							</execution>
 						</executions>

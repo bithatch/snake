@@ -86,14 +86,19 @@ public class JavaFXInstallHandler implements InstallHandler {
 	}
 
 	@Override
-	public void installFile(Path file, Path dest) throws Exception {
+	public void installFile(Path file, Path d, int index) throws Exception {
 		flag.acquireUninterruptibly();
 		try {
-			delegate.installFile(file, dest);
+			delegate.installFile(file, d, index);
 		} finally {
 			flag.release();
 		}
+	}
 
+	@Override
+	public void installDone() {
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
