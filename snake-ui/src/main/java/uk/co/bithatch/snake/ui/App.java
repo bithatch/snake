@@ -467,11 +467,6 @@ public class App extends Application implements BackendListener {
 			PlatformService.get().setStartOnLogin(true);
 			PREFS.putBoolean("installed", true);
 		}
-
-		addOnManager.start();
-		effectManager.open();
-
-		new DesktopNotifications(this);
 	}
 
 	private void clearControllers() {
@@ -525,6 +520,11 @@ public class App extends Application implements BackendListener {
 		try {
 			if (!backendInited) {
 				initBackend();
+				
+				addOnManager.start();
+				effectManager.open();
+
+				new DesktopNotifications(this);
 			}
 
 			if (!macroManager.isStarted())
@@ -535,6 +535,7 @@ public class App extends Application implements BackendListener {
 			} else {
 				push(Overview.class, Direction.FADE);
 			}
+
 		} catch (Exception e) {
 			LOG.log(Level.ERROR, "Failed to initialize.", e);
 			Error fc = openScene(Error.class, null);

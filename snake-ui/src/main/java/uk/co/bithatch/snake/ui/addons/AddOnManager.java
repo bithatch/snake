@@ -383,7 +383,7 @@ public class AddOnManager implements BackendListener {
 			try {
 				startDeviceEffects(effect);
 			} catch (Exception e) {
-				LOG.log(Level.ERROR, "Failed to start script.", e);
+				LOG.log(Level.ERROR, "Failed to start custom effects.", e);
 			}
 		}
 		context.getBackend().addListener(this);

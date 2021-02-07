@@ -85,7 +85,10 @@ public class Cache implements Closeable {
 									resolved.put(image, cacheFile.toURI().toURL().toExternalForm());
 								}
 							} catch (IOException ioe) {
-								LOG.log(Level.ERROR, "Failed to cache image.", ioe);
+								if(LOG.isLoggable(Level.DEBUG))
+									LOG.log(Level.ERROR, "Failed to cache image.", ioe);
+								else
+									LOG.log(Level.ERROR, "Failed to cache image. " + ioe.getMessage());
 								resolved.put(image, image);
 								return;
 							}

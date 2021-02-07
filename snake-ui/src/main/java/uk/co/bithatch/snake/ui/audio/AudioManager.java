@@ -100,7 +100,7 @@ public class AudioManager implements Closeable, PreferenceChangeListener, AudioD
 	private ScheduledFuture<?> grabTask;
 	private Configuration cfg;
 	private ScheduledExecutorService queue;
-	private Exception error;
+	private Throwable error;
 
 	public AudioManager(App context) {
 		this.context = context;
@@ -164,7 +164,7 @@ public class AudioManager implements Closeable, PreferenceChangeListener, AudioD
 		return backend == null ? Collections.emptyList() : backend.getSinks();
 	}
 
-	public Exception getError() {
+	public Throwable getError() {
 		return error;
 	}
 
@@ -285,7 +285,64 @@ public class AudioManager implements Closeable, PreferenceChangeListener, AudioD
 	}
 
 	protected AudioBackend createBackend() {
-		return new JImpulseAudioBackend(this);
+		try {
+			return new JImpulseAudioBackend(this);
+		} catch (UnsatisfiedLinkError | Exception e) {
+			error = e;
+			if (LOG.isLoggable(Level.DEBUG))
+				LOG.log(Level.ERROR, "Failed to setup audio backend. Do you have libfftw-3 installed?", e);
+			else
+				LOG.log(Level.ERROR,
+						"Failed to setup audio backend. Do you have libfftw-3 installed? " + e.getLocalizedMessage());
+			return new AudioBackend() {
+
+				@Override
+				public void setSourceIndex(int index) {
+				}
+
+				@Override
+				public void init() {
+				}
+
+				@Override
+				public void stop() {
+				}
+
+				@Override
+				public double[] getSnapshot(boolean audioFFT) {
+					return null;
+				}
+
+				@Override
+				public List<AudioSource> getSources() {
+					return Collections.emptyList();
+				}
+
+				@Override
+				public List<AudioSink> getSinks() {
+					return Collections.emptyList();
+				}
+
+				@Override
+				public int getVolume(AudioSink sink) {
+					return 0;
+				}
+
+				@Override
+				public void setVolume(AudioSink sink, int volume) {
+				}
+
+				@Override
+				public boolean isMuted(AudioSink sink) {
+					return false;
+				}
+
+				@Override
+				public void setMuted(AudioSink sink, boolean muted) {
+				}
+
+			};
+		}
 	}
 
 	@SuppressWarnings("resource")

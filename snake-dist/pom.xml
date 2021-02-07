@@ -85,6 +85,7 @@
 										<forkerArg>install-location ${installer.home}/snake-razer</forkerArg>
 										<forkerArg>jvmarg --add-modules</forkerArg>
 										<forkerArg>jvmarg themes.awhitelight,themes.agreenfuture,themes.aredsky,themes.abluelife,themes.ayellowdwarf,themes.anorangetwist,themes.apinkburst,themes.apurplehaze</forkerArg>
+										<forkerArg>jvmarg -Djfreedesktop.quiet=true</forkerArg>
 									</forkerArgs>
 									<bootstrapFiles>
 										<bootstrapFile>
@@ -178,6 +179,7 @@
 										<forkerArg>install-location ${installer.home}/snake-razer</forkerArg>
 										<forkerArg>jvmarg --add-modules</forkerArg>
 										<forkerArg>jvmarg themes.awhitelight,themes.agreenfuture,themes.aredsky,themes.abluelife,themes.ayellowdwarf,themes.anorangetwist,themes.apinkburst,themes.apurplehaze</forkerArg>
+                                        <forkerArg>jvmarg -Djfreedesktop.quiet=true</forkerArg>
 									</forkerArgs>
 									<bootstrapFiles>
 										<bootstrapFile>

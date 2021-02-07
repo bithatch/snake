@@ -1,5 +1,6 @@
 package uk.co.bithatch.snake.ui.tray;
 
+
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Font;
@@ -17,6 +18,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.System.Logger.Level;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -39,6 +41,7 @@ import dorkbox.systemTray.Menu;
 import dorkbox.systemTray.MenuItem;
 import dorkbox.systemTray.Separator;
 import dorkbox.systemTray.SystemTray;
+import dorkbox.systemTray.util.SystemTrayFixes;
 import javafx.application.Platform;
 import uk.co.bithatch.macrolib.MacroSystem.RecordingListener;
 import uk.co.bithatch.macrolib.RecordingSession;
@@ -66,6 +69,8 @@ import uk.co.bithatch.snake.widgets.Direction;
 
 public class Tray implements AutoCloseable, BackendListener, Listener, PreferenceChangeListener, RecordingListener {
 
+	final static System.Logger LOG = System.getLogger(Tray.class.getName());
+	
 	final static ResourceBundle bundle = ResourceBundle.getBundle(Tray.class.getName());
 
 	private Configuration cfg;
@@ -107,6 +112,7 @@ public class Tray implements AutoCloseable, BackendListener, Listener, Preferenc
 
 	Menu addDevice(Device device, Menu toMenu) throws IOException {
 		var img = context.getDefaultImage(device.getType(), context.getCache().getCachedImage(device.getImage()));
+		Menu menu = null;
 		if (img.startsWith("http:") || img.startsWith("https:")) {
 			var url = new URL(img);
 			var path = url.getPath();
@@ -119,13 +125,26 @@ public class Tray implements AutoCloseable, BackendListener, Listener, Preferenc
 			try (var fos = new FileOutputStream(tf)) {
 				try (InputStream is = url.openStream()) {
 					is.transferTo(fos);
+					img = tf.getAbsolutePath();
 				}
+			} catch(IOException ioe) {
+				try(InputStream in = SystemTrayFixes.class.getResource("error_32.png").openStream()) {
+					menu = new Menu(device.getName(), in);
+				}
+				if(LOG.isLoggable(Level.DEBUG))
+					LOG.log(Level.WARNING, "Failed to load device image.", ioe);
+				else
+					LOG.log(Level.WARNING, "Failed to load device image. " + ioe.getMessage() );
 			}
-			img = tf.getAbsolutePath();
 		} else if (img.startsWith("file:")) {
 			img = img.substring(5);
 		}
-		var menu = toMenu == null ? new Menu(device.getName(), img) : toMenu;
+		if(toMenu == null) {
+			if(menu == null)
+				menu = new Menu(device.getName(), img);
+		}
+		else 
+			menu = toMenu;
 
 		/* Open */
 		var openDev = new MenuItem(bundle.getString("open"), (e) -> Platform.runLater(() -> {

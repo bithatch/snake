@@ -67,13 +67,17 @@ public class AudioOptions extends AbstractEffectController<Matrix, AudioEffectHa
 		gain.setValue(cfg.getAudioGain());
 		gain.valueProperty().addListener((e, o, n) -> cfg.setAudioGain(n.floatValue()));
 
+		checkAudioState(context, this);
+
+	}
+
+	public static void checkAudioState(App context, AbstractController controller) {
 		if (context.getAudioManager().getError() != null) {
-			notifyMessage(MessagePersistence.EVERYTIME, MessageType.DANGER, null,
+			controller.notifyMessage(MessagePersistence.EVERYTIME, MessageType.DANGER, null,
 					MessageFormat.format(bundle.getString("error.noAudioSystem"),
 							context.getAudioManager().getError().getLocalizedMessage()),
 					60);
 		}
-
 	}
 
 	@Override

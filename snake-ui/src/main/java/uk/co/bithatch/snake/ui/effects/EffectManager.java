@@ -324,7 +324,12 @@ public class EffectManager implements BackendListener, Closeable {
 
 	public void open() {
 		context.getBackend().addListener(this);
-		context.getBackend().setSync(context.getPreferences().getBoolean(PREF_SYNC, false));
+		try {
+			context.getBackend().setSync(context.getPreferences().getBoolean(PREF_SYNC, false));
+		}
+		catch(Exception e) {
+			LOG.log(Level.ERROR, "Failed to set sync state.", e);
+		}
 	}
 
 	public void addListener(Listener listener) {
