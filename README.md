@@ -59,13 +59,13 @@ The self extracting installer is the easiest to use. You will be asked for a loc
 
 ```
 wget -O snake-installer-amd64.sh \
- https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT-145/snake-installer-amd64.sh && \
+ https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT-151/snake-installer-amd64.sh && \
  sh snake-installer-amd64.sh
 ```
 
 #### From Your Desktop
 
- *  Download [snake-amd64-installer.sh](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT-145/snake-installer-amd64.sh).
+ *  Download [snake-amd64-installer.sh](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT-151/snake-installer-amd64.sh).
  *  Add Execute permission to the downloaded *snake-installer.sh* in your file manager.
  *  Use the Open action in your file manager to start the installer.
 
@@ -77,7 +77,7 @@ Another option is to download the archived version of the app, extract it to whe
 
 ```
 wget -O snake-amd64.tar.gz \
- https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT-145/snake-amd64.tar.gz
+ https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT-151/snake-amd64.tar.gz
 tar xzf snake-amd64-tar.gz
 cd snake
 bin/snake &
@@ -85,15 +85,15 @@ bin/snake &
 
 #### From Your Desktop
 
- *  Download [snake-amd64.tar.gz](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT-145/snake-amd64.tar.gz)
+ *  Download [snake-amd64.tar.gz](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT-151/snake-amd64.tar.gz)
  *  Use the Open action in your file manager to locate and start `bin/snake` in the extracted folder.
  
 ### No-Runtime Packages
 
 The above packages all include a stripped down amd64 Java runtime so you do not need to install your own. If you  have another architecture such as X86 or Arm, or just want a smaller download, you can use your own runtime. It just needs to be at least [Java 15](https://adoptopenjdk.net/). 
 
- * [Installer](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT-145/snake-installer-noruntime.sh)
- * [Tar Archive](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT-145/snake-noruntime.tar.gz)
+ * [Installer](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT-151/snake-installer-noruntime.sh)
+ * [Tar Archive](https://github.com/bithatch/snake/releases/download/v1.0-SNAPSHOT-151/snake-noruntime.tar.gz)
  
 All these packages include the `bin/snake` launcher script. You may need to edit this if you want to use a runtime other than the system default.
  
