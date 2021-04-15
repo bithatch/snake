@@ -250,8 +250,14 @@ public class AudioManager implements Closeable, PreferenceChangeListener, AudioD
 
 	@Override
 	public void close() throws IOException {
-		if (grabTask != null)
+		if (grabTask != null) {
 			grabTask.cancel(false);
+		}
+		queue.shutdown();
+		try {
+			queue.awaitTermination(3, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+		}
 		if (backend != null) {
 			backend.stop();
 			backend = null;

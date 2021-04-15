@@ -126,7 +126,7 @@
                                         <automaticArtifact>jnr-a64asm</automaticArtifact>
                                         <automaticArtifact>jnr-x86asm</automaticArtifact>
                                         <automaticArtifact>annotations</automaticArtifact>
-                                        <automaticArtifact>kotlinx-coroutines-core-jvm</automaticArtifact>
+                                        <automaticArtifact>kotlin-coroutines-core-jvm</automaticArtifact>
                                         <automaticArtifact>kotlin-logging-jvm</automaticArtifact>
                                         <automaticArtifact>javassist</automaticArtifact>
                                     </automaticArtifacts>
@@ -225,7 +225,7 @@
                                         <automaticArtifact>jnr-a64asm</automaticArtifact>
                                         <automaticArtifact>jnr-x86asm</automaticArtifact>
                                         <automaticArtifact>annotations</automaticArtifact>
-                                        <automaticArtifact>kotlinx-coroutines-core-jvm</automaticArtifact>
+                                        <automaticArtifact>kotlin-coroutines-core-jvm</automaticArtifact>
                                         <automaticArtifact>kotlin-logging-jvm</automaticArtifact>
                                         <automaticArtifact>javassist</automaticArtifact>
                                     </automaticArtifacts>

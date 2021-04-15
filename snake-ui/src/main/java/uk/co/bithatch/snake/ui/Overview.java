@@ -98,6 +98,8 @@ public class Overview extends AbstractController implements Listener, BackendLis
 				adjustingBrightness = true;
 				try {
 					brightness.valueProperty().set(context.getBackend().getBrightness());
+				} catch(Exception e) {
+					//
 				} finally {
 					adjustingBrightness = false;
 				}
