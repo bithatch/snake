@@ -1,5 +1,10 @@
 # 1.0.0-SNAPSHOT-${buildNumber}
 
+ * OpenJ9 wasn't actually activated (due to problem with jimpulse), but it now
+   is.
+
+# 1.0.0-SNAPSHOT-151
+
  * Switch to OpenJ9 for lower memory usage and faster startup time. 
  
  * Updated Dorkbox SystemTray to latest.

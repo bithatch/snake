@@ -95,7 +95,7 @@
 											<target>docs</target>
 										</bootstrapFile>
 										<bootstrapFile>
-											<source>${basedir}/../target/CHANGES.md</source>
+											<source>${basedir}/target/CHANGES.md</source>
 											<target>docs</target>
 										</bootstrapFile>
 									</bootstrapFiles>
@@ -194,7 +194,7 @@
 											<target>docs</target>
 										</bootstrapFile>
 										<bootstrapFile>
-											<source>${basedir}/../target/CHANGES.md</source>
+											<source>${basedir}/target/CHANGES.md</source>
 											<target>docs</target>
 										</bootstrapFile>
 									</bootstrapFiles>
@@ -820,6 +820,33 @@
                     <doUpdate>false</doUpdate>
                     <revisionOnScmFailure>unknownbuild</revisionOnScmFailure>
                 </configuration>
+            </plugin>
+            
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>build-id</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>resources</goal>
+                        </goals>
+                        <configuration>
+                            <skip>false</skip>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>..</directory>
+                                    <includes>
+                                        <include>CHANGES.md</include>
+                                    </includes>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

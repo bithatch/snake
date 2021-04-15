@@ -70,6 +70,11 @@
 						<skip>true</skip>
 					</configuration>
 				</plugin>
+	            <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+	                <artifactId>maven-resources-plugin</artifactId>
+	                <version>3.2.0</version>
+                </plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>buildnumber-maven-plugin</artifactId>
@@ -81,34 +86,6 @@
 			</plugins>
 		</pluginManagement>
 
-		<plugins>
-			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>3.2.0</version>
-				<executions>
-					<execution>
-						<id>build-id</id>
-						<phase>package</phase>
-						<goals>
-							<goal>resources</goal>
-						</goals>
-						<configuration>
-							<skip>false</skip>
-							<outputDirectory>${project.build.directory}</outputDirectory>
-							<resources>
-								<resource>
-									<directory>.</directory>
-									<includes>
-										<include>CHANGES.md</include>
-									</includes>
-									<filtering>true</filtering>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
 	</build>
 	<repositories>
 		<repository>
