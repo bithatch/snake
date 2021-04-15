@@ -1,6 +1,7 @@
 module uk.co.bithatch.snake.updater {
 	requires java.desktop;
 	requires java.prefs;
+	requires java.logging;
     requires transitive javafx.controls;
     requires transitive javafx.graphics;
 	requires transitive javafx.fxml;

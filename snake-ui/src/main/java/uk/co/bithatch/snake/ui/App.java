@@ -214,6 +214,8 @@ public class App extends Application implements BackendListener {
 				audioManager.close();
 			} catch (Exception e) {
 			}
+			if(Wrapped.isWrapped())
+				Wrapped.get().close();
 			Platform.exit();
 		} else {
 			if (LOG.isLoggable(Level.DEBUG))
@@ -467,6 +469,9 @@ public class App extends Application implements BackendListener {
 			PlatformService.get().setStartOnLogin(true);
 			PREFS.putBoolean("installed", true);
 		}
+
+		if(Wrapped.isWrapped())
+			Wrapped.get().ready(); 
 	}
 
 	private void clearControllers() {

@@ -51,17 +51,47 @@
 			<groupId>uk.co.bithatch</groupId>
 			<artifactId>FX-BorderlessScene</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>com.dorkbox</groupId>
+            <artifactId>Updates</artifactId>
+            <version>1.0</version>
+        </dependency>
 		<dependency>
 			<groupId>com.dorkbox</groupId>
 			<artifactId>SystemTray</artifactId>
-			<version>3.17</version>
+			<version>4.1</version>
 			<exclusions>
 				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
+					<groupId>ch.qos.logback</groupId>
+					<artifactId>logback-classic</artifactId>
+				</exclusion><!--
+				<exclusion>
+					<groupId>org.jetbrains.kotlin</groupId>
+					<artifactId>kotlin-stdlib-jdk8</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.jetbrains.kotlinx</groupId>
+					<artifactId>kotlin-coroutines-core-jvm</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>io.github.microutils</groupId>
+					<artifactId>kotlin-logging-jvm</artifactId>
+				</exclusion> -->
+				<exclusion>
+					<groupId>com.hierynomus</groupId>
+					<artifactId>sshj</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.tukaani</groupId>
+					<artifactId>xz</artifactId>
+				</exclusion> 
 			</exclusions>
 		</dependency>
+		<!-- <dependency>
+			<groupId>org.jetbrains.kotlin</groupId>
+			<artifactId>kotlin-stdlib</artifactId>
+			<version>1.4.32</version>
+		</dependency> -->
 		<dependency>
 			<groupId>com.sshtools</groupId>
 			<artifactId>forker-wrapped</artifactId>
@@ -97,26 +127,26 @@
 			<artifactId>jdraw</artifactId>
 			<version>1.0</version>
 		</dependency>
-		<dependency> 
+		<dependency>
 			<groupId>com.sshtools</groupId>
-			<artifactId>jfreedesktop-javafx</artifactId> 
-			<version>3.0.0</version>
+			<artifactId>jfreedesktop-javafx</artifactId>
+			<version>3.0.1</version>
 		</dependency>
-        <dependency>
-            <groupId>org.kordamp.ikonli</groupId>
-            <artifactId>ikonli-javafx</artifactId>
-            <version>12.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.kordamp.ikonli</groupId>
-            <artifactId>ikonli-swing</artifactId>
-            <version>12.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.kordamp.ikonli</groupId>
-            <artifactId>ikonli-fontawesome-pack</artifactId>
-            <version>12.0.0</version>
-        </dependency>
+		<dependency>
+			<groupId>org.kordamp.ikonli</groupId>
+			<artifactId>ikonli-javafx</artifactId>
+			<version>12.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.kordamp.ikonli</groupId>
+			<artifactId>ikonli-swing</artifactId>
+			<version>12.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.kordamp.ikonli</groupId>
+			<artifactId>ikonli-fontawesome-pack</artifactId>
+			<version>12.0.0</version>
+		</dependency>
 	</dependencies>
 	<profiles>
 		<profile>

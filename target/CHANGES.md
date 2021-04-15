@@ -1,7 +1,25 @@
+# 1.0.0-SNAPSHOT-${buildNumber}
+
+ * Switch to OpenJ9 for lower memory usage and faster startup time. 
+ 
+ * Updated Dorkbox SystemTray to latest.
+ 
+ * Added splash screen.
+
 # 1.0.0-SNAPSHOT-148
 
- * Under development ...
+ * Testing repository location accidentally baked into build. You will need to re-install or use 
 
+   ```
+   bin/snake --remote-manifest http://www.bithatch.co.uk/repositories/snake/snapshot/manifest.xml
+   ```
+
+   .. or if you are using the 'no-runtime' package ..
+      
+   ```
+   bin/snake --remote-manifest http://www.bithatch.co.uk/repositories/snake-noruntime/snapshot/manifest.xml
+   ```
+   
 # 1.0.0-SNAPSHOT-145
  
  * Audio lighting effects. Requires `libpulse` and `libfftw-3` to be installed. 

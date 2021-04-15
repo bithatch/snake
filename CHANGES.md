@@ -1,6 +1,10 @@
 # 1.0.0-SNAPSHOT-${buildNumber}
 
- * Under development ...
+ * Switch to OpenJ9 for lower memory usage and faster startup time. 
+ 
+ * Updated Dorkbox SystemTray to latest.
+ 
+ * Added splash screen.
 
 # 1.0.0-SNAPSHOT-148
 

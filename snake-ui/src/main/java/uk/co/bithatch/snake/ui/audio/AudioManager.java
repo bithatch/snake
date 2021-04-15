@@ -286,7 +286,10 @@ public class AudioManager implements Closeable, PreferenceChangeListener, AudioD
 
 	protected AudioBackend createBackend() {
 		try {
-			return new JImpulseAudioBackend(this);
+			if(Boolean.getBoolean("snake.noJimpulse"))
+				throw new Exception("Disable by user.");
+			else
+				return new JImpulseAudioBackend(this);
 		} catch (UnsatisfiedLinkError | Exception e) {
 			error = e;
 			if (LOG.isLoggable(Level.DEBUG))

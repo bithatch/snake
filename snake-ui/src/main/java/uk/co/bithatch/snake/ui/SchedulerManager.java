@@ -41,7 +41,7 @@ public class SchedulerManager implements Closeable {
 	public void close() throws IOException {
 		synchronized (schedulers) {
 			for (Map.Entry<Queue, ScheduledExecutorService> s : schedulers.entrySet()) {
-				s.getValue().shutdown();
+				s.getValue().shutdownNow();
 			}
 			schedulers.clear();
 		}

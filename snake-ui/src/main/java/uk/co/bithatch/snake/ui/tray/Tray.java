@@ -42,6 +42,7 @@ import dorkbox.systemTray.MenuItem;
 import dorkbox.systemTray.Separator;
 import dorkbox.systemTray.SystemTray;
 import dorkbox.systemTray.util.SystemTrayFixes;
+import dorkbox.updates.Updates;
 import javafx.application.Platform;
 import uk.co.bithatch.macrolib.MacroSystem.RecordingListener;
 import uk.co.bithatch.macrolib.RecordingSession;
@@ -96,8 +97,10 @@ public class Tray implements AutoCloseable, BackendListener, Listener, Preferenc
 		for (Device dev : context.getBackend().getDevices()) {
 			dev.addListener(this);
 		}
-		SwingUtilities.invokeLater(() -> adjustTray());
-
+		SwingUtilities.invokeLater(() -> {
+			Updates.INSTANCE.setENABLE(cfg.isTelemetry());
+			adjustTray(); 
+		});
 	}
 
 	@Override
@@ -573,6 +576,9 @@ public class Tray implements AutoCloseable, BackendListener, Listener, Preferenc
 				|| evt.getKey().equals(Configuration.PREF_SHOW_BATTERY)
 				|| evt.getKey().equals(Configuration.PREF_WHEN_LOW)) {
 			SwingUtilities.invokeLater(() -> adjustTray());
+		}
+		else if (evt.getKey().equals(Configuration.PREF_THEME)) {
+			SwingUtilities.invokeLater(() -> Updates.INSTANCE.setENABLE(cfg.isTelemetry()));
 		}
 	}
 

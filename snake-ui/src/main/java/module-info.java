@@ -1,4 +1,7 @@
 module uk.co.bithatch.snake.ui {
+	requires org.objectweb.asm.commons;
+	requires org.objectweb.asm.tree;
+	requires org.objectweb.asm.util;
 	requires java.desktop;
     requires transitive javafx.controls;
     requires transitive javafx.graphics;
@@ -8,7 +11,9 @@ module uk.co.bithatch.snake.ui {
 	requires transitive uk.co.bithatch.snake.lib;
 	requires transitive javafx.web;
 	requires com.goxr3plus.fxborderlessscene;
+	requires kotlin.stdlib;
 	requires SystemTray;
+	requires Updates;
 	requires transitive uk.co.bithatch.snake.widgets;
     exports uk.co.bithatch.snake.ui;
     exports uk.co.bithatch.snake.ui.addons;

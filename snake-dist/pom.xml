@@ -71,6 +71,7 @@
 									<remoteBase>${snakeRemote}</remoteBase>
 									<mainClass>uk.co.bithatch.snake.app.linux/uk.co.bithatch.snake.app.linux.App</mainClass>
 									<remotesFromOriginalSource>false</remotesFromOriginalSource>
+                                    <splash>${basedir}/src/main/images/splash.png</splash>
 									<image>true</image>
 									<vmArgs>
 										<vmArg>-Xmx64m</vmArg>
@@ -82,6 +83,7 @@
 										<forkerArg>jvmarg -Djava.system.class.loader=uk.co.bithatch.snake.ui.DynamicClassLoader</forkerArg>
 										<forkerArg>restart-on 90</forkerArg>
 										<forkerArg>single-instance-per-user</forkerArg>
+                                        <forkerArg>run-on-install</forkerArg>
 										<forkerArg>install-location ${installer.home}/snake-razer</forkerArg>
 										<forkerArg>jvmarg --add-modules</forkerArg>
 										<forkerArg>jvmarg themes.awhitelight,themes.agreenfuture,themes.aredsky,themes.abluelife,themes.ayellowdwarf,themes.anorangetwist,themes.apinkburst,themes.apurplehaze</forkerArg>
@@ -114,12 +116,19 @@
 									<bootstrapArtifacts>
 										<bootstrapArtifact>snake-updater</bootstrapArtifact>
 									</bootstrapArtifacts>
-                                    <classpathArtifacts>
-                                        <classpathArtifact>asm</classpathArtifact>
-                                    </classpathArtifacts>
                                     <automaticArtifacts>
+                                        <automaticArtifact>asm</automaticArtifact>
                                         <automaticArtifact>java-utils</automaticArtifact>
                                         <automaticArtifact>svgSalamander</automaticArtifact>
+                                        <automaticArtifact>kotlin-stdlib</automaticArtifact>
+                                        <automaticArtifact>kotlin-stdlib-common</automaticArtifact>
+                                        <automaticArtifact>jffi</automaticArtifact>
+                                        <automaticArtifact>jnr-a64asm</automaticArtifact>
+                                        <automaticArtifact>jnr-x86asm</automaticArtifact>
+                                        <automaticArtifact>annotations</automaticArtifact>
+                                        <automaticArtifact>kotlinx-coroutines-core-jvm</automaticArtifact>
+                                        <automaticArtifact>kotlin-logging-jvm</automaticArtifact>
+                                        <automaticArtifact>javassist</automaticArtifact>
                                     </automaticArtifacts>
 									<systemModules>
 										<systemModule>java.prefs</systemModule>
@@ -129,19 +138,15 @@
 										<systemModule>jdk.zipfs</systemModule>
 
 										<systemModule>java.instrument</systemModule>
-										<systemModule>java.management</systemModule>
-										<systemModule>jdk.attach</systemModule>
-										<systemModule>jdk.management.agent</systemModule>
 										<systemModule>jdk.xml.dom</systemModule>
 										<systemModule>jdk.jsobject</systemModule>
 										<systemModule>java.net.http</systemModule>
                                         <systemModule>java.scripting</systemModule>
+                                        <systemModule>jdk.management.agent</systemModule>
+                                        <systemModule>java.management</systemModule>
 
 										<!-- TODO separate this in forker? -->
 										<systemModule>java.desktop</systemModule>
-
-										<!-- TODO separate this in forker? -->
-										<systemModule>java.management</systemModule>
 
 										<!-- TODO Because of Gson, consider finding a library that doesnt 
 											link to SQL -->
@@ -164,6 +169,7 @@
 									<mainClass>uk.co.bithatch.snake.app.linux/uk.co.bithatch.snake.app.linux.App</mainClass>
 									<remotesFromOriginalSource>false</remotesFromOriginalSource>
 									<imageDirectory>${project.build.directory}/image-noruntime</imageDirectory>
+                                    <splash>${basedir}/src/main/images/splash.png</splash>
 									<image>true</image>
 									<link>false</link>
 									<vmArgs>
@@ -175,6 +181,7 @@
 										<forkerArg>jvmarg -Dforker.betaChannel=${snakeRemoteNoRuntimeSnapshot}</forkerArg>
 										<forkerArg>jvmarg -Djava.system.class.loader=uk.co.bithatch.snake.ui.DynamicClassLoader</forkerArg>
 										<forkerArg>restart-on 90</forkerArg>
+                                        <forkerArg>run-on-install</forkerArg>
 										<forkerArg>single-instance-per-user</forkerArg>
 										<forkerArg>install-location ${installer.home}/snake-razer</forkerArg>
 										<forkerArg>jvmarg --add-modules</forkerArg>
@@ -208,12 +215,19 @@
 									<bootstrapArtifacts>
 										<bootstrapArtifact>snake-updater</bootstrapArtifact>
 									</bootstrapArtifacts>
-                                    <classpathArtifacts>
-                                        <classpathArtifact>asm</classpathArtifact>
-                                    </classpathArtifacts>
                                     <automaticArtifacts>
+                                        <automaticArtifact>asm</automaticArtifact>
                                         <automaticArtifact>java-utils</automaticArtifact>
                                         <automaticArtifact>svgSalamander</automaticArtifact>
+                                        <automaticArtifact>kotlin-stdlib</automaticArtifact>
+                                        <automaticArtifact>kotlin-stdlib-common</automaticArtifact>
+                                        <automaticArtifact>jffi</automaticArtifact>
+                                        <automaticArtifact>jnr-a64asm</automaticArtifact>
+                                        <automaticArtifact>jnr-x86asm</automaticArtifact>
+                                        <automaticArtifact>annotations</automaticArtifact>
+                                        <automaticArtifact>kotlinx-coroutines-core-jvm</automaticArtifact>
+                                        <automaticArtifact>kotlin-logging-jvm</automaticArtifact>
+                                        <automaticArtifact>javassist</automaticArtifact>
                                     </automaticArtifacts>
 									<systemModules>
 										<systemModule>java.prefs</systemModule>
@@ -223,18 +237,14 @@
 
 										<systemModule>java.instrument</systemModule>
 										<systemModule>java.management</systemModule>
-										<systemModule>jdk.attach</systemModule>
-										<systemModule>jdk.management.agent</systemModule>
 										<systemModule>jdk.xml.dom</systemModule>
 										<systemModule>jdk.jsobject</systemModule>
 										<systemModule>java.net.http</systemModule>
                                         <systemModule>java.scripting</systemModule>
+                                        <systemModule>jdk.management.agent</systemModule>
 
 										<!-- TODO separate this in forker? -->
 										<systemModule>java.desktop</systemModule>
-
-										<!-- TODO separate this in forker? -->
-										<systemModule>java.management</systemModule>
 
 										<!-- TODO Because of Gson, consider finding a library that doesnt 
 											link to SQL -->
@@ -787,6 +797,30 @@
 	<build>
 		<finalName>snake</finalName>
 		<plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>buildnumber</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <skip>false</skip>
+                    <getRevisionOnlyOnce>true</getRevisionOnlyOnce>
+                    <format>{0,number}</format>
+                    <items>
+                        <item>buildNumber</item>
+                    </items>
+                    <doCheck>false</doCheck>
+                    <doUpdate>false</doUpdate>
+                    <revisionOnScmFailure>unknownbuild</revisionOnScmFailure>
+                </configuration>
+            </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-deploy-plugin</artifactId>

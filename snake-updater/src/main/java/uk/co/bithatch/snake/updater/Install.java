@@ -10,12 +10,16 @@ import java.util.ResourceBundle;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
+import com.sshtools.forker.common.OS;
 import com.sshtools.forker.updater.AppManifest;
 import com.sshtools.forker.updater.DesktopShortcut;
 import com.sshtools.forker.updater.InstallHandler;
 import com.sshtools.forker.updater.InstallSession;
+import com.sshtools.forker.updater.Updater;
+import com.sshtools.forker.wrapper.Configuration;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -39,6 +43,10 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
 public class Install implements Controller, InstallHandler {
+
+	/** The logger. */
+	protected Logger logger = Logger.getGlobal();
+	
 	final static ResourceBundle bundle = ResourceBundle.getBundle(Install.class.getName());
 
 	final static Preferences PREFS = Preferences.userRoot().node("uk").node("co").node("bithatch").node("snake")
@@ -92,6 +100,18 @@ public class Install implements Controller, InstallHandler {
 	@Override
 	public void complete() {
 		bootstrap.setInstalled();
+
+		if(OS.getJavaPath().startsWith(System.getProperty("java.io.tmpdir"))) {
+			logger.info("Running from temporary runtime");
+			Path installedRuntime = Paths.get(installLocation.getText(), "bin", com.sun.jna.Platform.isWindows() ? "java.exe" : "java");
+			if(Files.exists(installedRuntime)) {
+				Configuration cfg = session.updater().getConfiguration();
+				cfg.setProperty("java", installedRuntime.toString());
+				session.updater().setLaunchDirectory(new File(installLocation.getText()));
+				cfg.setProperty("cwd", installLocation.toString());
+				logger.info(String.format("Found alternative runtime at %s", installedRuntime));
+			}
+		}
 
 		try {
 			if (installShortcut.selectedProperty().get()) {
@@ -150,12 +170,15 @@ public class Install implements Controller, InstallHandler {
 		options.managedProperty().bind(options.visibleProperty());
 		progressContainer.visibleProperty().set(false);
 
+		launch.setSelected(this.session.updater().getConfiguration().getSwitch("run-on-install", false));
 		installLocation.textProperty().set(PREFS.get("installLocation", session.base().toString()));
 		installLocation.textProperty().addListener((e) -> checkInstallable());
 		status.textProperty().set(bundle.getString("preparing"));
 		progress.setProgress(-1);
 		bootstrap.getStage().show();
 
+		Updater updater = this.session.updater();
+		updater.closeSplash();
 	}
 
 	@Override
@@ -235,6 +258,9 @@ public class Install implements Controller, InstallHandler {
 	@FXML
 	void evtInstall(ActionEvent evt) {
 		PREFS.put("installLocation", installLocation.textProperty().get());
+		boolean doLaunch = launch.selectedProperty().get();
+		this.session.updater().getConfiguration().setProperty("run-on-install", doLaunch);
+		this.session.updater().getConfiguration().setProperty("daemon", doLaunch);
 		new Thread() {
 			public void run() {
 				try {

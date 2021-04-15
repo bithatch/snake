@@ -81,6 +81,8 @@ public class Options extends AbstractDeviceController implements Listener, Prefe
 	@FXML
 	private CheckBox updateAutomatically;
 	@FXML
+	private CheckBox telemetry;
+	@FXML
 	private CheckBox checkForUpdates;
 	@FXML
 	private VBox updates;
@@ -117,6 +119,9 @@ public class Options extends AbstractDeviceController implements Listener, Prefe
 			PlatformService ps = PlatformService.get();
 			startOnLogin.selectedProperty().set(ps.isStartOnLogin());
 			updatesContainer.visibleProperty().set(ps.isUpdateableApp());
+			telemetry.selectedProperty().set(cfg.isTelemetry());
+			telemetry.selectedProperty()
+					.addListener((e) -> cfg.setTelemetry(telemetry.selectedProperty().get()));
 			updateAutomatically.selectedProperty().set(ps.isUpdateAutomatically());
 			updateAutomatically.selectedProperty()
 					.addListener((e) -> ps.setUpdateAutomatically(updateAutomatically.selectedProperty().get()));
