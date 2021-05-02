@@ -1,0 +1,22 @@
+{
+    "matrixHeight": 0,
+    "matrixWidth": 0,
+    "deviceType": "HEADSET",
+    "views": [
+        {
+            "desaturateImage": false,
+            "imageOpacity": 1.0,
+            "imageScale": 0.59241706,
+            "position": "TOP",
+            "elements": [
+                {
+                    "type": "AREA",
+                    "x": 0.7875,
+                    "y": 0.7875,
+                    "label": "Lighting",
+                    "region": "CHROMA"
+                }
+            ]
+        }
+    ]
+}

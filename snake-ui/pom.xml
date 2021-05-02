@@ -120,7 +120,7 @@
 		<dependency>
 			<groupId>uk.co.bithatch</groupId>
 			<artifactId>jimpulse</artifactId>
-			<version>1.1</version>
+			<version>1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>uk.co.bithatch</groupId>

@@ -1,0 +1,143 @@
+{
+    "matrixHeight": 1,
+    "matrixWidth": 8,
+    "deviceType": "ACCESSORY",
+    "views": [
+        {
+            "desaturateImage": false,
+            "imageOpacity": 1.0,
+            "imageScale": 1.0,
+            "position": "TOP",
+            "elements": [
+                {
+                    "type": "AREA",
+                    "x": 0.487127,
+                    "y": 0.7528777,
+                    "label": "Base",
+                    "region": "CHROMA"
+                },
+                {
+                    "type": "LED",
+                    "x": 0.6308484,
+                    "y": 0.7460432,
+                    "matrixX": 0,
+                    "matrixY": 0
+                },
+                {
+                    "type": "LED",
+                    "x": 0.5374295,
+                    "y": 0.6884892,
+                    "matrixX": 1,
+                    "matrixY": 0
+                },
+                {
+                    "type": "LED",
+                    "x": 0.5823424,
+                    "y": 0.84136695,
+                    "matrixX": 2,
+                    "matrixY": 0
+                },
+                {
+                    "type": "LED",
+                    "x": 0.4691618,
+                    "y": 0.86474824,
+                    "matrixX": 3,
+                    "matrixY": 0
+                },
+                {
+                    "type": "LED",
+                    "x": 0.35777774,
+                    "y": 0.83417267,
+                    "matrixX": 4,
+                    "matrixY": 0
+                },
+                {
+                    "type": "LED",
+                    "x": 0.34699866,
+                    "y": 0.7352518,
+                    "matrixX": 5,
+                    "matrixY": 0
+                },
+                {
+                    "type": "LED",
+                    "x": 0.43323147,
+                    "y": 0.69028777,
+                    "matrixX": 6,
+                    "matrixY": 0
+                }
+            ]
+        },
+        {
+            "desaturateImage": false,
+            "imageOpacity": 1.0,
+            "imageScale": 1.0,
+            "position": "MATRIX",
+            "elements": [
+                {
+                    "type": "MATRIX_CELL",
+                    "x": 0.0,
+                    "y": 0.0,
+                    "region": "CHROMA",
+                    "matrixX": 0,
+                    "matrixY": 0
+                },
+                {
+                    "type": "MATRIX_CELL",
+                    "x": 0.0,
+                    "y": 0.0,
+                    "region": "CHROMA",
+                    "matrixX": 1,
+                    "matrixY": 0
+                },
+                {
+                    "type": "MATRIX_CELL",
+                    "x": 0.0,
+                    "y": 0.0,
+                    "region": "CHROMA",
+                    "matrixX": 2,
+                    "matrixY": 0
+                },
+                {
+                    "type": "MATRIX_CELL",
+                    "x": 0.0,
+                    "y": 0.0,
+                    "region": "CHROMA",
+                    "matrixX": 3,
+                    "matrixY": 0
+                },
+                {
+                    "type": "MATRIX_CELL",
+                    "x": 0.0,
+                    "y": 0.0,
+                    "region": "CHROMA",
+                    "matrixX": 4,
+                    "matrixY": 0
+                },
+                {
+                    "type": "MATRIX_CELL",
+                    "x": 0.0,
+                    "y": 0.0,
+                    "region": "CHROMA",
+                    "matrixX": 5,
+                    "matrixY": 0
+                },
+                {
+                    "type": "MATRIX_CELL",
+                    "x": 0.0,
+                    "y": 0.0,
+                    "region": "CHROMA",
+                    "matrixX": 6,
+                    "matrixY": 0
+                },
+                {
+                    "type": "MATRIX_CELL",
+                    "x": 0.0,
+                    "y": 0.0,
+                    "region": "CHROMA",
+                    "matrixX": 7,
+                    "matrixY": 0
+                }
+            ]
+        }
+    ]
+}
