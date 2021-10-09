@@ -117,15 +117,21 @@ public class Bootstrap extends Application {
 		Parent node = null;
 		Install install = null;
 		Update update = null;
+		Uninstall uninstall = null;
 		if (JavaFXUpdateHandler.get().isActive()) {
 			update = openScene(Update.class);
 			update.setBootstrap(this);
 			node = update.getScene().getRoot();
-		} else {
+		} else if (JavaFXUninstallHandler.get().isActive()) {
+			uninstall = openScene(Uninstall.class);
+			uninstall.setBootstrap(this);
+			node = uninstall.getScene().getRoot();
+		} else if (JavaFXInstallHandler.get().isActive()) {
 			install = openScene(Install.class);
 			install.setBootstrap(this);
 			node = install.getScene().getRoot();
-		}
+		} else
+			throw new IllegalStateException("No handler active.");
 
 		if (stack == null) {
 			stack = new StackPane(node);
@@ -149,7 +155,9 @@ public class Bootstrap extends Application {
 		/* This will release the lock and let everything start */
 		if (install != null) {
 			JavaFXInstallHandler.get().setDelegate(install);
-		} else {
+		} else if (uninstall != null) {
+			JavaFXUninstallHandler.get().setDelegate(uninstall);
+		}else {
 			JavaFXUpdateHandler.get().setDelegate(update);
 		}
 	}

@@ -4,61 +4,41 @@ import java.nio.file.Path;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 
-import com.sshtools.forker.updater.InstallHandler;
-import com.sshtools.forker.updater.InstallSession;
-import com.sshtools.forker.updater.test.InstallTest;
+import com.sshtools.forker.updater.UninstallHandler;
+import com.sshtools.forker.updater.UninstallSession;
+import com.sshtools.forker.updater.test.UninstallTest;
 
-public class JavaFXInstallHandler implements InstallHandler {
-	
+public class JavaFXUninstallHandler implements UninstallHandler {
+
 	public static void main(String[] args) throws Exception {
-		InstallTest.main(args, new JavaFXInstallHandler());
+		UninstallTest.main(args, new JavaFXUninstallHandler());
 	}
 
-	private static JavaFXInstallHandler instance;
+	private static JavaFXUninstallHandler instance;
 
-	public static JavaFXInstallHandler get() {
+	public static JavaFXUninstallHandler get() {
 		if (instance == null)
 			/* For when launching from development environment */
-			instance = new JavaFXInstallHandler();
+			instance = new JavaFXUninstallHandler();
 		return instance;
 	}
-	
-	private InstallHandler delegate;
-	private Semaphore flag = new Semaphore(1);
-	private InstallSession session;
 
-	public JavaFXInstallHandler() {
+	private UninstallHandler delegate;
+	private Semaphore flag = new Semaphore(1);
+	private UninstallSession session;
+
+	public JavaFXUninstallHandler() {
 		instance = this;
 		flag.acquireUninterruptibly();
 	}
-	
+
 	@Override
 	public boolean isCancelled() {
 		return delegate.isCancelled();
 	}
 
 	@Override
-	public void installRollbackProgress(float progress) {
-		flag.acquireUninterruptibly();
-		try {
-			delegate.installRollbackProgress(progress);
-		} finally {
-			flag.release();
-		}
-	}
-
-	@Override
-	public void startInstallRollback() throws Exception {
-		flag.acquireUninterruptibly();
-		try {
-			delegate.startInstallRollback();
-		} finally {
-			flag.release();
-		}
-	}
-
-	@Override
-	public Path prep(Callable<Void> callable) {
+	public Boolean prep(Callable<Void> callable) {
 		flag.acquireUninterruptibly();
 		try {
 			return delegate.prep(callable);
@@ -68,7 +48,7 @@ public class JavaFXInstallHandler implements InstallHandler {
 	}
 
 	@Override
-	public Path value() {
+	public Boolean value() {
 		flag.acquireUninterruptibly();
 		try {
 			return delegate.value();
@@ -97,17 +77,17 @@ public class JavaFXInstallHandler implements InstallHandler {
 		}
 	}
 
-	public InstallSession getSession() {
+	public UninstallSession getSession() {
 		return session;
 	}
 
 	@Override
-	public void init(InstallSession session) {
+	public void init(UninstallSession session) {
 		this.session = session;
 		new Thread() {
 			public void run() {
 				try {
-					Bootstrap.main(session.tool() == null ? new String[0] : session.tool().getArguments());
+					Bootstrap.main(new String[0]);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -116,41 +96,30 @@ public class JavaFXInstallHandler implements InstallHandler {
 	}
 
 	@Override
-	public void installFile(Path file, Path d, int index) throws Exception {
+	public void uninstallFile(Path file, Path d, int index) throws Exception {
 		flag.acquireUninterruptibly();
 		try {
-			delegate.installFile(file, d, index);
+			delegate.uninstallFile(file, d, index);
 		} finally {
 			flag.release();
 		}
 	}
 
 	@Override
-	public void installDone() {
+	public void uninstallDone() {
 		flag.acquireUninterruptibly();
 		try {
-			delegate.installDone();
+			delegate.uninstallDone();
 		} finally {
 			flag.release();
 		}
 	}
 
 	@Override
-	public void installFileDone(Path file) throws Exception {
+	public void uninstallFileDone(Path file) throws Exception {
 		flag.acquireUninterruptibly();
 		try {
-			delegate.installFileDone(file);
-		} finally {
-			flag.release();
-		}
-
-	}
-
-	@Override
-	public void installFileProgress(Path file, float progress) throws Exception {
-		flag.acquireUninterruptibly();
-		try {
-			delegate.installFileProgress(file, progress);
+			delegate.uninstallFileDone(file);
 		} finally {
 			flag.release();
 		}
@@ -158,10 +127,21 @@ public class JavaFXInstallHandler implements InstallHandler {
 	}
 
 	@Override
-	public void installProgress(float progress) throws Exception {
+	public void uninstallFileProgress(Path file, float progress) throws Exception {
 		flag.acquireUninterruptibly();
 		try {
-			delegate.installProgress(progress);
+			delegate.uninstallFileProgress(file, progress);
+		} finally {
+			flag.release();
+		}
+
+	}
+
+	@Override
+	public void uninstallProgress(float progress) throws Exception {
+		flag.acquireUninterruptibly();
+		try {
+			delegate.uninstallProgress(progress);
 		} finally {
 			flag.release();
 		}
@@ -171,7 +151,7 @@ public class JavaFXInstallHandler implements InstallHandler {
 		return session != null;
 	}
 
-	public void setDelegate(InstallHandler delegate) {
+	public void setDelegate(UninstallHandler delegate) {
 		if (this.delegate != null)
 			throw new IllegalStateException("Delegate already set.");
 		this.delegate = delegate;
@@ -180,10 +160,10 @@ public class JavaFXInstallHandler implements InstallHandler {
 	}
 
 	@Override
-	public void startInstall() throws Exception {
+	public void startUninstall() throws Exception {
 		flag.acquireUninterruptibly();
 		try {
-			delegate.startInstall();
+			delegate.startUninstall();
 		} finally {
 			flag.release();
 		}

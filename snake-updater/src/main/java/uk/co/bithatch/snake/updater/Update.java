@@ -115,7 +115,7 @@ public class Update implements Controller, UpdateHandler {
 			 * This will prevent the update window being shown in most cases (except people
 			 * with slow networks to the update server)
 			 */
-			if (session.updater().getConfiguration().getProperty("update-on-exit") == null) {
+			if (session.tool().getConfiguration().getProperty("update-on-exit") == null) {
 				checkTask = executor.schedule(() -> {
 					Platform.runLater(() -> bootstrap.getStage().show());
 				}, 5, TimeUnit.SECONDS);
@@ -212,5 +212,39 @@ public class Update implements Controller, UpdateHandler {
 			status.textProperty().set(txt);
 		} else
 			Platform.runLater(() -> message(key, args));
+	}
+
+	@Override
+	public boolean isCancelled() {
+		return false;
+	}
+
+	@Override
+	public void startUpdateRollback() {
+		Platform.runLater(() -> {
+			bootstrap.getStage().show();
+			Platform.runLater(() -> progress.progressProperty().set(0));
+			message("startUpdateRollback");
+		});
+	}
+
+	@Override
+	public void updateRollbackProgress(float frac) {
+		Platform.runLater(() -> {
+			bootstrap.getStage().show();
+			Platform.runLater(() -> progress.progressProperty().set(frac));
+			message("updateRollbackProgress");
+		});
+		
+	}
+
+	@Override
+	public Void prep(Callable<Void> callback) {
+		return null;
+	}
+
+	@Override
+	public Void value() {
+		return null;
 	}
 }

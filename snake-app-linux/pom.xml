@@ -101,6 +101,15 @@
 					<mainClass>uk.co.bithatch.snake.app.linux/uk.co.bithatch.snake.app.linux.App</mainClass>
 				</configuration>
 			</plugin>
+			
+			<plugin>
+			    <groupId>com.gluonhq</groupId>
+			    <artifactId>gluonfx-maven-plugin</artifactId>
+			    <version>1.0.6</version>
+			    <configuration>
+			        <mainClass>uk.co.bithatch.snake.app.linux/uk.co.bithatch.snake.app.linux.App</mainClass>
+			    </configuration>
+			</plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

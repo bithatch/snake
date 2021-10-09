@@ -1,7 +1,4 @@
 module uk.co.bithatch.snake.ui {
-	requires org.objectweb.asm.commons;
-	requires org.objectweb.asm.tree;
-	requires org.objectweb.asm.util;
 	requires java.desktop;
     requires transitive javafx.controls;
     requires transitive javafx.graphics;

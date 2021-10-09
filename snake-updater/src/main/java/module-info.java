@@ -15,4 +15,5 @@ module uk.co.bithatch.snake.updater {
 	requires transitive org.kordamp.ikonli.javafx;
 	provides com.sshtools.forker.updater.UpdateHandler with uk.co.bithatch.snake.updater.JavaFXUpdateHandler;
 	provides com.sshtools.forker.updater.InstallHandler with uk.co.bithatch.snake.updater.JavaFXInstallHandler;
+	provides com.sshtools.forker.updater.UninstallHandler with uk.co.bithatch.snake.updater.JavaFXUninstallHandler;
 }

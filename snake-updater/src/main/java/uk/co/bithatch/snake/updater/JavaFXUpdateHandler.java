@@ -39,6 +39,31 @@ public class JavaFXUpdateHandler implements UpdateHandler {
 	}
 
 	@Override
+	public boolean isCancelled() {
+		return false;
+	}
+
+	@Override
+	public void startUpdateRollback() {
+		flag.acquireUninterruptibly();
+		try {
+			delegate.startUpdateRollback();
+		} finally {
+			flag.release();
+		}
+	}
+
+	@Override
+	public void updateRollbackProgress(float progress) {
+		flag.acquireUninterruptibly();
+		try {
+			delegate.updateRollbackProgress(progress);
+		} finally {
+			flag.release();
+		}
+	}
+
+	@Override
 	public void completedManifestLoad(URL location) {
 		flag.acquireUninterruptibly();
 		try {
@@ -78,7 +103,7 @@ public class JavaFXUpdateHandler implements UpdateHandler {
 		new Thread() {
 			public void run() {
 				try {
-					Bootstrap.main(updater.updater().getArguments());
+					Bootstrap.main(updater.tool().getArguments());
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -169,6 +194,26 @@ public class JavaFXUpdateHandler implements UpdateHandler {
 		flag.acquireUninterruptibly();
 		try {
 			return delegate.updatesComplete(task);
+		} finally {
+			flag.release();
+		}
+	}
+
+	@Override
+	public Void prep(Callable<Void> callback) {
+		flag.acquireUninterruptibly();
+		try {
+			return delegate.prep(callback);
+		} finally {
+			flag.release();
+		}
+	}
+
+	@Override
+	public Void value() {
+		flag.acquireUninterruptibly();
+		try {
+			return delegate.value();
 		} finally {
 			flag.release();
 		}

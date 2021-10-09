@@ -46,7 +46,7 @@ public class Install implements Controller, InstallHandler {
 
 	/** The logger. */
 	protected Logger logger = Logger.getGlobal();
-	
+
 	final static ResourceBundle bundle = ResourceBundle.getBundle(Install.class.getName());
 
 	final static Preferences PREFS = Preferences.userRoot().node("uk").node("co").node("bithatch").node("snake")
@@ -81,15 +81,15 @@ public class Install implements Controller, InstallHandler {
 	private Bootstrap bootstrap;
 	private Callable<Void> callback;
 	private ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
-	
+
 	@Override
-	public Path chooseDestination(Callable<Void> callable) {
+	public Path prep(Callable<Void> callable) {
 		this.callback = callable;
 		return null;
 	}
 
 	@Override
-	public Path chosenDestination() {
+	public Path value() {
 		return Paths.get(installLocation.textProperty().get());
 	}
 
@@ -101,13 +101,14 @@ public class Install implements Controller, InstallHandler {
 	public void complete() {
 		bootstrap.setInstalled();
 
-		if(OS.getJavaPath().startsWith(System.getProperty("java.io.tmpdir"))) {
+		if (OS.getJavaPath().startsWith(System.getProperty("java.io.tmpdir"))) {
 			logger.info("Running from temporary runtime");
-			Path installedRuntime = Paths.get(installLocation.getText(), "bin", com.sun.jna.Platform.isWindows() ? "java.exe" : "java");
-			if(Files.exists(installedRuntime)) {
-				Configuration cfg = session.updater().getConfiguration();
+			Path installedRuntime = Paths.get(installLocation.getText(), "bin",
+					com.sun.jna.Platform.isWindows() ? "java.exe" : "java");
+			if (Files.exists(installedRuntime)) {
+				Configuration cfg = session.tool().getConfiguration();
 				cfg.setProperty("java", installedRuntime.toString());
-				session.updater().setLaunchDirectory(new File(installLocation.getText()));
+				session.tool().setLaunchDirectory(new File(installLocation.getText()));
 				cfg.setProperty("cwd", installLocation.toString());
 				logger.info(String.format("Found alternative runtime at %s", installedRuntime));
 			}
@@ -170,15 +171,17 @@ public class Install implements Controller, InstallHandler {
 		options.managedProperty().bind(options.visibleProperty());
 		progressContainer.visibleProperty().set(false);
 
-		launch.setSelected(this.session.updater().getConfiguration().getSwitch("run-on-install", false));
+		launch.setSelected(this.session.tool() == null ? false
+				: this.session.tool().getConfiguration().getSwitch("run-on-install", false));
 		installLocation.textProperty().set(PREFS.get("installLocation", session.base().toString()));
 		installLocation.textProperty().addListener((e) -> checkInstallable());
 		status.textProperty().set(bundle.getString("preparing"));
 		progress.setProgress(-1);
 		bootstrap.getStage().show();
 
-		Updater updater = this.session.updater();
-		updater.closeSplash();
+		Updater updater = this.session.tool();
+		if (updater != null)
+			updater.closeSplash();
 	}
 
 	@Override
@@ -222,8 +225,32 @@ public class Install implements Controller, InstallHandler {
 		});
 	}
 
+	@Override
+	public boolean isCancelled() {
+		return false;
+	}
+
+	@Override
+	public void startInstallRollback() {
+		Platform.runLater(() -> {
+			bootstrap.getStage().show();
+			Platform.runLater(() -> progress.progressProperty().set(0));
+			message("startInstallRollback");
+		});
+	}
+
+	@Override
+	public void installRollbackProgress(float frac) {
+		Platform.runLater(() -> {
+			bootstrap.getStage().show();
+			Platform.runLater(() -> progress.progressProperty().set(frac));
+			message("installRollbackProgress");
+		});
+
+	}
+
 	protected void checkInstallable() {
-		Path p = chosenDestination();
+		Path p = value();
 		install.disableProperty()
 				.set(Files.isRegularFile(p) || (!isExistsAndIsEmpty(p) && Files.exists(p) && !isSameAppId(p)));
 	}
@@ -232,7 +259,7 @@ public class Install implements Controller, InstallHandler {
 	void evtBrowse(ActionEvent evt) {
 		DirectoryChooser fileChooser = new DirectoryChooser();
 		fileChooser.setTitle(bundle.getString("selectTarget"));
-		Path dir = chosenDestination();
+		Path dir = value();
 		while (dir != null) {
 			if (Files.isDirectory(dir)) {
 				break;
@@ -259,8 +286,11 @@ public class Install implements Controller, InstallHandler {
 	void evtInstall(ActionEvent evt) {
 		PREFS.put("installLocation", installLocation.textProperty().get());
 		boolean doLaunch = launch.selectedProperty().get();
-		this.session.updater().getConfiguration().setProperty("run-on-install", doLaunch);
-		this.session.updater().getConfiguration().setProperty("daemon", doLaunch);
+		Updater tool = this.session.tool();
+		if (tool != null) {
+			tool.getConfiguration().setProperty("run-on-install", doLaunch);
+			tool.getConfiguration().setProperty("daemon", doLaunch);
+		}
 		new Thread() {
 			public void run() {
 				try {

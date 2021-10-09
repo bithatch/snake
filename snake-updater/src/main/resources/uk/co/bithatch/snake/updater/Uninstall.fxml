@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="uk.co.bithatch.snake.updater.Uninstall">
+	<top>
+		<BorderPane fx:id="titleBar" BorderPane.alignment="CENTER_RIGHT">
+			<left>
+				<HBox alignment="CENTER" styleClass="iconBar" BorderPane.alignment="CENTER" />
+			</left>
+			<right>
+				<HBox alignment="CENTER_RIGHT" styleClass="iconBar" BorderPane.alignment="CENTER">
+					<children>
+						<Hyperlink onAction="#evtMin" styleClass="smallIconButton">
+                     <graphic>
+                        <FontIcon iconLiteral="fa-window-minimize" iconSize="24" />
+                     </graphic></Hyperlink>
+						<Hyperlink onAction="#evtClose" styleClass="smallIconButton">
+                     <graphic>
+                        <FontIcon iconLiteral="fa-window-close" iconSize="24" />
+                     </graphic></Hyperlink>
+					</children>
+				</HBox>
+			</right>
+			<center>
+				<HBox alignment="CENTER" BorderPane.alignment="CENTER">
+					<children>
+						<ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+							<image>
+								<Image url="@icons/app48.png" />
+							</image>
+						</ImageView>
+						<Label fx:id="title" styleClass="titleBar" text="%title" />
+					</children>
+				</HBox>
+			</center>
+		</BorderPane>
+	</top>
+   <center>
+      <VBox alignment="CENTER" styleClass="tools" BorderPane.alignment="CENTER">
+         <children>
+            <BorderPane fx:id="options">
+               <center>
+                  <BorderPane>
+                     <bottom>
+                        <VBox BorderPane.alignment="CENTER">
+                           <children>
+                              <CheckBox fx:id="deleteAll" mnemonicParsing="false" selected="false" styleClass="tools" text="%deleteAll" />
+                           </children>
+                        </VBox>
+                     </bottom>
+                  </BorderPane>
+               </center>
+               <bottom>
+                  <Hyperlink fx:id="install" onAction="#evtUninstall" styleClass="largeIconButton" BorderPane.alignment="CENTER">
+                     <graphic>
+                        <FontIcon iconLiteral="fa-trash" iconSize="64" />
+                     </graphic></Hyperlink>
+               </bottom>
+            </BorderPane>
+            <VBox fx:id="progressContainer" alignment="CENTER" styleClass="tools">
+               <children>
+                  <Label fx:id="status" text="Status" wrapText="true" />
+                  <ProgressIndicator fx:id="progress" progress="0.0" />
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+   </center>
+</BorderPane>

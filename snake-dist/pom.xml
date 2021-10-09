@@ -51,8 +51,6 @@
 			</dependencies>
 			<build>
 				<plugins>
-
-
 					<plugin>
 						<groupId>com.sshtools</groupId>
 						<artifactId>forker-updater-maven-plugin</artifactId>
@@ -117,18 +115,12 @@
 										<bootstrapArtifact>snake-updater</bootstrapArtifact>
 									</bootstrapArtifacts>
                                     <automaticArtifacts>
-                                        <automaticArtifact>asm</automaticArtifact>
-                                        <automaticArtifact>java-utils</automaticArtifact>
                                         <automaticArtifact>svgSalamander</automaticArtifact>
                                         <automaticArtifact>kotlin-stdlib</automaticArtifact>
                                         <automaticArtifact>kotlin-stdlib-common</automaticArtifact>
-                                        <automaticArtifact>jffi</automaticArtifact>
-                                        <automaticArtifact>jnr-a64asm</automaticArtifact>
-                                        <automaticArtifact>jnr-x86asm</automaticArtifact>
                                         <automaticArtifact>annotations</automaticArtifact>
                                         <automaticArtifact>kotlinx-coroutines-core-jvm</automaticArtifact>
                                         <automaticArtifact>kotlin-logging-jvm</automaticArtifact>
-                                        <automaticArtifact>javassist</automaticArtifact>
                                     </automaticArtifacts>
 									<systemModules>
 										<systemModule>java.prefs</systemModule>
@@ -139,9 +131,11 @@
 
 										<systemModule>java.instrument</systemModule>
 										<systemModule>jdk.xml.dom</systemModule>
+                                        <systemModule>java.scripting</systemModule>
 										<systemModule>jdk.jsobject</systemModule>
 										<systemModule>java.net.http</systemModule>
-                                        <systemModule>java.scripting</systemModule>
+                                        <systemModule>jdk.net</systemModule>
+                                        <systemModule>jdk.security.auth</systemModule>
                                         <systemModule>jdk.management.agent</systemModule>
                                         <systemModule>java.management</systemModule>
 
@@ -216,18 +210,12 @@
 										<bootstrapArtifact>snake-updater</bootstrapArtifact>
 									</bootstrapArtifacts>
                                     <automaticArtifacts>
-                                        <automaticArtifact>asm</automaticArtifact>
-                                        <automaticArtifact>java-utils</automaticArtifact>
                                         <automaticArtifact>svgSalamander</automaticArtifact>
                                         <automaticArtifact>kotlin-stdlib</automaticArtifact>
                                         <automaticArtifact>kotlin-stdlib-common</automaticArtifact>
-                                        <automaticArtifact>jffi</automaticArtifact>
-                                        <automaticArtifact>jnr-a64asm</automaticArtifact>
-                                        <automaticArtifact>jnr-x86asm</automaticArtifact>
                                         <automaticArtifact>annotations</automaticArtifact>
                                         <automaticArtifact>kotlinx-coroutines-core-jvm</automaticArtifact>
                                         <automaticArtifact>kotlin-logging-jvm</automaticArtifact>
-                                        <automaticArtifact>javassist</automaticArtifact>
                                     </automaticArtifacts>
 									<systemModules>
 										<systemModule>java.prefs</systemModule>
@@ -240,8 +228,10 @@
 										<systemModule>jdk.xml.dom</systemModule>
 										<systemModule>jdk.jsobject</systemModule>
 										<systemModule>java.net.http</systemModule>
+                                        <systemModule>jdk.net</systemModule>
                                         <systemModule>java.scripting</systemModule>
                                         <systemModule>jdk.management.agent</systemModule>
+                                        <systemModule>jdk.security.auth</systemModule>
 
 										<!-- TODO separate this in forker? -->
 										<systemModule>java.desktop</systemModule>

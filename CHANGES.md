@@ -1,6 +1,9 @@
 # 1.0.0-SNAPSHOT-${buildNumber}
 
  * Added layout for Razer Base Station Chroma V2 .
+ * Updated to Java 16. This lets us use dbus-java 4.0.0-SNAPSHOT.
+ * Updated to dbus-java 4.0.0-SNAPSHOT. This lets us drop a lot of dependencies.
+ * Added an uninstaller (run bin/uninstaller)
 
 # 1.0.0-SNAPSHOT-173
 
@@ -8,8 +11,7 @@
    
 # 1.0.0-SNAPSHOT-172
 
- * OpenJ9 wasn't actually activated (due to problem with jimpulse), but it now
-   is.
+ * OpenJ9 wasn't actually activated (due to problem with jimpulse), but it now is.
 
 # 1.0.0-SNAPSHOT-151
 
